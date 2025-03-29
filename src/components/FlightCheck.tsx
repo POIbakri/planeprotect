@@ -6,7 +6,7 @@ import { Button } from './ui/button';
 import { formatFlightNumber } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { checkFlightEligibility } from '@/lib/api';
+import { checkFlightEligibility, calculateEligibility } from '@/lib/api';
 import { FlightCheckResults } from './FlightCheckResults';
 import toast from 'react-hot-toast';
 import type { DisruptionDetails, DisruptionReason, FlightCheckResponse } from '@/lib/types';
@@ -26,6 +26,28 @@ const disruptionReasons = [
   { id: 'other_airline_fault', label: 'Other Airline Fault', icon: AlertTriangle },
   { id: 'other', label: 'Other Reason', icon: XCircle },
 ];
+
+// Flight distance data (in km) for compensation calculations
+const flightDistances = {
+  // UK to Europe
+  'LHRGAT': 923,   // London to Madrid
+  'LHRCDG': 344,   // London to Paris
+  'LHRGVA': 746,   // London to Geneva
+  'LGWBCN': 1041,  // London to Barcelona
+  'LHRFRA': 654,   // London to Frankfurt
+  
+  // Europe to Europe
+  'CDGFRA': 479,   // Paris to Frankfurt
+  'BCNFCO': 860,   // Barcelona to Rome
+  'CDGFCO': 1106,  // Paris to Rome
+  'FRAIST': 1865,  // Frankfurt to Istanbul
+  
+  // Long-haul
+  'LHRJFK': 5541,  // London to New York
+  'CDGDXB': 5246,  // Paris to Dubai
+  'FRAJFK': 6173,  // Frankfurt to New York
+  'LHRDEL': 6704,  // London to Delhi
+};
 
 export function FlightCheck() {
   const navigate = useNavigate();
@@ -50,8 +72,11 @@ export function FlightCheck() {
     setIsChecking(true);
 
     try {
+      // This now just returns basic flight info without determining eligibility yet
       const result = await checkFlightEligibility(flightNumber, flightDate);
       setCheckResult(result);
+      
+      // Move to disruption details step
       setStep('disruption');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to check flight eligibility');
@@ -74,13 +99,29 @@ export function FlightCheck() {
 
     if (!checkResult) return;
 
-    setCheckResult((prev: CheckResultState | null) => {
-      if (!prev) return null;
-      return {
-        ...prev,
-        disruption,
-      };
+    // Calculate distance based on departure and arrival airports
+    const routeKey = `${checkResult.flightDetails.departure.iata}${checkResult.flightDetails.arrival.iata}`;
+    const distance = flightDistances[routeKey as keyof typeof flightDistances] || 1500; // Default distance if not found
+    
+    // Now calculate eligibility based on user-provided disruption details
+    const updatedResult = calculateEligibility(
+      {
+        airline: { name: checkResult.flightDetails.airline },
+        flightNumber: checkResult.flightDetails.flightNumber,
+        departure: checkResult.flightDetails.departure,
+        arrival: checkResult.flightDetails.arrival
+      }, 
+      disruption,
+      distance
+    );
+    
+    // Update with disruption details from user input
+    setCheckResult({
+      ...updatedResult,
+      disruption
     });
+    
+    // Move to results step
     setStep('results');
   };
 
@@ -187,7 +228,7 @@ export function FlightCheck() {
                     Checking...
                   </motion.div>
                 ) : (
-                  'Check Compensation'
+                  'Next: Add Flight Details'
                 )}
               </Button>
             </form>
@@ -218,6 +259,23 @@ export function FlightCheck() {
                 Flight Disruption Details
               </h2>
             </div>
+
+            {checkResult && (
+              <div className="mb-6 p-4 bg-slate-50 rounded-xl">
+                <p className="font-medium text-slate-700">{checkResult.flightDetails.airline} {checkResult.flightDetails.flightNumber}</p>
+                <p className="text-sm text-slate-600">
+                  {checkResult.flightDetails.departure.airport} ({checkResult.flightDetails.departure.iata}) → 
+                  {checkResult.flightDetails.arrival.airport} ({checkResult.flightDetails.arrival.iata})
+                </p>
+                <p className="text-sm text-slate-500">
+                  {new Date(flightDate).toLocaleDateString('en-GB', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric'
+                  })}
+                </p>
+              </div>
+            )}
 
             <form onSubmit={handleDisruptionSubmit} className="space-y-6">
               <div className="space-y-4">
@@ -306,7 +364,7 @@ export function FlightCheck() {
                   variant="gradient"
                   className="flex-1"
                 >
-                  Continue
+                  Check Eligibility
                 </Button>
               </div>
             </form>

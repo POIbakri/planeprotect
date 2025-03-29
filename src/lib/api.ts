@@ -168,7 +168,7 @@ async function fetchData<T>(
   }
 }
 
-// Enhanced flight eligibility check with caching
+// Enhanced flight eligibility check with mock data
 export async function checkFlightEligibility(
   flightNumber: string,
   flightDate: string
@@ -195,82 +195,31 @@ export async function checkFlightEligibility(
       }
 
       try {
-        // Use supabase functions.invoke() instead of direct fetch
-        const { data, error } = await supabase.functions.invoke('aviation', {
-          body: {
-            flight_iata: flightNumber,
-            flight_date: flightDate,
-            flight_status: 'landed,cancelled,incident',
-          },
-        });
-
-        if (error) {
-          throw new Error(`Aviation function error: ${error.message}`);
-        }
-
-        if (!data || !data.data || data.data.length === 0) {
-          throw new Error('Flight not found');
-        }
-
-        const flight = data.data[0];
-
-        // Calculate route information
-        const route = {
-          departureCountry: flight.departure.timezone.split('/')[0],
-          arrivalCountry: flight.arrival.timezone.split('/')[0],
-          airlineCountry: flight.airline.name.split(' ')[0],
-        };
-
-        // Calculate distance
-        const distance = EligibilityChecker.calculateDistance(
-          flight.departure.latitude,
-          flight.departure.longitude,
-          flight.arrival.latitude,
-          flight.arrival.longitude
-        );
-
-        // Check for delays
-        const scheduledArrival = new Date(flight.arrival.scheduled).getTime();
-        const actualArrival = flight.arrival.actual 
-          ? new Date(flight.arrival.actual).getTime()
-          : new Date(flight.arrival.estimated).getTime();
+        // Create baseline flight data for UI to display
+        // The actual eligibility will be determined by user input in the next step
+        const mockFlight = createBasicFlightTemplate(flightNumber, flightDate);
         
-        if (isNaN(scheduledArrival) || isNaN(actualArrival)) {
-          throw new Error('Invalid flight times');
-        }
-        
-        const delayMinutes = Math.max(0, Math.floor((actualArrival - scheduledArrival) / (1000 * 60)));
-        const delayHours = delayMinutes / 60;
-
-        // Check eligibility
-        const disruption: DisruptionDetails = {
-          type: flight.flight_status === 'cancelled' ? 'cancellation' as const : 'delay' as const,
-          delayDuration: delayHours,
-          reason: flight.flight_status === 'incident' ? 'technical_issue' as DisruptionReason : undefined,
-        };
-
-        const eligibility = EligibilityChecker.checkEligibility(route, disruption, distance);
-
+        // We don't determine eligibility yet - this happens after user provides disruption details
         return {
-          isEligible: eligibility.isEligible,
-          compensation: eligibility.amount,
-          reason: eligibility.reason,
+          isEligible: false, // Will be updated after user provides disruption information
+          compensation: 0, // Will be calculated based on user input
+          reason: 'pending_details',
           processingTime: '2-3 weeks',
-          regulation: eligibility.regulation,
+          regulation: 'EU261', // Default to EU, will be determined based on route later
           flightDetails: {
-            airline: flight.airline.name,
-            flightNumber: flight.flight.iata,
+            airline: mockFlight.airline.name,
+            flightNumber: mockFlight.flight.iata,
             departure: {
-              airport: flight.departure.airport,
-              iata: flight.departure.iata,
-              terminal: flight.departure.terminal,
-              country: route.departureCountry,
+              airport: mockFlight.departure.airport,
+              iata: mockFlight.departure.iata,
+              terminal: mockFlight.departure.terminal,
+              country: mockFlight.departure.country,
             },
             arrival: {
-              airport: flight.arrival.airport,
-              iata: flight.arrival.iata,
-              terminal: flight.arrival.terminal,
-              country: route.arrivalCountry,
+              airport: mockFlight.arrival.airport,
+              iata: mockFlight.arrival.iata,
+              terminal: mockFlight.arrival.terminal,
+              country: mockFlight.arrival.country,
             },
           },
         };
@@ -281,6 +230,163 @@ export async function checkFlightEligibility(
     },
     { ttl: API_CONFIG.cacheTTL.flightCheck }
   );
+}
+
+// This will process user-provided disruption information to determine eligibility
+export function calculateEligibility(
+  flightDetails: {
+    departure: { country: string, iata: string, airport: string, terminal?: string },
+    arrival: { country: string, iata: string, airport: string, terminal?: string },
+    airline: { name: string },
+    flightNumber: string
+  },
+  disruption: DisruptionDetails,
+  distance: number
+): FlightCheckResponse {
+  // Extract airline's country code from first two letters of flight number
+  const airlineCode = flightDetails.flightNumber.substring(0, 2);
+  
+  // Determine airline country based on code
+  let airlineCountry = 'EU';
+  if (['BA', 'VS', 'BY', 'ZB', 'LS', 'U2', 'EZY'].includes(airlineCode)) {
+    airlineCountry = 'GB';
+  } else if (['AF', 'UU'].includes(airlineCode)) {
+    airlineCountry = 'FR';
+  } else if (['LH', 'EW', 'DE'].includes(airlineCode)) {
+    airlineCountry = 'DE';
+  }
+  
+  // Setup route information
+  const route = {
+    departureCountry: flightDetails.departure.country || 'Europe',
+    arrivalCountry: flightDetails.arrival.country || 'Europe',
+    airlineCountry: airlineCountry,
+  };
+  
+  // Calculate eligibility based on user provided disruption
+  const eligibility = EligibilityChecker.checkEligibility(route, disruption, distance);
+
+  return {
+    isEligible: eligibility.isEligible,
+    compensation: eligibility.amount,
+    reason: eligibility.reason,
+    processingTime: '2-3 weeks',
+    regulation: eligibility.regulation,
+    flightDetails: {
+      airline: flightDetails.airline.name,
+      flightNumber: flightDetails.flightNumber,
+      departure: {
+        airport: flightDetails.departure.airport,
+        iata: flightDetails.departure.iata,
+        terminal: flightDetails.departure.terminal,
+        country: flightDetails.departure.country,
+      },
+      arrival: {
+        airport: flightDetails.arrival.airport,
+        iata: flightDetails.arrival.iata,
+        terminal: flightDetails.arrival.terminal,
+        country: flightDetails.arrival.country,
+      },
+    },
+  };
+}
+
+// Create basic flight template with the minimum info needed
+function createBasicFlightTemplate(flightNumber: string, flightDate: string) {
+  // Parse flight carrier and number
+  const carrier = flightNumber.substring(0, 2);
+  
+  // Determine airline details based on carrier code
+  let airlineName = 'Unknown Airline';
+  let departureAirport = 'London Heathrow';
+  let departureIata = 'LHR';
+  let departureCountry = 'UK';
+  let arrivalAirport = 'Paris Charles de Gaulle';
+  let arrivalIata = 'CDG';
+  let arrivalCountry = 'France';
+  
+  // Common airlines
+  if (carrier === 'BA') {
+    airlineName = 'British Airways';
+    departureAirport = 'London Heathrow';
+    departureIata = 'LHR';
+    departureCountry = 'UK';
+  } else if (carrier === 'AF') {
+    airlineName = 'Air France';
+    departureAirport = 'Paris Charles de Gaulle';
+    departureIata = 'CDG';
+    departureCountry = 'France';
+  } else if (carrier === 'LH') {
+    airlineName = 'Lufthansa';
+    departureAirport = 'Frankfurt Airport';
+    departureIata = 'FRA';
+    departureCountry = 'Germany';
+  } else if (carrier === 'EK') {
+    airlineName = 'Emirates';
+    departureAirport = 'Dubai International';
+    departureIata = 'DXB';
+    departureCountry = 'UAE';
+  }
+  
+  return {
+    flight_date: flightDate,
+    airline: {
+      name: airlineName,
+      iata: carrier,
+    },
+    departure: {
+      airport: departureAirport,
+      iata: departureIata,
+      terminal: 'T2',
+      country: departureCountry,
+    },
+    arrival: {
+      airport: arrivalAirport,
+      iata: arrivalIata,
+      terminal: 'T1',
+      country: arrivalCountry,
+    },
+    flight: {
+      number: flightNumber.substring(2),
+      iata: flightNumber,
+    }
+  };
+}
+
+// Autocomplete for airlines using AviationStack API
+export async function searchAirlines(query: string): Promise<any[]> {
+  if (!query || query.length < 2) return [];
+  
+  const { data, error } = await supabase
+    .from('airlines')
+    .select('*')
+    .or(`name.ilike.%${query}%,iata.ilike.%${query}%`)
+    .limit(10);
+    
+  if (error) {
+    logger.error('Airline search failed', error);
+    throw error;
+  }
+  
+  return data || [];
+}
+
+// Autocomplete for airports using AviationStack API
+export async function searchAirports(query: string): Promise<any[]> {
+  if (!query || query.length < 2) return [];
+  
+  const { data, error } = await supabase
+    .from('airports')
+    .select('*')
+    .or(`name.ilike.%${query}%,iata.ilike.%${query}%,city.ilike.%${query}%`)
+    .limit(10);
+    
+  if (error) {
+    logger.error('Airport search failed', error);
+    throw error;
+  }
+  
+  return data || [];
 }
 
 export async function getUserClaims(page = 1, limit = 10): Promise<PaginatedResponse<Claim>> {
