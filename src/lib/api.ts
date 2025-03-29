@@ -124,7 +124,7 @@ async function fetchData<T>(
   endpoint: string,
   params: Record<string, string>
 ): Promise<T> {
-  const url = new URL(`${API_CONFIG.baseUrl}/functions/v1${endpoint}`);
+  const url = new URL(`${API_CONFIG.baseUrl}${endpoint}`);
   
   // Add all parameters to the URL
   Object.entries(params).forEach(([key, value]) => {
