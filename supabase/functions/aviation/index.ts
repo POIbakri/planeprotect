@@ -15,18 +15,44 @@ const port = parseInt(Deno.args.find((arg: string) => arg.startsWith("--port="))
 console.log(`Starting Aviation API server on port ${port}...`);
 
 serve(async (req: Request) => {
+  // Always add CORS headers
+  const headers = {
+    ...corsHeaders,
+    'Content-Type': 'application/json'
+  };
+  
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers });
   }
 
   try {
-    const url = new URL(req.url);
-    const flightNumber = url.searchParams.get('flight_iata');
-    const flightDate = url.searchParams.get('flight_date');
+    // Extract parameters - handle both GET and POST
+    let flightNumber = '';
+    let flightDate = '';
+    let flightStatus = 'landed,cancelled,incident';
+
+    if (req.method === 'POST') {
+      // For POST requests (from supabase client SDK)
+      const body = await req.json();
+      flightNumber = body.flight_iata || '';
+      flightDate = body.flight_date || '';
+      flightStatus = body.flight_status || flightStatus;
+    } else {
+      // For GET requests (direct requests)
+      const url = new URL(req.url);
+      flightNumber = url.searchParams.get('flight_iata') || '';
+      flightDate = url.searchParams.get('flight_date') || '';
+      flightStatus = url.searchParams.get('flight_status') || flightStatus;
+    }
 
     if (!flightNumber || !flightDate) {
-      throw new Error('Missing required parameters');
+      return new Response(
+        JSON.stringify({ 
+          error: { message: 'Missing required parameters' } 
+        }),
+        { status: 400, headers }
+      );
     }
 
     // First check our database
@@ -38,9 +64,7 @@ serve(async (req: Request) => {
       .single();
 
     if (dbFlights) {
-      return new Response(JSON.stringify(dbFlights), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return new Response(JSON.stringify(dbFlights), { headers });
     }
 
     // If not in database, fetch from Aviation Stack
@@ -52,7 +76,12 @@ serve(async (req: Request) => {
     const response = await fetch(aviationStackUrl.toString());
     
     if (!response.ok) {
-      throw new Error(`Aviation Stack API error: ${response.status}`);
+      return new Response(
+        JSON.stringify({ 
+          error: { message: `Aviation Stack API error: ${response.status}` } 
+        }),
+        { status: response.status, headers }
+      );
     }
 
     const data = await response.json();
@@ -68,9 +97,7 @@ serve(async (req: Request) => {
         });
     }
 
-    return new Response(JSON.stringify(data), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return new Response(JSON.stringify(data), { headers });
   } catch (error: unknown) {
     console.error('Aviation API error:', error);
     
@@ -85,10 +112,7 @@ serve(async (req: Request) => {
           code: 'AVIATION_API_ERROR',
         },
       }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
+      { status: 500, headers }
     );
   }
 }, { port });

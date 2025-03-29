@@ -195,21 +195,24 @@ export async function checkFlightEligibility(
       }
 
       try {
-        const response = await makeApiRequest<AviationStackResponse>(
-          AVIATION_ENDPOINTS.flights.path,
-          {
+        // Use supabase functions.invoke() instead of direct fetch
+        const { data, error } = await supabase.functions.invoke('aviation', {
+          body: {
             flight_iata: flightNumber,
             flight_date: flightDate,
             flight_status: 'landed,cancelled,incident',
           },
-          { cache: true, ttl: API_CONFIG.cacheTTL.flightCheck }
-        );
+        });
 
-        if (!response.data || response.data.length === 0) {
+        if (error) {
+          throw new Error(`Aviation function error: ${error.message}`);
+        }
+
+        if (!data || !data.data || data.data.length === 0) {
           throw new Error('Flight not found');
         }
 
-        const flight = response.data[0];
+        const flight = data.data[0];
 
         // Calculate route information
         const route = {
