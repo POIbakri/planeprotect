@@ -179,11 +179,13 @@ export async function checkFlightEligibility(
       }
       
       const date = new Date(flightDate);
-      const threeMonthsAgo = new Date();
-      threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+      const sixYearsAgo = new Date();
+      sixYearsAgo.setFullYear(sixYearsAgo.getFullYear() - 6);
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
       
-      if (date > new Date() || date < threeMonthsAgo) {
-        throw new Error('Flight date must be within the last 3 months');
+      if (date > tomorrow || date < sixYearsAgo) {
+        throw new Error('Flight date must be within the last 6 years and not in the future');
       }
 
       try {
