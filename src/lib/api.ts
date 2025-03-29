@@ -124,7 +124,7 @@ async function fetchData<T>(
   endpoint: string,
   params: Record<string, string>
 ): Promise<T> {
-  const url = new URL(`${API_CONFIG.baseUrl}${endpoint}`);
+  const url = new URL(`${API_CONFIG.baseUrl}/functions/v1${endpoint}`);
   
   // Add all parameters to the URL
   Object.entries(params).forEach(([key, value]) => {
@@ -142,7 +142,10 @@ async function fetchData<T>(
       headers: {
         'Authorization': `Bearer ${supabaseKey}`,
         'Content-Type': 'application/json',
+        'Origin': window.location.origin
       },
+      mode: 'cors',
+      credentials: 'same-origin'
     });
 
     if (!response.ok) {
