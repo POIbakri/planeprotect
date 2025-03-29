@@ -357,36 +357,66 @@ function createBasicFlightTemplate(flightNumber: string, flightDate: string) {
 export async function searchAirlines(query: string): Promise<any[]> {
   if (!query || query.length < 2) return [];
   
-  const { data, error } = await supabase
-    .from('airlines')
-    .select('*')
-    .or(`name.ilike.%${query}%,iata.ilike.%${query}%`)
-    .limit(10);
-    
-  if (error) {
-    logger.error('Airline search failed', error);
-    throw error;
-  }
+  // For mock purposes, return a list of common airlines
+  const airlines = [
+    { name: 'British Airways', iata: 'BA', icao: 'BAW', country_iso2: 'GB' },
+    { name: 'Air France', iata: 'AF', icao: 'AFR', country_iso2: 'FR' },
+    { name: 'Lufthansa', iata: 'LH', icao: 'DLH', country_iso2: 'DE' },
+    { name: 'Emirates', iata: 'EK', icao: 'UAE', country_iso2: 'AE' },
+    { name: 'Qatar Airways', iata: 'QR', icao: 'QTR', country_iso2: 'QA' },
+    { name: 'American Airlines', iata: 'AA', icao: 'AAL', country_iso2: 'US' },
+    { name: 'Delta Air Lines', iata: 'DL', icao: 'DAL', country_iso2: 'US' },
+    { name: 'United Airlines', iata: 'UA', icao: 'UAL', country_iso2: 'US' },
+    { name: 'KLM Royal Dutch Airlines', iata: 'KL', icao: 'KLM', country_iso2: 'NL' },
+    { name: 'Etihad Airways', iata: 'EY', icao: 'ETD', country_iso2: 'AE' },
+  ];
   
-  return data || [];
+  const filteredAirlines = airlines.filter(
+    airline => 
+      airline.name.toLowerCase().includes(query.toLowerCase()) || 
+      airline.iata.toLowerCase().includes(query.toLowerCase())
+  );
+  
+  return filteredAirlines;
 }
 
 // Autocomplete for airports using AviationStack API
 export async function searchAirports(query: string): Promise<any[]> {
   if (!query || query.length < 2) return [];
   
-  const { data, error } = await supabase
-    .from('airports')
-    .select('*')
-    .or(`name.ilike.%${query}%,iata.ilike.%${query}%,city.ilike.%${query}%`)
-    .limit(10);
-    
-  if (error) {
-    logger.error('Airport search failed', error);
-    throw error;
-  }
+  // For mock purposes, return a list of common airports
+  const airports = [
+    { name: 'London Heathrow', iata: 'LHR', city: 'London', country: 'UK' },
+    { name: 'London Gatwick', iata: 'LGW', city: 'London', country: 'UK' },
+    { name: 'Manchester Airport', iata: 'MAN', city: 'Manchester', country: 'UK' },
+    { name: 'Edinburgh Airport', iata: 'EDI', city: 'Edinburgh', country: 'UK' },
+    { name: 'Paris Charles de Gaulle', iata: 'CDG', city: 'Paris', country: 'France' },
+    { name: 'Paris Orly', iata: 'ORY', city: 'Paris', country: 'France' },
+    { name: 'Amsterdam Schiphol', iata: 'AMS', city: 'Amsterdam', country: 'Netherlands' },
+    { name: 'Frankfurt Airport', iata: 'FRA', city: 'Frankfurt', country: 'Germany' },
+    { name: 'Munich Airport', iata: 'MUC', city: 'Munich', country: 'Germany' },
+    { name: 'Madrid Barajas', iata: 'MAD', city: 'Madrid', country: 'Spain' },
+    { name: 'Barcelona El Prat', iata: 'BCN', city: 'Barcelona', country: 'Spain' },
+    { name: 'Rome Fiumicino', iata: 'FCO', city: 'Rome', country: 'Italy' },
+    { name: 'Milan Malpensa', iata: 'MXP', city: 'Milan', country: 'Italy' },
+    { name: 'Athens International', iata: 'ATH', city: 'Athens', country: 'Greece' },
+    { name: 'Istanbul Airport', iata: 'IST', city: 'Istanbul', country: 'Turkey' },
+    { name: 'Dubai International', iata: 'DXB', city: 'Dubai', country: 'UAE' },
+    { name: 'New York JFK', iata: 'JFK', city: 'New York', country: 'USA' },
+    { name: 'Los Angeles International', iata: 'LAX', city: 'Los Angeles', country: 'USA' },
+    { name: 'Tokyo Narita', iata: 'NRT', city: 'Tokyo', country: 'Japan' },
+    { name: 'Singapore Changi', iata: 'SIN', city: 'Singapore', country: 'Singapore' },
+    { name: 'Sydney Kingsford Smith', iata: 'SYD', city: 'Sydney', country: 'Australia' },
+  ];
   
-  return data || [];
+  const filteredAirports = airports.filter(
+    airport => 
+      airport.name.toLowerCase().includes(query.toLowerCase()) || 
+      airport.iata.toLowerCase().includes(query.toLowerCase()) ||
+      airport.city.toLowerCase().includes(query.toLowerCase())
+  );
+  
+  return filteredAirports;
 }
 
 export async function getUserClaims(page = 1, limit = 10): Promise<PaginatedResponse<Claim>> {

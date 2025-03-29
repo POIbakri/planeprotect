@@ -1,12 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plane, AlertTriangle, Clock, Cloud, PenTool as Tool, Users, Shield, XCircle } from 'lucide-react';
+import { Plane, AlertTriangle, Clock, Cloud, PenTool as Tool, Users, Shield, XCircle, Search } from 'lucide-react';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { formatFlightNumber } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { checkFlightEligibility, calculateEligibility } from '@/lib/api';
+import { checkFlightEligibility, calculateEligibility, searchAirports } from '@/lib/api';
 import { FlightCheckResults } from './FlightCheckResults';
 import toast from 'react-hot-toast';
 import type { DisruptionDetails, DisruptionReason, FlightCheckResponse } from '@/lib/types';
@@ -14,6 +14,13 @@ import type { DisruptionDetails, DisruptionReason, FlightCheckResponse } from '@
 // Extended type for our local state that includes the disruption
 interface CheckResultState extends FlightCheckResponse {
   disruption?: DisruptionDetails;
+}
+
+interface Airport {
+  name: string;
+  iata: string;
+  city: string;
+  country: string;
 }
 
 const disruptionReasons = [
@@ -54,6 +61,14 @@ export function FlightCheck() {
   const { user } = useAuth();
   const [flightNumber, setFlightNumber] = useState('');
   const [flightDate, setFlightDate] = useState('');
+  const [departureQuery, setDepartureQuery] = useState('');
+  const [destinationQuery, setDestinationQuery] = useState('');
+  const [departureAirport, setDepartureAirport] = useState<Airport | null>(null);
+  const [destinationAirport, setDestinationAirport] = useState<Airport | null>(null);
+  const [departureResults, setDepartureResults] = useState<Airport[]>([]);
+  const [destinationResults, setDestinationResults] = useState<Airport[]>([]);
+  const [showDepartureResults, setShowDepartureResults] = useState(false);
+  const [showDestinationResults, setShowDestinationResults] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
   const [step, setStep] = useState<'initial' | 'disruption' | 'results'>('initial');
   const [checkResult, setCheckResult] = useState<CheckResultState | null>(null);
@@ -67,14 +82,93 @@ export function FlightCheck() {
   minDate.setFullYear(minDate.getFullYear() - 6);
   const minDateStr = minDate.toISOString().split('T')[0];
 
+  // Handle airport search for departure
+  useEffect(() => {
+    const fetchDepartureAirports = async () => {
+      if (departureQuery.length < 2) {
+        setDepartureResults([]);
+        return;
+      }
+      
+      try {
+        const results = await searchAirports(departureQuery);
+        setDepartureResults(results);
+      } catch (error) {
+        console.error('Error searching airports:', error);
+      }
+    };
+    
+    const timer = setTimeout(fetchDepartureAirports, 300);
+    return () => clearTimeout(timer);
+  }, [departureQuery]);
+
+  // Handle airport search for destination
+  useEffect(() => {
+    const fetchDestinationAirports = async () => {
+      if (destinationQuery.length < 2) {
+        setDestinationResults([]);
+        return;
+      }
+      
+      try {
+        const results = await searchAirports(destinationQuery);
+        setDestinationResults(results);
+      } catch (error) {
+        console.error('Error searching airports:', error);
+      }
+    };
+    
+    const timer = setTimeout(fetchDestinationAirports, 300);
+    return () => clearTimeout(timer);
+  }, [destinationQuery]);
+
+  const selectDepartureAirport = (airport: Airport) => {
+    setDepartureAirport(airport);
+    setDepartureQuery(`${airport.name} (${airport.iata})`);
+    setShowDepartureResults(false);
+  };
+
+  const selectDestinationAirport = (airport: Airport) => {
+    setDestinationAirport(airport);
+    setDestinationQuery(`${airport.name} (${airport.iata})`);
+    setShowDestinationResults(false);
+  };
+
   const handleCheck = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsChecking(true);
 
+    if (!departureAirport || !destinationAirport) {
+      toast.error('Please select both departure and destination airports');
+      setIsChecking(false);
+      return;
+    }
+
     try {
-      // This now just returns basic flight info without determining eligibility yet
+      // Get basic flight template from the flight number
       const result = await checkFlightEligibility(flightNumber, flightDate);
-      setCheckResult(result);
+      
+      // Override with user-selected airports
+      const updatedResult = {
+        ...result,
+        flightDetails: {
+          ...result.flightDetails,
+          departure: {
+            airport: departureAirport.name,
+            iata: departureAirport.iata,
+            terminal: result.flightDetails.departure.terminal,
+            country: departureAirport.country
+          },
+          arrival: {
+            airport: destinationAirport.name,
+            iata: destinationAirport.iata,
+            terminal: result.flightDetails.arrival.terminal,
+            country: destinationAirport.country
+          }
+        }
+      };
+      
+      setCheckResult(updatedResult);
       
       // Move to disruption details step
       setStep('disruption');
@@ -128,6 +222,10 @@ export function FlightCheck() {
   const handleReset = () => {
     setFlightNumber('');
     setFlightDate('');
+    setDepartureQuery('');
+    setDestinationQuery('');
+    setDepartureAirport(null);
+    setDestinationAirport(null);
     setCheckResult(null);
     setStep('initial');
     setDisruption({ type: 'delay' });
@@ -207,6 +305,92 @@ export function FlightCheck() {
                 <p className="text-sm text-slate-500">
                   Claims can be made for flights within the last 6 years
                 </p>
+              </div>
+
+              {/* Departure Airport Selection */}
+              <div className="space-y-2 relative">
+                <label htmlFor="departureAirport" className="block text-sm font-medium text-slate-700">
+                  Departure Airport
+                </label>
+                <div className="relative">
+                  <Input
+                    id="departureAirport"
+                    type="text"
+                    value={departureQuery}
+                    onChange={(e) => {
+                      setDepartureQuery(e.target.value);
+                      setShowDepartureResults(true);
+                      if (!e.target.value) {
+                        setDepartureAirport(null);
+                      }
+                    }}
+                    placeholder="Search airport by name or code"
+                    className="h-12 pr-10"
+                    required
+                    onFocus={() => setShowDepartureResults(true)}
+                  />
+                  <Search className="absolute right-3 top-3.5 w-5 h-5 text-slate-400" />
+                </div>
+                
+                {showDepartureResults && departureResults.length > 0 && (
+                  <div className="absolute z-10 mt-1 w-full bg-white rounded-md shadow-lg max-h-60 overflow-auto">
+                    <ul className="py-1">
+                      {departureResults.map((airport) => (
+                        <li
+                          key={airport.iata}
+                          className="px-4 py-2 hover:bg-slate-100 cursor-pointer"
+                          onClick={() => selectDepartureAirport(airport)}
+                        >
+                          <div className="font-medium">{airport.name} ({airport.iata})</div>
+                          <div className="text-sm text-slate-500">{airport.city}, {airport.country}</div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+
+              {/* Destination Airport Selection */}
+              <div className="space-y-2 relative">
+                <label htmlFor="destinationAirport" className="block text-sm font-medium text-slate-700">
+                  Destination Airport
+                </label>
+                <div className="relative">
+                  <Input
+                    id="destinationAirport"
+                    type="text"
+                    value={destinationQuery}
+                    onChange={(e) => {
+                      setDestinationQuery(e.target.value);
+                      setShowDestinationResults(true);
+                      if (!e.target.value) {
+                        setDestinationAirport(null);
+                      }
+                    }}
+                    placeholder="Search airport by name or code"
+                    className="h-12 pr-10"
+                    required
+                    onFocus={() => setShowDestinationResults(true)}
+                  />
+                  <Search className="absolute right-3 top-3.5 w-5 h-5 text-slate-400" />
+                </div>
+                
+                {showDestinationResults && destinationResults.length > 0 && (
+                  <div className="absolute z-10 mt-1 w-full bg-white rounded-md shadow-lg max-h-60 overflow-auto">
+                    <ul className="py-1">
+                      {destinationResults.map((airport) => (
+                        <li
+                          key={airport.iata}
+                          className="px-4 py-2 hover:bg-slate-100 cursor-pointer"
+                          onClick={() => selectDestinationAirport(airport)}
+                        >
+                          <div className="font-medium">{airport.name} ({airport.iata})</div>
+                          <div className="text-sm text-slate-500">{airport.city}, {airport.country}</div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
 
               <Button
