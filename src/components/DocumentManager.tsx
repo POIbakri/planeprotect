@@ -4,7 +4,6 @@ import { FileText, Download, Trash2, Upload } from 'lucide-react';
 import { Button } from './ui/button';
 import { useDropzone } from 'react-dropzone';
 import { supabase } from '@/lib/api';
-import { useAuth } from '@/contexts/AuthContext';
 import toast from 'react-hot-toast';
 import { formatDate } from '@/lib/utils';
 
@@ -17,7 +16,6 @@ interface Document {
 }
 
 export function DocumentManager({ claimId }: { claimId: string }) {
-  const { user } = useAuth();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -91,19 +89,19 @@ export function DocumentManager({ claimId }: { claimId: string }) {
     }
   }
 
-  async function handleDownload(document: Document) {
+  async function handleDownload(documentItem: Document) {
     try {
       const { data, error } = await supabase.storage
         .from('claim-documents')
-        .download(document.file_path);
+        .download(documentItem.file_path);
 
       if (error) throw error;
 
       // Create download link
       const url = URL.createObjectURL(data);
-      const a = document.createElement('a');
+      const a = window.document.createElement('a');
       a.href = url;
-      a.download = document.file_path.split('/').pop() || 'document';
+      a.download = documentItem.file_path.split('/').pop() || 'document';
       a.click();
       URL.revokeObjectURL(url);
     } catch (error) {
@@ -159,18 +157,27 @@ export function DocumentManager({ claimId }: { claimId: string }) {
           isDragActive
             ? 'border-blue-400 bg-blue-50'
             : 'border-slate-200 hover:border-blue-400'
-        }`}
+        } ${uploading ? 'opacity-50 pointer-events-none' : ''}`}
       >
-        <input {...getInputProps()} />
-        <Upload className="w-12 h-12 mx-auto mb-4 text-slate-400" />
-        <p className="text-slate-600">
-          {isDragActive
-            ? 'Drop files here...'
-            : 'Drag and drop files here, or click to select files'}
-        </p>
-        <p className="text-sm text-slate-500 mt-2">
-          Supported formats: PDF, JPEG, PNG (max 10MB)
-        </p>
+        <input {...getInputProps()} disabled={uploading} />
+        {uploading ? (
+          <div className="flex flex-col items-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-2" />
+            <p className="text-slate-600">Uploading...</p>
+          </div>
+        ) : (
+          <>
+            <Upload className="w-12 h-12 mx-auto mb-4 text-slate-400" />
+            <p className="text-slate-600">
+              {isDragActive
+                ? 'Drop files here...'
+                : 'Drag and drop files here, or click to select files'}
+            </p>
+            <p className="text-sm text-slate-500 mt-2">
+              Supported formats: PDF, JPEG, PNG (max 10MB)
+            </p>
+          </>
+        )}
       </div>
 
       {/* Documents List */}

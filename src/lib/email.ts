@@ -69,7 +69,7 @@ export async function sendEmail({ to, name, template, data = {} }: EmailData) {
     logger.info('Email sent successfully', {
       template,
       to,
-      messageId: response.id,
+      messageId: response.data?.id,
     });
 
     // Record email in database
@@ -79,7 +79,7 @@ export async function sendEmail({ to, name, template, data = {} }: EmailData) {
       subject,
       status: 'sent',
       metadata: {
-        messageId: response.id,
+        messageId: response.data?.id,
         templateData,
       },
     }]);

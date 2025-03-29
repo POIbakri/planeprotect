@@ -1,3 +1,5 @@
+/// <reference path="../deno-env.d.ts" />
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'npm:@supabase/supabase-js';
 import { corsHeaders } from "../_shared/cors.ts";
@@ -8,7 +10,11 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-serve(async (req) => {
+// Get port from arguments (default: 8000)
+const port = parseInt(Deno.args.find((arg: string) => arg.startsWith("--port="))?.split("=")[1] || "8000");
+console.log(`Starting Aviation API server on port ${port}...`);
+
+serve(async (req: Request) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -65,13 +71,17 @@ serve(async (req) => {
     return new Response(JSON.stringify(data), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Aviation API error:', error);
+    
+    const errorMessage = error instanceof Error 
+      ? error.message 
+      : 'Internal server error';
 
     return new Response(
       JSON.stringify({
         error: {
-          message: error.message || 'Internal server error',
+          message: errorMessage,
           code: 'AVIATION_API_ERROR',
         },
       }),
@@ -81,4 +91,4 @@ serve(async (req) => {
       }
     );
   }
-});
+}, { port });

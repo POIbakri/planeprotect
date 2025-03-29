@@ -12,7 +12,10 @@ import type {
   Claim,
   ClaimFilters,
   AviationStackResponse,
-  AviationStackFlight 
+  AviationStackFlight,
+  DisruptionReason,
+  DisruptionType,
+  DisruptionDetails
 } from './types';
 
 // Initialize Supabase client with production configuration
@@ -234,10 +237,10 @@ export async function checkFlightEligibility(
         const delayHours = delayMinutes / 60;
 
         // Check eligibility
-        const disruption = {
+        const disruption: DisruptionDetails = {
           type: flight.flight_status === 'cancelled' ? 'cancellation' as const : 'delay' as const,
           delayDuration: delayHours,
-          reason: flight.flight_status === 'incident' ? 'technical_issue' : undefined,
+          reason: flight.flight_status === 'incident' ? 'technical_issue' as DisruptionReason : undefined,
         };
 
         const eligibility = EligibilityChecker.checkEligibility(route, disruption, distance);
@@ -247,6 +250,7 @@ export async function checkFlightEligibility(
           compensation: eligibility.amount,
           reason: eligibility.reason,
           processingTime: '2-3 weeks',
+          regulation: eligibility.regulation,
           flightDetails: {
             airline: flight.airline.name,
             flightNumber: flight.flight.iata,
@@ -254,11 +258,13 @@ export async function checkFlightEligibility(
               airport: flight.departure.airport,
               iata: flight.departure.iata,
               terminal: flight.departure.terminal,
+              country: route.departureCountry,
             },
             arrival: {
               airport: flight.arrival.airport,
               iata: flight.arrival.iata,
               terminal: flight.arrival.terminal,
+              country: route.arrivalCountry,
             },
           },
         };
@@ -288,7 +294,7 @@ export async function getUserClaims(page = 1, limit = 10): Promise<PaginatedResp
         .range((page - 1) * limit, page * limit - 1);
 
       if (error) throw error;
-      return { data, count, page, limit };
+      return { data, count: count ?? 0, page, limit };
     },
     { ttl: API_CONFIG.cacheTTL.claims }
   );

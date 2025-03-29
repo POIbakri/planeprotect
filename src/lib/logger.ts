@@ -81,8 +81,9 @@ class Logger {
   }
 
   private async sendToLogService(entry: LogEntry): Promise<void> {
-    // Implementation for sending logs to a service
-    // This is where you'd integrate with your logging service
+    // Disable remote logging to prevent 404 errors
+    // Comment this out until a proper logging endpoint is set up
+    /*
     try {
       const response = await fetch('/api/logs', {
         method: 'POST',
@@ -98,12 +99,18 @@ class Logger {
     } catch (error) {
       console.error('Error sending log to service:', error);
     }
+    */
+    
+    // Only log to console in production to avoid network errors
+    if (this.environment === 'production') {
+      console[entry.level](`[${entry.timestamp}] ${entry.level.toUpperCase()}: ${entry.message}`);
+    }
   }
 
   private flush(): void {
-    // Implement log flushing logic
+    // Disable beacon sending until proper endpoint exists
     if (this.environment === 'production' && this.logBuffer.length > 0) {
-      navigator.sendBeacon('/api/logs/bulk', JSON.stringify(this.logBuffer));
+      // navigator.sendBeacon('/api/logs/bulk', JSON.stringify(this.logBuffer));
       this.logBuffer = [];
     }
   }

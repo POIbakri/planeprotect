@@ -9,7 +9,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import { checkFlightEligibility } from '@/lib/api';
 import { FlightCheckResults } from './FlightCheckResults';
 import toast from 'react-hot-toast';
-import type { DisruptionDetails } from '@/lib/types';
+import type { DisruptionDetails, DisruptionReason, FlightCheckResponse } from '@/lib/types';
+
+// Extended type for our local state that includes the disruption
+interface CheckResultState extends FlightCheckResponse {
+  disruption?: DisruptionDetails;
+}
 
 const disruptionReasons = [
   { id: 'technical_issue', label: 'Technical Issue', icon: Tool },
@@ -29,7 +34,7 @@ export function FlightCheck() {
   const [flightDate, setFlightDate] = useState('');
   const [isChecking, setIsChecking] = useState(false);
   const [step, setStep] = useState<'initial' | 'disruption' | 'results'>('initial');
-  const [checkResult, setCheckResult] = useState<any>(null);
+  const [checkResult, setCheckResult] = useState<CheckResultState | null>(null);
   const [disruption, setDisruption] = useState<DisruptionDetails>({
     type: 'delay',
   });
@@ -67,10 +72,15 @@ export function FlightCheck() {
       return;
     }
 
-    setCheckResult(prev => ({
-      ...prev,
-      disruption,
-    }));
+    if (!checkResult) return;
+
+    setCheckResult((prev: CheckResultState | null) => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        disruption,
+      };
+    });
     setStep('results');
   };
 
@@ -83,6 +93,8 @@ export function FlightCheck() {
   };
 
   const handleContinue = () => {
+    if (!checkResult) return;
+    
     if (!user) {
       navigate('/login', { 
         state: { from: '/claim' }
@@ -92,8 +104,8 @@ export function FlightCheck() {
         state: {
           flightNumber,
           flightDate,
-          compensation: checkResult?.compensation,
-          disruption: checkResult?.disruption,
+          compensation: checkResult.compensation,
+          disruption: checkResult.disruption,
         }
       });
     }
@@ -266,7 +278,10 @@ export function FlightCheck() {
                         key={id}
                         type="button"
                         variant={disruption.reason === id ? 'gradient' : 'outline'}
-                        onClick={() => setDisruption({ ...disruption, reason: id })}
+                        onClick={() => setDisruption({ 
+                          ...disruption, 
+                          reason: id as DisruptionReason 
+                        })}
                         className="justify-start h-auto py-3"
                       >
                         <Icon className="w-4 h-4 mr-2 flex-shrink-0" />
@@ -299,11 +314,11 @@ export function FlightCheck() {
         </motion.div>
       )}
 
-      {step === 'results' && (
+      {step === 'results' && checkResult && (
         <FlightCheckResults
           flightNumber={flightNumber}
           flightDate={flightDate}
-          checkResult={checkResult}
+          checkResult={checkResult as FlightCheckResponse}
           onReset={handleReset}
           onContinue={handleContinue}
         />

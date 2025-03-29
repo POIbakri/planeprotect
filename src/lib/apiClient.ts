@@ -6,7 +6,7 @@ import { ApiError } from './errors';
 
 interface RequestConfig extends RequestInit {
   retry?: boolean;
-  cache?: boolean;
+  useCache?: boolean;
   cacheTTL?: number;
   rateLimit?: {
     key: string;
@@ -55,7 +55,7 @@ class ApiClient {
     }
 
     // Check cache for GET requests
-    if (config.cache && config.method === 'GET') {
+    if (config.useCache && config.method === 'GET') {
       const cachedData = await cache.get<T>(
         cacheKey,
         () => this.executeRequest<T>(url, config),
@@ -77,8 +77,11 @@ class ApiClient {
     config: RequestConfig
   ): Promise<T> {
     try {
+      // Create a new config object without our custom properties
+      const { useCache, cacheTTL, retry, rateLimit, ...fetchConfig } = config;
+      
       const response = await fetch(url, {
-        ...config,
+        ...fetchConfig,
         headers: {
           'Content-Type': 'application/json',
           ...config.headers,

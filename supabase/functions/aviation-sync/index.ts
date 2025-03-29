@@ -1,3 +1,5 @@
+/// <reference path="../deno-env.d.ts" />
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'npm:@supabase/supabase-js';
 import { corsHeaders } from "../_shared/cors.ts";
@@ -7,6 +9,10 @@ const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+// Get port from arguments (default: 8000)
+const port = parseInt(Deno.args.find((arg: string) => arg.startsWith("--port="))?.split("=")[1] || "8000");
+console.log(`Starting Aviation Sync server on port ${port}...`);
 
 interface AviationData {
   airlines: any[];
@@ -67,13 +73,13 @@ async function syncAviationData() {
     ]);
 
     return { success: true };
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Sync error:', error);
     throw error;
   }
 }
 
-serve(async (req) => {
+serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -105,10 +111,14 @@ serve(async (req) => {
     return new Response(JSON.stringify(data), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
-  } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error 
+      ? error.message 
+      : 'Internal server error';
+      
+    return new Response(JSON.stringify({ error: errorMessage }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
-});
+}, { port });

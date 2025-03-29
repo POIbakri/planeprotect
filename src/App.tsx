@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './contexts/AuthContext';
 import { Layout } from './components/Layout';
@@ -12,7 +12,7 @@ import { PasswordReset } from './components/PasswordReset';
 import { TermsPage } from './components/TermsPage';
 import { PrivacyPage } from './components/PrivacyPage';
 import { ProfileSettings } from './components/ProfileSettings';
-import { DocumentManager } from './components/DocumentManager';
+import { DocumentManagerWrapper } from './components/DocumentManagerWrapper';
 import { HelpCenter } from './components/HelpCenter';
 import { NotificationsPage } from './components/NotificationsPage';
 import { DeleteAccount } from './components/DeleteAccount';
@@ -21,7 +21,6 @@ import { PrivateRoute } from './components/PrivateRoute';
 import { AdminRoute } from './components/AdminRoute';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { performanceMonitor } from './lib/performance';
-import { securityMonitor } from './lib/security';
 
 // Initialize monitoring
 performanceMonitor.startMonitoring();
@@ -135,7 +134,7 @@ function App() {
               <Route path="documents/:claimId" element={
                 <ErrorBoundary>
                   <PrivateRoute>
-                    <DocumentManager />
+                    <DocumentManagerWrapper />
                   </PrivateRoute>
                 </ErrorBoundary>
               } />
