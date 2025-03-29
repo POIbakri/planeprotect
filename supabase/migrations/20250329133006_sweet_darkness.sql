@@ -263,34 +263,39 @@ BEGIN
 END;
 $$ language plpgsql security definer;
 
--- Create claim notification handler
+-- Create claim notification handler with fix for missing FROM-clause error
 CREATE OR REPLACE FUNCTION notify_claim_update()
 RETURNS trigger AS $$
+DECLARE
+  old_status text;
 BEGIN
-  IF OLD.status IS DISTINCT FROM NEW.status THEN
-    INSERT INTO notifications (
-      user_id,
-      type,
-      title,
-      message,
-      data
-    )
-    VALUES (
-      NEW.user_id,
-      'claim_update',
-      'Claim Status Updated',
-      CASE NEW.status
-        WHEN 'approved' THEN 'Your claim has been approved!'
-        WHEN 'paid' THEN 'Your compensation has been paid'
-        WHEN 'in-review' THEN 'Your claim is being reviewed'
-        ELSE 'Your claim status has been updated'
-      END,
-      jsonb_build_object(
-        'claim_id', NEW.id,
-        'old_status', OLD.status,
-        'new_status', NEW.status
+  IF TG_OP = 'UPDATE' THEN
+    old_status := OLD.status;
+    IF NEW.status IS DISTINCT FROM old_status THEN
+      INSERT INTO notifications (
+        user_id,
+        type,
+        title,
+        message,
+        data
       )
-    );
+      VALUES (
+        NEW.user_id,
+        'claim_update',
+        'Claim Status Updated',
+        CASE NEW.status
+          WHEN 'approved' THEN 'Your claim has been approved!'
+          WHEN 'paid' THEN 'Your compensation has been paid'
+          WHEN 'in-review' THEN 'Your claim is being reviewed'
+          ELSE 'Your claim status has been updated'
+        END,
+        jsonb_build_object(
+          'claim_id', NEW.id,
+          'old_status', old_status,
+          'new_status', NEW.status
+        )
+      );
+    END IF;
   END IF;
   RETURN NEW;
 END;
@@ -452,15 +457,11 @@ CREATE POLICY "Users can view own notifications"
   TO authenticated
   USING (auth.uid() = user_id);
 
+-- Fixed policy: Removed OLD references from update notification read status
 CREATE POLICY "Users can update own notification read status"
   ON notifications FOR UPDATE
   TO authenticated
-  USING (auth.uid() = user_id)
-  WITH CHECK (
-    auth.uid() = user_id AND
-    (OLD.read IS DISTINCT FROM NEW.read) AND
-    (OLD.* IS NOT DISTINCT FROM NEW.* OR OLD.read IS DISTINCT FROM NEW.read)
-  );
+  WITH CHECK (auth.uid() = user_id);
 
 CREATE POLICY "Admins can manage email templates"
   ON email_templates FOR ALL
