@@ -510,7 +510,10 @@ export async function checkFlightEligibility(flightData: FlightData): Promise<Co
     // Create a basic flight template
     const flightRoute: FlightRoute = {
       flight_date: flightData.flightDate,
-      airline: flightData.airline,
+      airline: {
+        ...flightData.airline,
+        country: flightData.airline.country || 'Unknown'
+      },
       departure: {
         ...flightData.departure,
         terminal: flightData.departure.terminal || 'Unknown'
@@ -550,7 +553,26 @@ export async function checkFlightEligibility(flightData: FlightData): Promise<Co
     
     console.log(`Eligibility check for ${flightData.flightNumber}: ${result.isEligible ? 'Eligible' : 'Not eligible'} (${result.regulation})`);
     
-    return result;
+    // Add flightDetails to the result
+    return {
+      ...result,
+      flightDetails: {
+        airline: flightData.airline.name,
+        flightNumber: flightData.flightNumber,
+        departure: {
+          airport: flightData.departure.airport,
+          iata: flightData.departure.iata,
+          terminal: flightData.departure.terminal,
+          country: flightData.departure.country
+        },
+        arrival: {
+          airport: flightData.arrival.airport,
+          iata: flightData.arrival.iata,
+          terminal: flightData.arrival.terminal,
+          country: flightData.arrival.country
+        }
+      }
+    };
   } catch (error) {
     console.error('Error checking eligibility:', error);
     if (error instanceof Error) {

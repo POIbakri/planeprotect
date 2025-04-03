@@ -15,9 +15,7 @@ interface FlightCheckResultsProps {
 }
 
 export function FlightCheckResults({
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   flightNumber,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   flightDate,
   checkResult,
   onReset,
@@ -33,6 +31,12 @@ export function FlightCheckResults({
   } = checkResult;
 
   const currency = regulation === 'UK261' ? 'GBP' : 'EUR';
+
+  // Create fallback values for flight details if they're missing
+  const airlineName = flightDetails?.airline || 'Unknown airline';
+  const displayFlightNumber = flightDetails?.flightNumber || flightNumber;
+  const departureIata = flightDetails?.departure?.iata || 'DEP';
+  const arrivalIata = flightDetails?.arrival?.iata || 'ARR';
 
   return (
     <motion.div
@@ -66,13 +70,19 @@ export function FlightCheckResults({
           <div className="flex justify-between items-center">
             <span className="text-slate-600">Flight</span>
             <span className="font-semibold text-slate-900">
-              {flightDetails.airline} {flightDetails.flightNumber}
+              {airlineName} {displayFlightNumber}
             </span>
           </div>
           <div className="flex justify-between items-center">
             <span className="text-slate-600">Route</span>
             <span className="font-semibold text-slate-900">
-              {flightDetails.departure.iata} → {flightDetails.arrival.iata}
+              {departureIata} → {arrivalIata}
+            </span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-slate-600">Date</span>
+            <span className="font-semibold text-slate-900">
+              {flightDate}
             </span>
           </div>
 

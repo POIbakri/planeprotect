@@ -595,19 +595,30 @@ export function FlightCheck() {
       return;
     }
 
-    if (!checkResult) return;
+    if (!checkResult || !checkResult.flightDetails) {
+      toast.error('Missing flight details. Please try again.');
+      return;
+    }
 
     // Calculate distance based on departure and arrival airports
-    const routeKey = `${checkResult.flightDetails.departure.iata}${checkResult.flightDetails.arrival.iata}`;
+    const routeKey = `${checkResult.flightDetails.departure?.iata || ''}${checkResult.flightDetails.arrival?.iata || ''}`;
     const distance = flightDistances[routeKey as keyof typeof flightDistances] || 1500; // Default distance if not found
     
     // Now calculate eligibility based on user-provided disruption details
     const updatedResult = calculateEligibility(
       {
-        airline: { name: checkResult.flightDetails.airline },
-        flightNumber: checkResult.flightDetails.flightNumber,
-        departure: checkResult.flightDetails.departure,
-        arrival: checkResult.flightDetails.arrival
+        airline: { name: checkResult.flightDetails.airline || '' },
+        flightNumber: checkResult.flightDetails.flightNumber || '',
+        departure: checkResult.flightDetails.departure || {
+          airport: '',
+          iata: '',
+          country: ''
+        },
+        arrival: checkResult.flightDetails.arrival || {
+          airport: '',
+          iata: '',
+          country: ''
+        }
       }, 
       disruption,
       distance
