@@ -13,22 +13,29 @@ export function UserDashboard() {
   const [claims, setClaims] = useState<Claim[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedStatus, setSelectedStatus] = useState<ClaimStatus | 'all'>('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [dateFilter, setDateFilter] = useState<{startDate: string; endDate: string}>({
+    startDate: '',
+    endDate: '',
+  });
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchClaims = async () => {
-      try {
-        const { data } = await getUserClaims();
-        setClaims(data || []);
-      } catch (error) {
-        toast.error('Failed to fetch claims');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchClaims();
   }, []);
+
+  const fetchClaims = async () => {
+    try {
+      setLoading(true);
+      const { data } = await getUserClaims();
+      setClaims(data || []);
+    } catch (error) {
+      console.error('Error fetching claims:', error);
+      toast.error('Failed to fetch claims');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const totalCompensation = claims.reduce((sum, claim) => 
     sum + (claim.status === 'paid' ? claim.compensation_amount : 0), 0);
@@ -40,9 +47,54 @@ export function UserDashboard() {
     amount: claim.compensation_amount,
   }));
 
-  const filteredClaims = selectedStatus === 'all' 
-    ? claims 
-    : claims.filter(claim => claim.status === selectedStatus);
+  const filterClaims = () => {
+    return claims.filter(claim => {
+      // Filter by status
+      if (selectedStatus !== 'all' && claim.status !== selectedStatus) {
+        return false;
+      }
+      
+      // Filter by search term (flight number or passenger name)
+      if (searchTerm && !claim.flight_number.toLowerCase().includes(searchTerm.toLowerCase()) && 
+          !claim.passenger_name.toLowerCase().includes(searchTerm.toLowerCase())) {
+        return false;
+      }
+      
+      // Filter by date range
+      if (dateFilter.startDate) {
+        const claimDate = new Date(claim.flight_date);
+        const startDate = new Date(dateFilter.startDate);
+        if (claimDate < startDate) return false;
+      }
+      
+      if (dateFilter.endDate) {
+        const claimDate = new Date(claim.flight_date);
+        const endDate = new Date(dateFilter.endDate);
+        endDate.setHours(23, 59, 59, 999); // End of day
+        if (claimDate > endDate) return false;
+      }
+      
+      return true;
+    });
+  };
+
+  const filteredClaims = filterClaims();
+  
+  const handleClearFilters = () => {
+    setSelectedStatus('all');
+    setSearchTerm('');
+    setDateFilter({ startDate: '', endDate: '' });
+  };
+  
+  const getStatusColor = (status: ClaimStatus) => {
+    switch (status) {
+      case 'pending': return 'text-amber-600 bg-amber-50 border-amber-200';
+      case 'in-review': return 'text-purple-600 bg-purple-50 border-purple-200';
+      case 'approved': return 'text-blue-600 bg-blue-50 border-blue-200';
+      case 'paid': return 'text-emerald-600 bg-emerald-50 border-emerald-200';
+      default: return 'text-slate-600 bg-slate-50 border-slate-200';
+    }
+  };
 
   return (
     <motion.div
@@ -128,29 +180,39 @@ export function UserDashboard() {
           className="bg-white rounded-xl p-6 shadow-sm border border-slate-100"
         >
           <h2 className="text-xl font-semibold mb-6">Compensation History</h2>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                <XAxis dataKey="date" stroke="#64748b" />
-                <YAxis stroke="#64748b" />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: 'white',
-                    border: '1px solid #e2e8f0',
-                    borderRadius: '0.5rem',
-                  }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="amount"
-                  stroke="#2563eb"
-                  strokeWidth={2}
-                  dot={{ fill: '#2563eb', strokeWidth: 2 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
+          {claims.length > 0 ? (
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                  <XAxis dataKey="date" stroke="#64748b" />
+                  <YAxis stroke="#64748b" />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'white',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '0.5rem',
+                    }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="amount"
+                    stroke="#2563eb"
+                    strokeWidth={2}
+                    dot={{ fill: '#2563eb', strokeWidth: 2 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center h-64 text-center">
+              <FileText className="w-12 h-12 text-slate-300 mb-4" />
+              <p className="text-slate-500">No compensation data yet</p>
+              <p className="text-sm text-slate-400 max-w-xs mt-2">
+                Submit your first claim to track your compensation history
+              </p>
+            </div>
+          )}
         </motion.div>
 
         <motion.div
@@ -159,33 +221,57 @@ export function UserDashboard() {
           transition={{ delay: 0.5 }}
           className="bg-white rounded-xl p-6 shadow-sm border border-slate-100"
         >
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 mb-6">
-            <h2 className="text-xl font-semibold">Recent Claims</h2>
-            <div className="flex flex-wrap gap-2 w-full sm:w-auto">
-              <Button
-                variant={selectedStatus === 'all' ? 'gradient' : 'outline'}
-                size="sm"
-                onClick={() => setSelectedStatus('all')}
-                className="flex-1 sm:flex-none"
-              >
-                All
-              </Button>
-              <Button
-                variant={selectedStatus === 'pending' ? 'gradient' : 'outline'}
-                size="sm"
-                onClick={() => setSelectedStatus('pending')}
-                className="flex-1 sm:flex-none"
-              >
-                Pending
-              </Button>
-              <Button
-                variant={selectedStatus === 'approved' ? 'gradient' : 'outline'}
-                size="sm"
-                onClick={() => setSelectedStatus('approved')}
-                className="flex-1 sm:flex-none"
-              >
-                Approved
-              </Button>
+          <div className="flex flex-col gap-4 mb-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0">
+              <h2 className="text-xl font-semibold">Your Claims</h2>
+              <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+                <Button
+                  variant={selectedStatus === 'all' ? 'gradient' : 'outline'}
+                  size="sm"
+                  onClick={() => setSelectedStatus('all')}
+                  className="flex-1 sm:flex-none"
+                >
+                  All
+                </Button>
+                <Button
+                  variant={selectedStatus === 'pending' ? 'gradient' : 'outline'}
+                  size="sm"
+                  onClick={() => setSelectedStatus('pending')}
+                  className="flex-1 sm:flex-none"
+                >
+                  Pending
+                </Button>
+                <Button
+                  variant={selectedStatus === 'approved' ? 'gradient' : 'outline'}
+                  size="sm"
+                  onClick={() => setSelectedStatus('approved')}
+                  className="flex-1 sm:flex-none"
+                >
+                  Approved
+                </Button>
+              </div>
+            </div>
+            
+            <div className="flex gap-4">
+              <div className="relative flex-1">
+                <input
+                  type="text"
+                  placeholder="Search by flight number..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full border border-slate-200 rounded-lg px-4 py-2 text-sm"
+                />
+              </div>
+              
+              {(selectedStatus !== 'all' || searchTerm || dateFilter.startDate || dateFilter.endDate) && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleClearFilters}
+                >
+                  Clear Filters
+                </Button>
+              )}
             </div>
           </div>
           
@@ -195,62 +281,59 @@ export function UserDashboard() {
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
               </div>
             ) : filteredClaims.length === 0 ? (
-              <div className="text-center py-8 text-slate-500">
-                No claims found
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <FileText className="w-12 h-12 text-slate-300 mb-4" />
+                <h3 className="text-lg font-medium text-slate-900 mb-2">No claims found</h3>
+                <p className="text-slate-500 max-w-md mx-auto mb-6">
+                  {selectedStatus !== 'all' || searchTerm || dateFilter.startDate || dateFilter.endDate ? 
+                    'Try adjusting your filters to see more results.' : 
+                    'You haven\'t submitted any claims yet. Start by checking if your flight is eligible for compensation.'}
+                </p>
+                {(selectedStatus !== 'all' || searchTerm || dateFilter.startDate || dateFilter.endDate) ? (
+                  <Button variant="outline" onClick={handleClearFilters}>
+                    Clear Filters
+                  </Button>
+                ) : (
+                  <Button variant="gradient" onClick={() => navigate('/')}>
+                    Check Flight Eligibility
+                  </Button>
+                )}
               </div>
             ) : (
-              filteredClaims.slice(0, 5).map((claim) => (
-                <motion.div
-                  key={claim.id}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer gap-4"
-                  onClick={() => navigate(`/claim/${claim.id}`)}
-                >
-                  <div className="flex items-center gap-4 w-full sm:w-auto">
-                    <div className={`p-2 rounded-lg ${
-                      claim.status === 'paid'
-                        ? 'bg-emerald-100'
-                        : claim.status === 'approved'
-                        ? 'bg-blue-100'
-                        : 'bg-amber-100'
-                    }`}>
-                      <Plane className={`w-5 h-5 ${
-                        claim.status === 'paid'
-                          ? 'text-emerald-500'
-                          : claim.status === 'approved'
-                          ? 'text-blue-500'
-                          : 'text-amber-500'
-                      }`} />
-                    </div>
-                    <div>
-                      <p className="font-medium text-slate-900">
-                        {claim.flight_number}
-                      </p>
-                      <p className="text-sm text-slate-600">
-                        {formatDate(claim.flight_date)}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
-                    <div>
-                      <p className="text-right font-medium text-slate-900">
-                        {formatCurrency(claim.compensation_amount)}
-                      </p>
-                      <span className={`inline-block px-2 py-1 rounded-full text-xs ${
-                        claim.status === 'paid'
-                          ? 'bg-emerald-100 text-emerald-700'
-                          : claim.status === 'approved'
-                          ? 'bg-blue-100 text-blue-700'
-                          : 'bg-amber-100 text-amber-700'
-                      }`}>
-                        {claim.status.charAt(0).toUpperCase() + claim.status.slice(1)}
+              <>
+                {filteredClaims.map((claim) => (
+                  <div
+                    key={claim.id}
+                    className="p-4 border border-slate-100 rounded-lg hover:border-slate-200 transition-colors"
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <h3 className="font-medium">{claim.flight_number}</h3>
+                        <p className="text-sm text-slate-500">{formatDate(claim.flight_date)}</p>
+                      </div>
+                      <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${getStatusColor(claim.status)}`}>
+                        {claim.status.charAt(0).toUpperCase() + claim.status.slice(1).replace('_', ' ')}
                       </span>
                     </div>
-                    <ArrowRight className="w-4 h-4 text-slate-400" />
+                    <div className="flex items-center justify-between mt-4">
+                      <div className="text-sm">
+                        <span className="text-lg font-semibold">
+                          {formatCurrency(claim.compensation_amount)}
+                        </span>
+                        {claim.status === 'paid' && <span className="text-xs text-emerald-600 ml-2">Paid</span>}
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => navigate(`/claims/${claim.id}`)}
+                        className="text-blue-600"
+                      >
+                        View Details
+                      </Button>
+                    </div>
                   </div>
-                </motion.div>
-              ))
+                ))}
+              </>
             )}
           </div>
         </motion.div>

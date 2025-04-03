@@ -53,115 +53,82 @@ export function FlightCheckResults({
             </div>
           )}
           <h2 className="text-2xl font-bold text-slate-900 mb-2">
-            {isEligible ? "Good News!" : "Not Eligible"}
+            {isEligible ? "Good News!" : "Initial Assessment"}
           </h2>
           <p className="text-slate-600">
             {isEligible
               ? `You're eligible for compensation under ${regulation}`
-              : "Unfortunately, this flight is not eligible for compensation"}
+              : "Our initial assessment suggests this flight may not be eligible for compensation"}
           </p>
         </div>
 
-        <div className="space-y-6 mb-8">
-          <div className="bg-slate-50 rounded-xl p-4 sm:p-6 space-y-4">
-            {flightDetails && (
-              <>
-                <div className="flex items-center gap-4 pb-4 border-b border-slate-200">
-                  <div className="bg-blue-100 p-2 rounded-lg">
-                    <Plane className="w-6 h-6 text-blue-600" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-600">{flightDetails.airline}</p>
-                    <p className="font-semibold text-slate-900">{flightDetails.flightNumber}</p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-slate-600">Departure</p>
-                    <p className="font-semibold text-slate-900">
-                      {flightDetails.departure.airport}
-                    </p>
-                    {flightDetails.departure.terminal && (
-                      <p className="text-sm text-slate-500">
-                        Terminal {flightDetails.departure.terminal}
-                      </p>
-                    )}
-                    <p className="text-sm text-slate-500">
-                      {flightDetails.departure.country}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-600">Arrival</p>
-                    <p className="font-semibold text-slate-900">
-                      {flightDetails.arrival.airport}
-                    </p>
-                    {flightDetails.arrival.terminal && (
-                      <p className="text-sm text-slate-500">
-                        Terminal {flightDetails.arrival.terminal}
-                      </p>
-                    )}
-                    <p className="text-sm text-slate-500">
-                      {flightDetails.arrival.country}
-                    </p>
-                  </div>
-                </div>
-              </>
-            )}
-
-            {isEligible && (
-              <>
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-600">Compensation</span>
-                  <span className="font-semibold text-emerald-600">
-                    {formatCurrency(compensation, currency)}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-600">Regulation</span>
-                  <span className="font-semibold text-slate-900">{regulation}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-600">Processing Time</span>
-                  <span className="font-semibold text-slate-900">{processingTime}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-600">Reason</span>
-                  <span className="font-semibold text-slate-900">{reason}</span>
-                </div>
-              </>
-            )}
+        <div className="space-y-4 mb-8">
+          <div className="flex justify-between items-center">
+            <span className="text-slate-600">Flight</span>
+            <span className="font-semibold text-slate-900">
+              {flightDetails.airline} {flightDetails.flightNumber}
+            </span>
           </div>
+          <div className="flex justify-between items-center">
+            <span className="text-slate-600">Route</span>
+            <span className="font-semibold text-slate-900">
+              {flightDetails.departure.iata} → {flightDetails.arrival.iata}
+            </span>
+          </div>
+
+          {isEligible && (
+            <>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-600">Compensation</span>
+                <span className="font-semibold text-emerald-600">
+                  {formatCurrency(compensation, currency)}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-600">Regulation</span>
+                <span className="font-semibold text-slate-900">{regulation}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-600">Processing Time</span>
+                <span className="font-semibold text-slate-900">{processingTime}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-600">Reason</span>
+                <span className="font-semibold text-slate-900">{reason}</span>
+              </div>
+            </>
+          )}
+
+          {!isEligible && (
+            <div className="bg-amber-50 rounded-lg p-4 text-amber-800">
+              <p className="text-sm mb-2">
+                <strong>Note:</strong> {reason}
+              </p>
+              <p className="text-sm">
+                If you believe you are eligible, you can still proceed with your claim. 
+                Our team will review your case in detail and consider any additional circumstances.
+              </p>
+            </div>
+          )}
         </div>
 
-        <div className="space-y-3">
-          {isEligible ? (
-            <>
-              <Button
-                onClick={onContinue}
-                variant="gradient"
-                className="w-full h-12 text-base font-medium"
-              >
-                <span>Continue to Claim</span>
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-              <Button
-                onClick={onReset}
-                variant="outline"
-                className="w-full h-12 text-base font-medium"
-              >
-                Check Another Flight
-              </Button>
-            </>
-          ) : (
-            <Button
-              onClick={onReset}
-              variant="gradient"
-              className="w-full h-12 text-base font-medium"
-            >
-              Check Another Flight
-            </Button>
-          )}
+        <div className="flex gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onReset}
+            className="flex-1"
+          >
+            Back
+          </Button>
+          <Button
+            type="button"
+            variant={isEligible ? "gradient" : "outline"}
+            onClick={onContinue}
+            className="flex-1"
+          >
+            {isEligible ? "Continue to Claim" : "Proceed with Claim"}
+          </Button>
         </div>
       </div>
     </motion.div>

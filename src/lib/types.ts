@@ -108,28 +108,79 @@ export interface ClaimDocument {
 export type ClaimStatus = 'pending' | 'in-review' | 'approved' | 'paid';
 export type DisruptionType = 'delay' | 'cancellation' | 'denied_boarding';
 export type DisruptionReason = 
-  | 'technical_issue'
-  | 'weather'
-  | 'air_traffic_control'
-  | 'security'
-  | 'staff_shortage'
-  | 'strike'
-  | 'other_airline_fault'
-  | 'other';
+  | 'technical_issue'      // General technical issues
+  | 'maintenance'          // Maintenance problems
+  | 'staff_shortage'       // Staff shortages
+  | 'weather'             // Bad weather
+  | 'air_traffic_control' // ATC restrictions
+  | 'security'            // Security issues
+  | 'strike'              // Strikes
+  | 'medical'             // Medical emergencies
+  | 'bird_strike'         // Bird strikes
+  | 'volcanic_ash'        // Volcanic ash
+  | 'terrorism'           // Terrorist threats
+  | 'military_conflict'   // Military conflicts
+  | 'natural_disaster'    // Natural disasters
+  | 'airport_closure'     // Airport closures
+  | 'customs_immigration' // Customs/immigration issues
+  | 'airport_strike'      // Airport staff strikes
+  | 'airport_technical'   // Airport technical issues
+  | 'aircraft_rotation'   // Aircraft rotation issues
+  | 'baggage_handling'    // Baggage handling problems
+  | 'fuel_issue'         // Fuel-related issues
+  | 'catering_issue'     // Catering problems
+  | 'cleaning_issue'     // Cleaning problems
+  | 'airline_strike'     // Airline staff strikes
+  | 'other';             // Other reasons
 
 export interface ClaimFilters {
   status?: ClaimStatus;
   search?: string;
   startDate?: string;
   endDate?: string;
+  sortBy?: string;
+  sortDirection?: 'asc' | 'desc';
 }
 
 // Eligibility Types
 export interface DisruptionDetails {
   type: DisruptionType;
+  delayDuration?: number;    // in hours
+  noticeGiven?: number;      // in hours
   reason?: DisruptionReason;
-  delayDuration?: number;
-  noticeGiven?: number;
+  reroutingTime?: number;    // in hours
+  voluntary?: boolean;
+  alternativeFlight?: {
+    airline: string;
+    flightNumber: string;
+    departureTime: string;
+    arrivalTime: string;
+  };
+  additionalInfo?: string;   // Free text for additional details
+  isDomestic?: boolean;
+}
+
+export interface FlightData {
+  flightNumber: string;
+  flightDate: string;
+  departure: {
+    airport: string;
+    iata: string;
+    terminal?: string;
+    country: string;
+  };
+  arrival: {
+    airport: string;
+    iata: string;
+    terminal?: string;
+    country: string;
+  };
+  airline: {
+    name: string;
+    iata: string;
+    country: string;
+  };
+  disruption: DisruptionDetails;
 }
 
 export interface CompensationResult {
@@ -137,14 +188,27 @@ export interface CompensationResult {
   amount: number;
   reason: string;
   regulation: 'EU261' | 'UK261';
-}
-
-export interface FlightCheckResponse {
-  isEligible: boolean;
-  compensation: number;
-  reason: string;
-  processingTime: string;
-  regulation: 'EU261' | 'UK261';
+  requiresManualReview?: boolean;
+  details?: {
+    departureCountry: string;
+    arrivalCountry: string;
+    airlineCountry: string;
+    distance: number;
+    disruptionType?: DisruptionType;
+    disruptionReason?: DisruptionReason;
+    noticeGiven?: number;
+    delayDuration?: number;
+    reroutingTime?: number;
+    voluntary?: boolean;
+    alternativeFlight?: {
+      airline: string;
+      flightNumber: string;
+      departureTime: string;
+      arrivalTime: string;
+    };
+    additionalInfo?: string;
+    isDomestic?: boolean;
+  };
   flightDetails: {
     airline: string;
     flightNumber: string;
@@ -163,10 +227,16 @@ export interface FlightCheckResponse {
   };
 }
 
+export interface FlightCheckResponse extends CompensationResult {
+  processingTime: string;
+  disruption?: DisruptionDetails;
+  compensation: number;
+}
+
 // Pagination Types
 export interface PaginatedResponse<T> {
   data: T[];
-  count: number;
+  count: number | null;
   page: number;
   limit: number;
 }
@@ -188,4 +258,47 @@ export interface ErrorDetails {
   message: string;
   status: number;
   details?: unknown;
+}
+
+export interface Airport {
+  iata: string;
+  name: string;
+  city: string;
+  country: string;
+}
+
+export interface Airline {
+  name: string;
+  iata: string;
+  icao: string;
+  country: string;
+}
+
+export interface FlightRoute {
+  flight_date: string;
+  airline: {
+    name: string;
+    iata: string;
+    country: string;
+  };
+  departure: {
+    airport: string;
+    iata: string;
+    terminal: string;
+    country: string;
+  };
+  arrival: {
+    airport: string;
+    iata: string;
+    terminal: string;
+    country: string;
+  };
+  flight: {
+    iata: string;
+    number: string;
+    status: string;
+  };
+  departureCountry: string;
+  arrivalCountry: string;
+  airlineCountry: string;
 }

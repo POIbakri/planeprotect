@@ -9,11 +9,20 @@ import { useAuth } from '@/contexts/AuthContext';
 import { checkFlightEligibility, calculateEligibility, searchAirports } from '@/lib/api';
 import { FlightCheckResults } from './FlightCheckResults';
 import toast from 'react-hot-toast';
-import type { DisruptionDetails, DisruptionReason, FlightCheckResponse } from '@/lib/types';
+import type { 
+  DisruptionType, 
+  DisruptionReason,
+  DisruptionDetails,
+  CompensationResult,
+  FlightData,
+  FlightCheckResponse
+} from '../lib/types';
 
 // Extended type for our local state that includes the disruption
-interface CheckResultState extends FlightCheckResponse {
-  disruption?: DisruptionDetails;
+interface CheckResultState extends CompensationResult {
+  compensation: number;
+  processingTime: string;
+  disruption: DisruptionDetails;
 }
 
 interface Airport {
@@ -34,27 +43,402 @@ const disruptionReasons = [
   { id: 'other', label: 'Other Reason', icon: XCircle },
 ];
 
-// Flight distance data (in km) for compensation calculations
+// Flight distances in kilometers for common routes
 const flightDistances = {
-  // UK to Europe
-  'LHRGAT': 923,   // London to Madrid
-  'LHRCDG': 344,   // London to Paris
-  'LHRGVA': 746,   // London to Geneva
-  'LGWBCN': 1041,  // London to Barcelona
-  'LHRFRA': 654,   // London to Frankfurt
+  // UK Routes
+  'LHRJFK': 5556, // London Heathrow to New York JFK
+  'LHRDXB': 5500, // London Heathrow to Dubai
+  'LHRHKG': 9630, // London Heathrow to Hong Kong
+  'LHRLAX': 8750, // London Heathrow to Los Angeles
+  'LHRCDG': 344,  // London Heathrow to Paris Charles de Gaulle
+  'LHRFRA': 650,  // London Heathrow to Frankfurt
+  'LHRAMS': 357,  // London Heathrow to Amsterdam
+  'LHRMAD': 1260, // London Heathrow to Madrid
+  'LHRFCO': 1430, // London Heathrow to Rome
+  'LHRBCN': 1150, // London Heathrow to Barcelona
+  'LHRDUB': 464,  // London Heathrow to Dublin
+  'LHREDI': 534,  // London Heathrow to Edinburgh
+  'LHRMUC': 950,  // London Heathrow to Munich
+  'LHRZRH': 780,  // London Heathrow to Zurich
+  'LHRCPH': 960,  // London Heathrow to Copenhagen
+  'LHRARN': 1440, // London Heathrow to Stockholm
+  'LHRHEL': 1800, // London Heathrow to Helsinki
+  'LHRWAW': 1450, // London Heathrow to Warsaw
+  'LHRPRG': 1030, // London Heathrow to Prague
+  'LHRBUD': 1450, // London Heathrow to Budapest
+  'LHRVIE': 1230, // London Heathrow to Vienna
+  'LHRBRU': 320,  // London Heathrow to Brussels
+  'LHRLIS': 1580, // London Heathrow to Lisbon
+  'LHRATH': 2400, // London Heathrow to Athens
+  'LHRIST': 2500, // London Heathrow to Istanbul
+  'LHRDOH': 5200, // London Heathrow to Doha
+  'LHRICN': 8900, // London Heathrow to Seoul
+  'LHRNRT': 9600, // London Heathrow to Tokyo
+  'LHRSIN': 10800,// London Heathrow to Singapore
+  'LHRBKK': 9500, // London Heathrow to Bangkok
+  'LHRDEL': 6700, // London Heathrow to Delhi
+  'LHRBOM': 7200, // London Heathrow to Mumbai
+  'LHRPEK': 8200, // London Heathrow to Beijing
+  'LHRPVG': 9200, // London Heathrow to Shanghai
+  'LHRMEL': 16900,// London Heathrow to Melbourne
+  'LHRSYD': 17000,// London Heathrow to Sydney
+  'LHRJNB': 9100, // London Heathrow to Johannesburg
+  'LHRCPT': 9700, // London Heathrow to Cape Town
+  'LHRYYZ': 5800, // London Heathrow to Toronto
+  'LHRYUL': 5300, // London Heathrow to Montreal
+  'LHRYVR': 7600, // London Heathrow to Vancouver
+  'LHRORD': 6400, // London Heathrow to Chicago
+  'LHRDFW': 7500, // London Heathrow to Dallas
+  'LHRSFO': 8600, // London Heathrow to San Francisco
+  'LHRMIA': 7100, // London Heathrow to Miami
+  'LHRBOS': 5300, // London Heathrow to Boston
+  'LHRSEA': 7700, // London Heathrow to Seattle
   
-  // Europe to Europe
-  'CDGFRA': 479,   // Paris to Frankfurt
-  'BCNFCO': 860,   // Barcelona to Rome
-  'CDGFCO': 1106,  // Paris to Rome
-  'FRAIST': 1865,  // Frankfurt to Istanbul
+  // EU Routes
+  'CDGJFK': 5830, // Paris to New York
+  'CDGDXB': 5200, // Paris to Dubai
+  'CDGHKG': 9600, // Paris to Hong Kong
+  'CDGLAX': 9100, // Paris to Los Angeles
+  'CDGFRA': 450,  // Paris to Frankfurt
+  'CDGAMS': 430,  // Paris to Amsterdam
+  'CDGMAD': 1050, // Paris to Madrid
+  'CDGFCO': 1100, // Paris to Rome
+  'CDGBCN': 850,  // Paris to Barcelona
+  'CDGDUB': 780,  // Paris to Dublin
+  'CDGMUC': 680,  // Paris to Munich
+  'CDGZRH': 480,  // Paris to Zurich
+  'CDGCPH': 1020, // Paris to Copenhagen
+  'CDGARN': 1540, // Paris to Stockholm
+  'CDGHEL': 1900, // Paris to Helsinki
+  'CDGWAW': 1360, // Paris to Warsaw
+  'CDGPRG': 880,  // Paris to Prague
+  'CDGBUD': 1240, // Paris to Budapest
+  'CDGVIE': 1030, // Paris to Vienna
+  'CDGBRU': 260,  // Paris to Brussels
+  'CDGLIS': 1450, // Paris to Lisbon
+  'CDGATH': 2100, // Paris to Athens
+  'CDGIST': 2250, // Paris to Istanbul
+  'CDGDOH': 4900, // Paris to Doha
+  'CDGICN': 8900, // Paris to Seoul
+  'CDGNRT': 9700, // Paris to Tokyo
+  'CDGSIN': 10700,// Paris to Singapore
+  'CDGBKK': 9400, // Paris to Bangkok
+  'CDGDEL': 6700, // Paris to Delhi
+  'CDGBOM': 7200, // Paris to Mumbai
+  'CDGPEK': 8200, // Paris to Beijing
+  'CDGPVG': 9200, // Paris to Shanghai
+  'CDGMEL': 16900,// Paris to Melbourne
+  'CDGSYD': 17000,// Paris to Sydney
+  'CDGJNB': 9100, // Paris to Johannesburg
+  'CDGCPT': 9700, // Paris to Cape Town
+  'CDGYYZ': 5800, // Paris to Toronto
+  'CDGYUL': 5300, // Paris to Montreal
+  'CDGYVR': 7600, // Paris to Vancouver
+  'CDGORD': 6400, // Paris to Chicago
+  'CDGDFW': 7500, // Paris to Dallas
+  'CDGSFO': 8600, // Paris to San Francisco
+  'CDGMIA': 7100, // Paris to Miami
+  'CDGBOS': 5300, // Paris to Boston
+  'CDGSEA': 7700, // Paris to Seattle
   
-  // Long-haul
-  'LHRJFK': 5541,  // London to New York
-  'CDGDXB': 5246,  // Paris to Dubai
-  'FRAJFK': 6173,  // Frankfurt to New York
-  'LHRDEL': 6704,  // London to Delhi
-};
+  // German Routes
+  'FRAJFK': 6200, // Frankfurt to New York
+  'FRADXB': 4800, // Frankfurt to Dubai
+  'FRAHKG': 9200, // Frankfurt to Hong Kong
+  'FRALAX': 9300, // Frankfurt to Los Angeles
+  'FRAAMS': 350,  // Frankfurt to Amsterdam
+  'FRAMAD': 1800, // Frankfurt to Madrid
+  'FRAFCO': 1000, // Frankfurt to Rome
+  'FRABCN': 1200, // Frankfurt to Barcelona
+  'FRADUB': 1050, // Frankfurt to Dublin
+  'FRAMUC': 300,  // Frankfurt to Munich
+  'FRAZRH': 300,  // Frankfurt to Zurich
+  'FRACPH': 760,  // Frankfurt to Copenhagen
+  'FRAARN': 1200, // Frankfurt to Stockholm
+  'FRAHEL': 1500, // Frankfurt to Helsinki
+  'FRAWAW': 900,  // Frankfurt to Warsaw
+  'FRAPRG': 450,  // Frankfurt to Prague
+  'FRABUD': 800,  // Frankfurt to Budapest
+  'FRAVIE': 600,  // Frankfurt to Vienna
+  'FRABRU': 350,  // Frankfurt to Brussels
+  'FRALIS': 1900, // Frankfurt to Lisbon
+  'FRAATH': 1800, // Frankfurt to Athens
+  'FRAIST': 2100, // Frankfurt to Istanbul
+  'FRADOH': 4500, // Frankfurt to Doha
+  'FRAICN': 8500, // Frankfurt to Seoul
+  'FRANRT': 9300, // Frankfurt to Tokyo
+  'FRASIN': 10300,// Frankfurt to Singapore
+  'FRABKK': 9000, // Frankfurt to Bangkok
+  'FRADEL': 6500, // Frankfurt to Delhi
+  'FRABOM': 7000, // Frankfurt to Mumbai
+  'FRAPEK': 8100, // Frankfurt to Beijing
+  'FRAPVG': 9100, // Frankfurt to Shanghai
+  'FRAMEL': 16800,// Frankfurt to Melbourne
+  'FRASYD': 16900,// Frankfurt to Sydney
+  'FRAJNB': 9000, // Frankfurt to Johannesburg
+  'FRACPT': 9600, // Frankfurt to Cape Town
+  'FRAYYZ': 6300, // Frankfurt to Toronto
+  'FRAYUL': 5800, // Frankfurt to Montreal
+  'FRAYVR': 8100, // Frankfurt to Vancouver
+  'FRAORD': 6900, // Frankfurt to Chicago
+  'FRADFW': 8000, // Frankfurt to Dallas
+  'FRASFO': 9100, // Frankfurt to San Francisco
+  'FRAMIA': 7600, // Frankfurt to Miami
+  'FRABOS': 5800, // Frankfurt to Boston
+  'FRASEA': 8200, // Frankfurt to Seattle
+  
+  // Spanish Routes
+  'MADJFK': 5800, // Madrid to New York
+  'MADDXB': 5200, // Madrid to Dubai
+  'MADHKG': 11000,// Madrid to Hong Kong
+  'MADLAX': 9400, // Madrid to Los Angeles
+  'MADBCN': 500,  // Madrid to Barcelona
+  'MADFCO': 1300, // Madrid to Rome
+  'MADDUB': 1500, // Madrid to Dublin
+  'MADMUC': 1600, // Madrid to Munich
+  'MADZRH': 1200, // Madrid to Zurich
+  'MADCPH': 2200, // Madrid to Copenhagen
+  'MADARN': 2500, // Madrid to Stockholm
+  'MADHEL': 2900, // Madrid to Helsinki
+  'MADWAW': 2200, // Madrid to Warsaw
+  'MADPRG': 1800, // Madrid to Prague
+  'MADBUD': 2000, // Madrid to Budapest
+  'MADVIE': 1900, // Madrid to Vienna
+  'MADBRU': 1400, // Madrid to Brussels
+  'MADLIS': 500,  // Madrid to Lisbon
+  'MADATH': 2300, // Madrid to Athens
+  'MADIST': 2200, // Madrid to Istanbul
+  'MADDOH': 5000, // Madrid to Doha
+  'MADICN': 9500, // Madrid to Seoul
+  'MADNRT': 10300,// Madrid to Tokyo
+  'MADSIN': 11200,// Madrid to Singapore
+  'MADBKK': 9900, // Madrid to Bangkok
+  'MADDEL': 7200, // Madrid to Delhi
+  'MADBOM': 7700, // Madrid to Mumbai
+  'MADPEK': 8800, // Madrid to Beijing
+  'MADPVG': 9800, // Madrid to Shanghai
+  'MADMEL': 17500,// Madrid to Melbourne
+  'MADSYD': 17600,// Madrid to Sydney
+  'MADJNB': 9700, // Madrid to Johannesburg
+  'MADCPT': 10300,// Madrid to Cape Town
+  'MADYYZ': 6100, // Madrid to Toronto
+  'MADYUL': 5600, // Madrid to Montreal
+  'MADYVR': 7900, // Madrid to Vancouver
+  'MADORD': 6700, // Madrid to Chicago
+  'MADDFW': 7800, // Madrid to Dallas
+  'MADSFO': 8900, // Madrid to San Francisco
+  'MADMIA': 7400, // Madrid to Miami
+  'MADBOS': 5600, // Madrid to Boston
+  'MADSEA': 8000, // Madrid to Seattle
+  
+  // Italian Routes
+  'FCOJFK': 6900, // Rome to New York
+  'FCODXB': 4000, // Rome to Dubai
+  'FCOHKG': 9200, // Rome to Hong Kong
+  'FCOLAX': 10000,// Rome to Los Angeles
+  'FCOBCN': 850,  // Rome to Barcelona
+  'FCODUB': 1900, // Rome to Dublin
+  'FCOMUC': 800,  // Rome to Munich
+  'FCOZRH': 700,  // Rome to Zurich
+  'FCOCPH': 1600, // Rome to Copenhagen
+  'FCOARN': 1900, // Rome to Stockholm
+  'FCOHEL': 2200, // Rome to Helsinki
+  'FCOWAW': 1300, // Rome to Warsaw
+  'FCOPRG': 1000, // Rome to Prague
+  'FCOBUD': 800,  // Rome to Budapest
+  'FCOVIE': 800,  // Rome to Vienna
+  'FCOBRU': 1200, // Rome to Brussels
+  'FCOLIS': 1900, // Rome to Lisbon
+  'FCOATH': 1000, // Rome to Athens
+  'FCOIST': 1300, // Rome to Istanbul
+  'FCODOH': 3700, // Rome to Doha
+  'FCOICN': 8700, // Rome to Seoul
+  'FCONRT': 9500, // Rome to Tokyo
+  'FCOSIN': 10500,// Rome to Singapore
+  'FCOBKK': 9200, // Rome to Bangkok
+  'FCODEL': 6400, // Rome to Delhi
+  'FCOBOM': 6900, // Rome to Mumbai
+  'FCOPEK': 8000, // Rome to Beijing
+  'FCOPVG': 9000, // Rome to Shanghai
+  'FCOMEL': 16700,// Rome to Melbourne
+  'FCOSYD': 16800,// Rome to Sydney
+  'FCOJNB': 8900, // Rome to Johannesburg
+  'FCOCPT': 9500, // Rome to Cape Town
+  'FCOYYZ': 7000, // Rome to Toronto
+  'FCOYUL': 6500, // Rome to Montreal
+  'FCOYVR': 8800, // Rome to Vancouver
+  'FCOORD': 7600, // Rome to Chicago
+  'FCODFW': 8700, // Rome to Dallas
+  'FCOSFO': 9800, // Rome to San Francisco
+  'FCOMIA': 8300, // Rome to Miami
+  'FCOBOS': 6500, // Rome to Boston
+  'FCOSEA': 8900, // Rome to Seattle
+  
+  // Dutch Routes
+  'AMSJFK': 5900, // Amsterdam to New York
+  'AMSDXB': 5100, // Amsterdam to Dubai
+  'AMSHKG': 9200, // Amsterdam to Hong Kong
+  'AMSLAX': 8900, // Amsterdam to Los Angeles
+  'AMSBCN': 1200, // Amsterdam to Barcelona
+  'AMSFCO': 1300, // Amsterdam to Rome
+  'AMSDUB': 750,  // Amsterdam to Dublin
+  'AMSMUC': 700,  // Amsterdam to Munich
+  'AMSZRH': 650,  // Amsterdam to Zurich
+  'AMSCPH': 620,  // Amsterdam to Copenhagen
+  'AMSARN': 1100, // Amsterdam to Stockholm
+  'AMSHEL': 1400, // Amsterdam to Helsinki
+  'AMSWAW': 1100, // Amsterdam to Warsaw
+  'AMSPRG': 800,  // Amsterdam to Prague
+  'AMSBUD': 1200, // Amsterdam to Budapest
+  'AMSVIE': 1000, // Amsterdam to Vienna
+  'AMSBRU': 170,  // Amsterdam to Brussels
+  'AMSLIS': 1900, // Amsterdam to Lisbon
+  'AMSATH': 2200, // Amsterdam to Athens
+  'AMSIST': 2200, // Amsterdam to Istanbul
+  'AMSDOH': 4800, // Amsterdam to Doha
+  'AMSICN': 8600, // Amsterdam to Seoul
+  'AMSNRT': 9400, // Amsterdam to Tokyo
+  'AMSSIN': 10400,// Amsterdam to Singapore
+  'AMSBKK': 9100, // Amsterdam to Bangkok
+  'AMSDEL': 6600, // Amsterdam to Delhi
+  'AMSBOM': 7100, // Amsterdam to Mumbai
+  'AMSPEK': 8200, // Amsterdam to Beijing
+  'AMSPVG': 9200, // Amsterdam to Shanghai
+  'AMSMEL': 16700,// Amsterdam to Melbourne
+  'AMSSYD': 16800,// Amsterdam to Sydney
+  'AMSJNB': 9000, // Amsterdam to Johannesburg
+  'AMSCPT': 9600, // Amsterdam to Cape Town
+  'AMSYYZ': 5900, // Amsterdam to Toronto
+  'AMSYUL': 5400, // Amsterdam to Montreal
+  'AMSYVR': 7700, // Amsterdam to Vancouver
+  'AMSORD': 6500, // Amsterdam to Chicago
+  'AMSDFW': 7600, // Amsterdam to Dallas
+  'AMSSFO': 8700, // Amsterdam to San Francisco
+  'AMSMIA': 7200, // Amsterdam to Miami
+  'AMSBOS': 5400, // Amsterdam to Boston
+  'AMSSEA': 7800, // Amsterdam to Seattle
+  
+  // Nordic Routes
+  'CPHJFK': 6200, // Copenhagen to New York
+  'CPHDXB': 5000, // Copenhagen to Dubai
+  'CPHHKG': 8500, // Copenhagen to Hong Kong
+  'CPHLAX': 8900, // Copenhagen to Los Angeles
+  'CPHARN': 520,  // Copenhagen to Stockholm
+  'CPHHEL': 900,  // Copenhagen to Helsinki
+  'CPHWAW': 700,  // Copenhagen to Warsaw
+  'CPHPRG': 600,  // Copenhagen to Prague
+  'CPHBUD': 900,  // Copenhagen to Budapest
+  'CPHVIE': 900,  // Copenhagen to Vienna
+  'CPHBRU': 800,  // Copenhagen to Brussels
+  'CPHLIS': 2400, // Copenhagen to Lisbon
+  'CPHATH': 2200, // Copenhagen to Athens
+  'CPHIST': 2100, // Copenhagen to Istanbul
+  'CPHDOH': 4900, // Copenhagen to Doha
+  'CPHICN': 8300, // Copenhagen to Seoul
+  'CPHNRT': 9100, // Copenhagen to Tokyo
+  'CPHSIN': 10100,// Copenhagen to Singapore
+  'CPHBKK': 8800, // Copenhagen to Bangkok
+  'CPHDEL': 6300, // Copenhagen to Delhi
+  'CPHBOM': 6800, // Copenhagen to Mumbai
+  'CPHPEK': 7900, // Copenhagen to Beijing
+  'CPHPVG': 8900, // Copenhagen to Shanghai
+  'CPHMEL': 16600,// Copenhagen to Melbourne
+  'CPHSYD': 16700,// Copenhagen to Sydney
+  'CPHJNB': 8800, // Copenhagen to Johannesburg
+  'CPHCPT': 9400, // Copenhagen to Cape Town
+  'CPHYYZ': 6000, // Copenhagen to Toronto
+  'CPHYUL': 5500, // Copenhagen to Montreal
+  'CPHYVR': 7800, // Copenhagen to Vancouver
+  'CPHORD': 6600, // Copenhagen to Chicago
+  'CPHDFW': 7700, // Copenhagen to Dallas
+  'CPHSFO': 8800, // Copenhagen to San Francisco
+  'CPHMIA': 7300, // Copenhagen to Miami
+  'CPHBOS': 5500, // Copenhagen to Boston
+  'CPHSEA': 7900, // Copenhagen to Seattle
+  
+  // Middle Eastern Routes
+  'DXBJFK': 11000,// Dubai to New York
+  'DXBHKG': 5800, // Dubai to Hong Kong
+  'DXBLAX': 13400,// Dubai to Los Angeles
+  'DXBLHR': 5500, // Dubai to London
+  'DXBCDG': 5200, // Dubai to Paris
+  'DXBFRA': 4800, // Dubai to Frankfurt
+  'DXBMAD': 5200, // Dubai to Madrid
+  'DXBFCO': 4000, // Dubai to Rome
+  'DXBAMS': 5100, // Dubai to Amsterdam
+  'DXBDOH': 380,  // Dubai to Doha
+  'DXBICN': 7000, // Dubai to Seoul
+  'DXBNRT': 8000, // Dubai to Tokyo
+  'DXBSIN': 5800, // Dubai to Singapore
+  'DXBBKK': 4600, // Dubai to Bangkok
+  'DXBDEL': 2200, // Dubai to Delhi
+  'DXBBOM': 1900, // Dubai to Mumbai
+  'DXBPEK': 5800, // Dubai to Beijing
+  'DXBPVG': 6800, // Dubai to Shanghai
+  'DXBMEL': 12000,// Dubai to Melbourne
+  'DXBSYD': 12100,// Dubai to Sydney
+  'DXBJNB': 6800, // Dubai to Johannesburg
+  'DXBCPT': 7400, // Dubai to Cape Town
+  'DXBYYZ': 11000,// Dubai to Toronto
+  'DXBYUL': 10500,// Dubai to Montreal
+  'DXBYVR': 11800,// Dubai to Vancouver
+  'DXBORD': 12000,// Dubai to Chicago
+  'DXBDFW': 13100,// Dubai to Dallas
+  'DXBSFO': 14200,// Dubai to San Francisco
+  'DXBMIA': 12700,// Dubai to Miami
+  'DXBBOS': 10900,// Dubai to Boston
+  'DXBSEA': 13300,// Dubai to Seattle
+  
+  // Asian Routes
+  'HKGJFK': 13000,// Hong Kong to New York
+  'HKGLAX': 11600,// Hong Kong to Los Angeles
+  'HKGLHR': 9630, // Hong Kong to London
+  'HKGCDG': 9600, // Hong Kong to Paris
+  'HKGFRA': 9200, // Hong Kong to Frankfurt
+  'HKGMAD': 11000,// Hong Kong to Madrid
+  'HKGFCO': 9200, // Hong Kong to Rome
+  'HKGAMS': 9200, // Hong Kong to Amsterdam
+  'HKGDXB': 5800, // Hong Kong to Dubai
+  'HKGICN': 2000, // Hong Kong to Seoul
+  'HKGNRT': 2900, // Hong Kong to Tokyo
+  'HKGSIN': 2600, // Hong Kong to Singapore
+  'HKGBKK': 1700, // Hong Kong to Bangkok
+  'HKGDEL': 3800, // Hong Kong to Delhi
+  'HKGBOM': 4300, // Hong Kong to Mumbai
+  'HKGPEK': 2000, // Hong Kong to Beijing
+  'HKGPVG': 1200, // Hong Kong to Shanghai
+  'HKGMEL': 7400, // Hong Kong to Melbourne
+  'HKGSYD': 7500, // Hong Kong to Sydney
+  'HKGJNB': 11600,// Hong Kong to Johannesburg
+  'HKGCPT': 12200,// Hong Kong to Cape Town
+  'HKGYYZ': 12500,// Hong Kong to Toronto
+  'HKGYUL': 12000,// Hong Kong to Montreal
+  'HKGYVR': 10300,// Hong Kong to Vancouver
+  'HKGORD': 12800,// Hong Kong to Chicago
+  'HKGDFW': 13900,// Hong Kong to Dallas
+  'HKGSFO': 11100,// Hong Kong to San Francisco
+  'HKGMIA': 13600,// Hong Kong to Miami
+  'HKGBOS': 11800,// Hong Kong to Boston
+  'HKGSEA': 10400,// Hong Kong to Seattle
+  
+  // North American Routes
+  'JFKLAX': 3940, // New York to Los Angeles
+  'JFKORD': 1180, // New York to Chicago
+  'JFKDFW': 2300, // New York to Dallas
+  'JFKIAH': 2300, // New York to Houston
+  'JFKSEA': 3900, // New York to Seattle
+  'JFKYYZ': 550,  // New York to Toronto
+  'JFKYUL': 550,  // New York to Montreal
+  'JFKYVR': 3900, // New York to Vancouver
+  'JFKFLL': 1700, // New York to Fort Lauderdale
+  'JFKMIA': 1800, // New York to Miami
+  'JFKATL': 1200, // New York to Atlanta
+  'JFKPDX': 3900, // New York to Portland
+  'JFKPHX': 3400, // New York to Phoenix
+  'JFKLAS': 3600, // New York to Las Vegas
+  'JFKANC': 5400, // New York to Anchorage
+  'JFKHNL': 8000, // New York to Honolulu
+} as const;
 
 export function FlightCheck() {
   const navigate = useNavigate();
@@ -74,7 +458,20 @@ export function FlightCheck() {
   const [checkResult, setCheckResult] = useState<CheckResultState | null>(null);
   const [disruption, setDisruption] = useState<DisruptionDetails>({
     type: 'delay',
+    delayDuration: 0,
+    reason: 'technical_issue',
+    voluntary: false,
+    alternativeFlight: {
+      airline: '',
+      flightNumber: '',
+      departureTime: '',
+      arrivalTime: ''
+    },
+    additionalInfo: '',
+    isDomestic: false
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Calculate date limits
   const maxDate = new Date().toISOString().split('T')[0];
@@ -134,7 +531,7 @@ export function FlightCheck() {
     setShowDestinationResults(false);
   };
 
-  const handleCheck = async (e: React.FormEvent) => {
+  const handleCheckEligibility = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsChecking(true);
 
@@ -145,35 +542,42 @@ export function FlightCheck() {
     }
 
     try {
-      // Get basic flight template from the flight number
-      const result = await checkFlightEligibility(flightNumber, flightDate);
-      
-      // Override with user-selected airports
-      const updatedResult = {
-        ...result,
-        flightDetails: {
-          ...result.flightDetails,
-          departure: {
-            airport: departureAirport.name,
-            iata: departureAirport.iata,
-            terminal: result.flightDetails.departure.terminal,
-            country: departureAirport.country
-          },
-          arrival: {
-            airport: destinationAirport.name,
-            iata: destinationAirport.iata,
-            terminal: result.flightDetails.arrival.terminal,
-            country: destinationAirport.country
-          }
-        }
+      const flightData: FlightData = {
+        flightNumber: flightNumber,
+        flightDate: flightDate,
+        departure: {
+          airport: departureAirport.name,
+          iata: departureAirport.iata,
+          terminal: '',
+          country: departureAirport.country
+        },
+        arrival: {
+          airport: destinationAirport.name,
+          iata: destinationAirport.iata,
+          terminal: '',
+          country: destinationAirport.country
+        },
+        airline: {
+          name: '',
+          iata: flightNumber.slice(0, 2),
+          country: ''
+        },
+        disruption
       };
+
+      const result = await checkFlightEligibility(flightData);
       
-      setCheckResult(updatedResult);
+      setCheckResult({
+        ...result,
+        compensation: result.amount,
+        processingTime: '2-3 weeks',
+        disruption
+      });
       
       // Move to disruption details step
       setStep('disruption');
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to check flight eligibility');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to check flight eligibility');
     } finally {
       setIsChecking(false);
     }
@@ -212,6 +616,8 @@ export function FlightCheck() {
     // Update with disruption details from user input
     setCheckResult({
       ...updatedResult,
+      compensation: updatedResult.amount,
+      processingTime: '2-3 weeks',
       disruption
     });
     
@@ -228,7 +634,20 @@ export function FlightCheck() {
     setDestinationAirport(null);
     setCheckResult(null);
     setStep('initial');
-    setDisruption({ type: 'delay' });
+    setDisruption({
+      type: 'delay',
+      delayDuration: 0,
+      reason: 'technical_issue',
+      voluntary: false,
+      alternativeFlight: {
+        airline: '',
+        flightNumber: '',
+        departureTime: '',
+        arrivalTime: ''
+      },
+      additionalInfo: '',
+      isDomestic: false
+    });
   };
 
   const handleContinue = () => {
@@ -270,7 +689,7 @@ export function FlightCheck() {
               </h2>
             </div>
 
-            <form onSubmit={handleCheck} className="space-y-6">
+            <form onSubmit={handleCheckEligibility} className="space-y-6">
               <div className="space-y-2">
                 <label htmlFor="flightNumber" className="block text-sm font-medium text-slate-700">
                   Flight Number

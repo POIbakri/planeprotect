@@ -10,8 +10,9 @@ import { EmailTemplateEditor } from './EmailTemplateEditor';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 import toast from 'react-hot-toast';
-import type { Claim, ClaimStatus, PaginatedResponse } from '@/lib/types';
+import type { Claim, ClaimStatus, PaginatedResponse, ClaimFilters } from '@/lib/types';
 import { CLAIM_STATUS } from '@/lib/constants';
+import { useNavigate } from 'react-router-dom';
 
 interface ClaimStats {
   totalValue: number;
@@ -21,6 +22,7 @@ interface ClaimStats {
 }
 
 export function AdminDashboard() {
+  const navigate = useNavigate();
   const [claims, setClaims] = useState<Claim[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedStatus, setSelectedStatus] = useState<ClaimStatus | 'all'>('all');
@@ -33,19 +35,53 @@ export function AdminDashboard() {
     approvedCount: 0,
     totalCount: 0,
   });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
+  const [dateFilter, setDateFilter] = useState<{startDate: string; endDate: string}>({
+    startDate: '',
+    endDate: '',
+  });
+  const [statusFilter, setStatusFilter] = useState<ClaimStatus | 'all'>('all');
+  const [sortBy, setSortBy] = useState<{field: string; direction: 'asc' | 'desc'}>({
+    field: 'created_at',
+    direction: 'desc',
+  });
 
   useEffect(() => {
     fetchClaims();
-  }, []);
+  }, [currentPage, pageSize, statusFilter, dateFilter, sortBy]);
 
   const fetchClaims = async () => {
     try {
-      const { data, error } = await getAllClaims();
-      if (error) throw error;
+      setLoading(true);
+      
+      // Prepare filter parameters as ClaimFilters type
+      const filterParams: ClaimFilters = {
+        status: statusFilter !== 'all' ? statusFilter : undefined,
+        search: searchTerm.length > 2 ? searchTerm : undefined,
+        startDate: dateFilter.startDate || undefined,
+        endDate: dateFilter.endDate || undefined,
+        sortBy: sortBy.field,
+        sortDirection: sortBy.direction,
+      };
+      
+      const result = await getAllClaims(currentPage, pageSize, filterParams);
+      
+      if (!result || !result.data) {
+        throw new Error('Invalid response from server');
+      }
 
-      setClaims(data || []);
-      calculateStats(data);
+      setClaims(result.data || []);
+      
+      // Calculate total pages
+      if (result.count) {
+        setTotalPages(Math.ceil(result.count / pageSize));
+      }
+      
+      calculateStats(result.data);
     } catch (error) {
+      console.error('Error fetching claims:', error);
       toast.error('Failed to fetch claims');
     } finally {
       setLoading(false);
@@ -70,14 +106,70 @@ export function AdminDashboard() {
 
   const handleStatusUpdate = async (claimId: string, newStatus: ClaimStatus) => {
     try {
+      const loadingToast = toast.loading(`Updating claim status to ${newStatus}...`);
+      
+      const claim = claims.find(c => c.id === claimId);
+      if (!claim) {
+        toast.dismiss(loadingToast);
+        toast.error('Claim not found');
+        return;
+      }
+      
+      const validTransitions: Record<ClaimStatus, ClaimStatus[]> = {
+        'pending': ['in-review'],
+        'in-review': ['approved', 'pending'],
+        'approved': ['paid', 'in-review'],
+        'paid': ['approved']
+      };
+      
+      if (!validTransitions[claim.status].includes(newStatus)) {
+        toast.dismiss(loadingToast);
+        toast.error(`Cannot transition from ${claim.status} to ${newStatus}`);
+        return;
+      }
+      
       await updateClaimStatus(claimId, newStatus);
       setClaims(claims.map(claim => 
         claim.id === claimId ? { ...claim, status: newStatus } : claim
       ));
-      toast.success('Status updated successfully');
+      
+      toast.dismiss(loadingToast);
+      toast.success(`Claim status updated to ${newStatus}`);
+      
+      calculateStats(claims.map(claim => 
+        claim.id === claimId ? { ...claim, status: newStatus } : claim
+      ));
     } catch (error) {
-      toast.error('Failed to update status');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update status';
+      toast.error(errorMessage);
     }
+  };
+  
+  const handleSearch = () => {
+    setCurrentPage(1);
+    fetchClaims();
+  };
+  
+  const handleDateFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setDateFilter(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+  
+  const clearFilters = () => {
+    setSearchTerm('');
+    setDateFilter({ startDate: '', endDate: '' });
+    setStatusFilter('all');
+    setCurrentPage(1);
+  };
+  
+  const handleSort = (field: string) => {
+    setSortBy(prev => ({
+      field,
+      direction: prev.field === field && prev.direction === 'asc' ? 'desc' : 'asc'
+    }));
   };
 
   const chartData = claims.map(claim => ({
@@ -93,33 +185,82 @@ export function AdminDashboard() {
   );
 
   const exportClaimsReport = () => {
-    const doc = new jsPDF();
-    
-    doc.setFontSize(20);
-    doc.text('Claims Report', 20, 20);
-    
-    doc.setFontSize(12);
-    doc.text(`Total Claims: ${stats.totalCount}`, 20, 40);
-    doc.text(`Pending Claims: ${stats.pendingCount}`, 20, 50);
-    doc.text(`Total Compensation: ${formatCurrency(stats.totalValue)}`, 20, 60);
-    
-    const tableData = filteredClaims.map(claim => [
-      claim.id.slice(0, 8),
-      claim.flight_number,
-      claim.passenger_name,
-      formatDate(claim.flight_date),
-      formatCurrency(claim.compensation_amount),
-      claim.status,
-    ]);
-    
-    (doc as any).autoTable({
-      head: [['ID', 'Flight', 'Passenger', 'Date', 'Amount', 'Status']],
-      body: tableData,
-      startY: 80,
-    });
-    
-    doc.save('claims-report.pdf');
-    toast.success('Report downloaded successfully');
+    try {
+      const doc = new jsPDF();
+      
+      doc.setFontSize(20);
+      doc.text('Claims Report', 20, 20);
+      
+      doc.setFontSize(12);
+      doc.text(`Total Claims: ${stats.totalCount}`, 20, 40);
+      doc.text(`Pending Claims: ${stats.pendingCount}`, 20, 50);
+      doc.text(`Total Compensation: ${formatCurrency(stats.totalValue)}`, 20, 60);
+      
+      const tableData = filteredClaims.map(claim => [
+        claim.id.slice(0, 8),
+        claim.flight_number,
+        claim.passenger_name,
+        formatDate(claim.flight_date),
+        formatCurrency(claim.compensation_amount),
+        claim.status,
+      ]);
+      
+      (doc as any).autoTable({
+        head: [['ID', 'Flight', 'Passenger', 'Date', 'Amount', 'Status']],
+        body: tableData,
+        startY: 80,
+      });
+      
+      doc.save('claims-report.pdf');
+      toast.success('Report downloaded successfully');
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast.error('Failed to generate report');
+    }
+  };
+  
+  const renderPagination = () => {
+    return (
+      <div className="flex items-center justify-between mt-6">
+        <div className="text-sm text-slate-600">
+          Showing {claims.length ? (currentPage - 1) * pageSize + 1 : 0} to {Math.min(currentPage * pageSize, stats.totalCount)} of {stats.totalCount} claims
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+          >
+            Previous
+          </Button>
+          {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+            const pageNum = currentPage > 3 && totalPages > 5
+              ? currentPage - 3 + i + (totalPages - currentPage < 2 ? totalPages - currentPage - 2 : 0)
+              : i + 1;
+              
+            return pageNum <= totalPages ? (
+              <Button
+                key={pageNum}
+                variant={pageNum === currentPage ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setCurrentPage(pageNum)}
+              >
+                {pageNum}
+              </Button>
+            ) : null;
+          })}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage(prev => (prev < totalPages ? prev + 1 : prev))}
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </Button>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -163,7 +304,7 @@ export function AdminDashboard() {
 
       {activeTab === 'claims' && (
         <>
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
             <div className="relative flex-1 sm:flex-none w-full sm:w-auto">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
               <Input
@@ -171,6 +312,7 @@ export function AdminDashboard() {
                 placeholder="Search claims..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleSearch()}
                 className="pl-10 w-full"
               />
             </div>
@@ -183,6 +325,68 @@ export function AdminDashboard() {
                 <Download className="w-4 h-4" />
                 Export Report
               </Button>
+              <Button
+                variant="default"
+                onClick={handleSearch}
+                className="flex items-center gap-2 flex-1 sm:flex-none"
+              >
+                <Filter className="w-4 h-4" />
+                Filter
+              </Button>
+            </div>
+          </div>
+          
+          <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div>
+                <label className="block text-sm text-slate-600 mb-1">Status</label>
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value as ClaimStatus | 'all')}
+                  className="w-full border border-slate-200 rounded-lg p-2 text-sm"
+                >
+                  <option value="all">All Statuses</option>
+                  <option value="pending">Pending</option>
+                  <option value="in-review">In Review</option>
+                  <option value="approved">Approved</option>
+                  <option value="paid">Paid</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm text-slate-600 mb-1">Start Date</label>
+                <Input
+                  type="date"
+                  name="startDate"
+                  value={dateFilter.startDate}
+                  onChange={handleDateFilterChange}
+                  className="w-full"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-slate-600 mb-1">End Date</label>
+                <Input
+                  type="date"
+                  name="endDate"
+                  value={dateFilter.endDate}
+                  onChange={handleDateFilterChange}
+                  className="w-full"
+                />
+              </div>
+              <div className="flex items-end">
+                <Button
+                  variant="outline"
+                  onClick={clearFilters}
+                  className="mr-2"
+                >
+                  Clear
+                </Button>
+                <Button
+                  variant="gradient"
+                  onClick={handleSearch}
+                >
+                  Apply Filters
+                </Button>
+              </div>
             </div>
           </div>
 
@@ -245,119 +449,165 @@ export function AdminDashboard() {
             </motion.div>
           </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-slate-100"
-          >
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-              <h2 className="text-xl font-semibold">Claims Management</h2>
-              <div className="flex flex-wrap gap-2 w-full sm:w-auto">
-                <Button
-                  variant={selectedStatus === 'all' ? 'gradient' : 'outline'}
-                  size="sm"
-                  onClick={() => setSelectedStatus('all')}
-                  className="flex-1 sm:flex-none"
-                >
-                  All Claims
-                </Button>
-                {Object.values(CLAIM_STATUS).map(status => (
-                  <Button
-                    key={status}
-                    variant={selectedStatus === status ? 'gradient' : 'outline'}
-                    size="sm"
-                    onClick={() => setSelectedStatus(status)}
-                    className="flex-1 sm:flex-none"
-                  >
-                    {status.charAt(0).toUpperCase() + status.slice(1)}
-                  </Button>
-                ))}
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100 overflow-hidden">
+            <h2 className="text-xl font-semibold mb-6">Claims Management</h2>
+            
+            {loading ? (
+              <div className="flex items-center justify-center h-64">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
               </div>
-            </div>
-
-            <div className="overflow-x-auto">
-              <div className="min-w-[800px]">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="text-left p-4 text-slate-600">Claim ID</th>
-                      <th className="text-left p-4 text-slate-600">Flight</th>
-                      <th className="text-left p-4 text-slate-600">Passenger</th>
-                      <th className="text-left p-4 text-slate-600">Date</th>
-                      <th className="text-left p-4 text-slate-600">Amount</th>
-                      <th className="text-left p-4 text-slate-600">Status</th>
-                      <th className="text-left p-4 text-slate-600">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {loading ? (
-                      <tr>
-                        <td colSpan={7} className="text-center py-8">
-                          <div className="flex items-center justify-center">
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+            ) : filteredClaims.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="mx-auto bg-slate-100 w-16 h-16 flex items-center justify-center rounded-full mb-4">
+                  <FileText className="text-slate-400 w-8 h-8" />
+                </div>
+                <h3 className="text-lg font-medium text-slate-900 mb-2">No claims found</h3>
+                <p className="text-slate-500 max-w-md mx-auto mb-6">
+                  {searchTerm || statusFilter !== 'all' || dateFilter.startDate || dateFilter.endDate ? 
+                    'Try adjusting your search filters to find what you\'re looking for.' : 
+                    'There are no claims in the system yet.'}
+                </p>
+                {(searchTerm || statusFilter !== 'all' || dateFilter.startDate || dateFilter.endDate) && (
+                  <Button variant="outline" onClick={clearFilters}>
+                    Clear Filters
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr className="border-b border-slate-200">
+                        <th className="px-4 py-3 text-sm text-slate-600 font-medium cursor-pointer" onClick={() => handleSort('id')}>
+                          <div className="flex items-center">
+                            ID
+                            {sortBy.field === 'id' && (
+                              <span className="ml-1">{sortBy.direction === 'asc' ? '↑' : '↓'}</span>
+                            )}
                           </div>
-                        </td>
+                        </th>
+                        <th className="px-4 py-3 text-sm text-slate-600 font-medium cursor-pointer" onClick={() => handleSort('passenger_name')}>
+                          <div className="flex items-center">
+                            Passenger
+                            {sortBy.field === 'passenger_name' && (
+                              <span className="ml-1">{sortBy.direction === 'asc' ? '↑' : '↓'}</span>
+                            )}
+                          </div>
+                        </th>
+                        <th className="px-4 py-3 text-sm text-slate-600 font-medium cursor-pointer" onClick={() => handleSort('flight_number')}>
+                          <div className="flex items-center">
+                            Flight
+                            {sortBy.field === 'flight_number' && (
+                              <span className="ml-1">{sortBy.direction === 'asc' ? '↑' : '↓'}</span>
+                            )}
+                          </div>
+                        </th>
+                        <th className="px-4 py-3 text-sm text-slate-600 font-medium cursor-pointer" onClick={() => handleSort('flight_date')}>
+                          <div className="flex items-center">
+                            Date
+                            {sortBy.field === 'flight_date' && (
+                              <span className="ml-1">{sortBy.direction === 'asc' ? '↑' : '↓'}</span>
+                            )}
+                          </div>
+                        </th>
+                        <th className="px-4 py-3 text-sm text-slate-600 font-medium cursor-pointer" onClick={() => handleSort('compensation_amount')}>
+                          <div className="flex items-center">
+                            Amount
+                            {sortBy.field === 'compensation_amount' && (
+                              <span className="ml-1">{sortBy.direction === 'asc' ? '↑' : '↓'}</span>
+                            )}
+                          </div>
+                        </th>
+                        <th className="px-4 py-3 text-sm text-slate-600 font-medium cursor-pointer" onClick={() => handleSort('status')}>
+                          <div className="flex items-center">
+                            Status
+                            {sortBy.field === 'status' && (
+                              <span className="ml-1">{sortBy.direction === 'asc' ? '↑' : '↓'}</span>
+                            )}
+                          </div>
+                        </th>
+                        <th className="px-4 py-3 text-sm text-slate-600 font-medium">Actions</th>
                       </tr>
-                    ) : filteredClaims.length === 0 ? (
-                      <tr>
-                        <td colSpan={7} className="text-center py-8 text-slate-500">
-                          No claims found
-                        </td>
-                      </tr>
-                    ) : (
-                      filteredClaims.map((claim) => (
-                        <tr key={claim.id} className="border-b hover:bg-slate-50">
-                          <td className="p-4 font-mono text-sm">
-                            {claim.id.slice(0, 8)}
-                          </td>
-                          <td className="p-4">{claim.flight_number}</td>
-                          <td className="p-4">{claim.passenger_name}</td>
-                          <td className="p-4">{formatDate(claim.flight_date)}</td>
-                          <td className="p-4 font-medium">
+                    </thead>
+                    <tbody>
+                      {filteredClaims.map((claim) => (
+                        <tr key={claim.id} className="border-b border-slate-100 hover:bg-slate-50">
+                          <td className="px-4 py-3 text-sm text-slate-800">{claim.id.slice(0, 8)}</td>
+                          <td className="px-4 py-3 text-sm text-slate-800">{claim.passenger_name}</td>
+                          <td className="px-4 py-3 text-sm text-slate-800">{claim.flight_number}</td>
+                          <td className="px-4 py-3 text-sm text-slate-800">{formatDate(claim.flight_date)}</td>
+                          <td className="px-4 py-3 text-sm font-medium text-emerald-600">
                             {formatCurrency(claim.compensation_amount)}
                           </td>
-                          <td className="p-4">
-                            <span className={`px-3 py-1 rounded-full text-sm ${
-                              claim.status === 'paid'
-                                ? 'bg-emerald-100 text-emerald-700'
-                                : claim.status === 'approved'
-                                ? 'bg-blue-100 text-blue-700'
-                                : 'bg-amber-100 text-amber-700'
-                            }`}>
+                          <td className="px-4 py-3">
+                            <span
+                              className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
+                                claim.status === 'paid'
+                                  ? 'bg-emerald-100 text-emerald-700'
+                                  : claim.status === 'approved'
+                                  ? 'bg-blue-100 text-blue-700'
+                                  : claim.status === 'in-review'
+                                  ? 'bg-purple-100 text-purple-700'
+                                  : 'bg-amber-100 text-amber-700'
+                              }`}
+                            >
                               {claim.status.charAt(0).toUpperCase() + claim.status.slice(1)}
                             </span>
                           </td>
-                          <td className="p-4">
-                            <div className="flex gap-2">
-                              {claim.status === 'pending' && (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => handleStatusUpdate(claim.id, 'approved')}
-                                >
-                                  Approve
-                                </Button>
-                              )}
-                              {claim.status === 'approved' && (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => handleStatusUpdate(claim.id, 'paid')}
-                                >
-                                  Mark as Paid
-                                </Button>
-                              )}
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-2">
+                              <select
+                                className="text-sm border border-slate-200 rounded p-1"
+                                value=""
+                                onChange={(e) => {
+                                  if (e.target.value) {
+                                    handleStatusUpdate(claim.id, e.target.value as ClaimStatus);
+                                    e.target.value = '';
+                                  }
+                                }}
+                              >
+                                <option value="">Update Status</option>
+                                {claim.status === 'pending' && (
+                                  <option value="in-review">Move to Review</option>
+                                )}
+                                {claim.status === 'in-review' && (
+                                  <>
+                                    <option value="approved">Approve</option>
+                                    <option value="pending">Return to Pending</option>
+                                  </>
+                                )}
+                                {claim.status === 'approved' && (
+                                  <>
+                                    <option value="paid">Mark as Paid</option>
+                                    <option value="in-review">Return to Review</option>
+                                  </>
+                                )}
+                                {claim.status === 'paid' && (
+                                  <option value="approved">Return to Approved</option>
+                                )}
+                              </select>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  // View claim details
+                                  navigate(`/admin/claims/${claim.id}`);
+                                }}
+                              >
+                                View
+                              </Button>
                             </div>
                           </td>
                         </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </motion.div>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {renderPagination()}
+              </>
+            )}
+          </div>
         </>
       )}
 

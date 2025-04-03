@@ -40,17 +40,125 @@ export function ClaimForm() {
     }));
   };
 
+  // Add validation for email, phone, and passport number
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validatePhone = (phone: string): boolean => {
+    // Allow various phone formats with optional country codes
+    const phoneRegex = /^(\+?\d{1,3}[- ]?)?\d{8,14}$/;
+    return phoneRegex.test(phone);
+  };
+
+  const validatePassport = (passport: string): boolean => {
+    // General passport format: 6-9 characters, alphanumeric
+    const passportRegex = /^[A-Z0-9]{6,12}$/i;
+    return passportRegex.test(passport);
+  };
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, type: keyof typeof formData.documents) => {
     if (e.target.files?.[0]) {
+      const file = e.target.files[0];
+      
+      // Validate file types and size
+      const validTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      
+      if (!validTypes.includes(file.type)) {
+        toast.error(`Invalid file type. Please upload a JPEG, PNG, or PDF file for ${type}.`);
+        return;
+      }
+      
+      if (file.size > maxSize) {
+        toast.error(`File is too large. Maximum size is 5MB.`);
+        return;
+      }
+      
       setFormData((prev) => ({
         ...prev,
-        documents: { ...prev.documents, [type]: e.target.files?.[0] },
+        documents: { ...prev.documents, [type]: file },
       }));
+      
+      // Show success message
+      toast.success(`${type.replace('_', ' ')} uploaded successfully`);
     }
+  };
+
+  const validateForm = (): boolean => {
+    // Validate personal details
+    if (step === 'personal') {
+      if (!formData.fullName || formData.fullName.trim() === '') {
+        toast.error('Please enter your full name');
+        return false;
+      }
+      
+      if (!formData.email || !validateEmail(formData.email)) {
+        toast.error('Please enter a valid email address');
+        return false;
+      }
+      
+      if (!formData.phone || !validatePhone(formData.phone)) {
+        toast.error('Please enter a valid phone number');
+        return false;
+      }
+      
+      if (!formData.passportNumber || !validatePassport(formData.passportNumber)) {
+        toast.error('Please enter a valid passport number');
+        return false;
+      }
+      
+      if (!formData.consentGiven) {
+        toast.error('Please accept the terms and consent to proceed');
+        return false;
+      }
+    }
+    
+    // Validate documents
+    if (step === 'documents') {
+      if (!formData.documents.boardingPass) {
+        toast.error('Please upload your boarding pass');
+        return false;
+      }
+      
+      if (!formData.documents.bookingConfirmation) {
+        toast.error('Please upload your booking confirmation');
+        return false;
+      }
+    }
+    
+    // Validate payment details
+    if (step === 'payment') {
+      if (!formData.bankAccount || formData.bankAccount.trim() === '') {
+        toast.error('Please enter your bank account number');
+        return false;
+      }
+      
+      if (!formData.bankName || formData.bankName.trim() === '') {
+        toast.error('Please enter your bank name');
+        return false;
+      }
+      
+      if (!formData.bankHolder || formData.bankHolder.trim() === '') {
+        toast.error('Please enter the account holder name');
+        return false;
+      }
+    }
+    
+    return true;
   };
 
   const handleSubmit = async () => {
     try {
+      // Validate payment details one more time
+      if (!validateForm()) {
+        return;
+      }
+      
+      // Show loading toast
+      const loadingToast = toast.loading('Submitting your claim...');
+      
       // Submit claim data
       const claim = await submitClaim({
         flightNumber,
@@ -59,7 +167,7 @@ export function ClaimForm() {
         ...formData,
       });
 
-      // Upload documents
+      // Upload documents with progress tracking
       const uploadPromises = Object.entries(formData.documents).map(([type, file]) => {
         if (file) {
           return uploadDocument(claim.id, file, type as any);
@@ -69,16 +177,19 @@ export function ClaimForm() {
 
       await Promise.all(uploadPromises);
       
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
+      
       setStep('success');
       toast.success('Claim submitted successfully!');
     } catch (error) {
-      toast.error('Failed to submit claim');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to submit claim';
+      toast.error(errorMessage);
     }
   };
 
   const handleNext = async () => {
-    if (step === 'personal' && !formData.consentGiven) {
-      toast.error('Please accept the terms and consent to proceed');
+    if (!validateForm()) {
       return;
     }
 
@@ -86,6 +197,7 @@ export function ClaimForm() {
       await handleSubmit();
     } else {
       setStep(step === 'personal' ? 'documents' : 'payment');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
