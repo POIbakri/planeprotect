@@ -37,6 +37,10 @@ export function FlightCheckResults({
   const displayFlightNumber = flightDetails?.flightNumber || flightNumber;
   const departureIata = flightDetails?.departure?.iata || 'DEP';
   const arrivalIata = flightDetails?.arrival?.iata || 'ARR';
+  const departureAirport = flightDetails?.departure?.airport || 'Unknown departure';
+  const arrivalAirport = flightDetails?.arrival?.airport || 'Unknown arrival';
+  const departureCountry = flightDetails?.departure?.country || '';
+  const arrivalCountry = flightDetails?.arrival?.country || '';
 
   return (
     <motion.div
@@ -67,46 +71,69 @@ export function FlightCheckResults({
         </div>
 
         <div className="space-y-4 mb-8">
-          <div className="flex justify-between items-center">
-            <span className="text-slate-600">Flight</span>
-            <span className="font-semibold text-slate-900">
-              {airlineName} {displayFlightNumber}
-            </span>
+          {/* Airline section */}
+          <div className="bg-slate-50 rounded-lg p-4 mb-4">
+            <div className="flex items-center mb-3">
+              <Plane className="w-5 h-5 text-blue-600 mr-2" />
+              <h3 className="font-medium text-slate-700 uppercase tracking-wide text-sm">Airline</h3>
+            </div>
+            <p className="text-lg font-semibold text-slate-900">{airlineName}</p>
+            <p className="text-slate-500 text-sm">Flight {displayFlightNumber}</p>
           </div>
-          <div className="flex justify-between items-center">
-            <span className="text-slate-600">Route</span>
-            <span className="font-semibold text-slate-900">
-              {departureIata} → {arrivalIata}
-            </span>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-slate-600">Date</span>
-            <span className="font-semibold text-slate-900">
-              {flightDate}
-            </span>
+          
+          {/* Route details */}
+          <div className="bg-slate-50 rounded-lg p-4">
+            <h3 className="font-medium text-slate-700 uppercase tracking-wide text-sm mb-3">Route Details</h3>
+            <div className="flex justify-between items-center">
+              <div className="text-left">
+                <p className="font-medium text-slate-900">{departureIata}</p>
+                <p className="text-xs text-slate-600">{departureAirport}</p>
+                <p className="text-xs text-slate-500">{departureCountry}</p>
+              </div>
+              <div className="flex-1 px-2">
+                <div className="border-t-2 border-slate-300 border-dashed relative">
+                  <div className="absolute -top-2 left-0 w-2 h-2 rounded-full bg-slate-400"></div>
+                  <div className="absolute -top-2 right-0 w-2 h-2 rounded-full bg-slate-400"></div>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="font-medium text-slate-900">{arrivalIata}</p>
+                <p className="text-xs text-slate-600">{arrivalAirport}</p>
+                <p className="text-xs text-slate-500">{arrivalCountry}</p>
+              </div>
+            </div>
+            <p className="text-sm text-slate-500 mt-3 text-center">
+              {new Date(flightDate).toLocaleDateString('en-GB', {
+                weekday: 'short',
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric'
+              })}
+            </p>
           </div>
 
           {isEligible && (
-            <>
-              <div className="flex justify-between items-center">
-                <span className="text-slate-600">Compensation</span>
-                <span className="font-semibold text-emerald-600">
+            <div className="bg-emerald-50 rounded-lg p-4 mt-4">
+              <h3 className="font-medium text-emerald-800 uppercase tracking-wide text-sm mb-2">Compensation Details</h3>
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-slate-700">Amount</span>
+                <span className="font-semibold text-emerald-700 text-lg">
                   {formatCurrency(compensation, currency)}
                 </span>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-slate-600">Regulation</span>
-                <span className="font-semibold text-slate-900">{regulation}</span>
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-slate-700">Regulation</span>
+                <span className="font-medium text-slate-900">{regulation}</span>
+              </div>
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-slate-700">Processing Time</span>
+                <span className="font-medium text-slate-900">{processingTime}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-slate-600">Processing Time</span>
-                <span className="font-semibold text-slate-900">{processingTime}</span>
+                <span className="text-slate-700">Reason</span>
+                <span className="font-medium text-slate-900">{reason}</span>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-slate-600">Reason</span>
-                <span className="font-semibold text-slate-900">{reason}</span>
-              </div>
-            </>
+            </div>
           )}
 
           {!isEligible && (

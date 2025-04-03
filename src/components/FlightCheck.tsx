@@ -6,7 +6,7 @@ import { Button } from './ui/button';
 import { formatFlightNumber } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { checkFlightEligibility, calculateEligibility, searchAirports } from '@/lib/api';
+import { checkFlightEligibility, calculateEligibility, searchAirports, searchAirlines } from '@/lib/api';
 import { FlightCheckResults } from './FlightCheckResults';
 import toast from 'react-hot-toast';
 import type { 
@@ -15,7 +15,8 @@ import type {
   DisruptionDetails,
   CompensationResult,
   FlightData,
-  FlightCheckResponse
+  FlightCheckResponse,
+  Airline
 } from '../lib/types';
 
 // Extended type for our local state that includes the disruption
@@ -443,6 +444,10 @@ const flightDistances = {
 export function FlightCheck() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [airlineQuery, setAirlineQuery] = useState('');
+  const [selectedAirline, setSelectedAirline] = useState<Airline | null>(null);
+  const [airlineResults, setAirlineResults] = useState<Airline[]>([]);
+  const [showAirlineResults, setShowAirlineResults] = useState(false);
   const [flightNumber, setFlightNumber] = useState('');
   const [flightDate, setFlightDate] = useState('');
   const [departureQuery, setDepartureQuery] = useState('');
@@ -478,6 +483,26 @@ export function FlightCheck() {
   const minDate = new Date();
   minDate.setFullYear(minDate.getFullYear() - 6);
   const minDateStr = minDate.toISOString().split('T')[0];
+
+  // Handle airline search
+  useEffect(() => {
+    const fetchAirlines = async () => {
+      if (airlineQuery.length < 2) {
+        setAirlineResults([]);
+        return;
+      }
+      
+      try {
+        const results = await searchAirlines(airlineQuery);
+        setAirlineResults(results);
+      } catch (error) {
+        console.error('Error searching airlines:', error);
+      }
+    };
+    
+    const timer = setTimeout(fetchAirlines, 300);
+    return () => clearTimeout(timer);
+  }, [airlineQuery]);
 
   // Handle airport search for departure
   useEffect(() => {
@@ -519,6 +544,12 @@ export function FlightCheck() {
     return () => clearTimeout(timer);
   }, [destinationQuery]);
 
+  const selectAirline = (airline: Airline) => {
+    setSelectedAirline(airline);
+    setAirlineQuery(`${airline.name} (${airline.iata})`);
+    setShowAirlineResults(false);
+  };
+
   const selectDepartureAirport = (airport: Airport) => {
     setDepartureAirport(airport);
     setDepartureQuery(`${airport.name} (${airport.iata})`);
@@ -535,6 +566,18 @@ export function FlightCheck() {
     e.preventDefault();
     setIsChecking(true);
 
+    if (!selectedAirline) {
+      toast.error('Please select an airline');
+      setIsChecking(false);
+      return;
+    }
+
+    if (!flightNumber) {
+      toast.error('Please enter a flight number');
+      setIsChecking(false);
+      return;
+    }
+
     if (!departureAirport || !destinationAirport) {
       toast.error('Please select both departure and destination airports');
       setIsChecking(false);
@@ -542,8 +585,10 @@ export function FlightCheck() {
     }
 
     try {
+      const fullFlightNumber = `${selectedAirline.iata}${flightNumber}`;
+      
       const flightData: FlightData = {
-        flightNumber: flightNumber,
+        flightNumber: fullFlightNumber,
         flightDate: flightDate,
         departure: {
           airport: departureAirport.name,
@@ -558,9 +603,9 @@ export function FlightCheck() {
           country: destinationAirport.country
         },
         airline: {
-          name: '',
-          iata: flightNumber.slice(0, 2),
-          country: ''
+          name: selectedAirline.name,
+          iata: selectedAirline.iata,
+          country: selectedAirline.country
         },
         disruption
       };
@@ -637,6 +682,8 @@ export function FlightCheck() {
   };
 
   const handleReset = () => {
+    setAirlineQuery('');
+    setSelectedAirline(null);
     setFlightNumber('');
     setFlightDate('');
     setDepartureQuery('');
@@ -671,7 +718,7 @@ export function FlightCheck() {
     } else {
       navigate('/claim', {
         state: {
-          flightNumber,
+          flightNumber: checkResult.flightDetails?.flightNumber || '',
           flightDate,
           compensation: checkResult.compensation,
           disruption: checkResult.disruption,
@@ -701,21 +748,72 @@ export function FlightCheck() {
             </div>
 
             <form onSubmit={handleCheckEligibility} className="space-y-6">
+              {/* Airline Selection */}
+              <div className="space-y-2 relative">
+                <label htmlFor="airline" className="block text-sm font-medium text-slate-700">
+                  Airline
+                </label>
+                <div className="relative">
+                  <Input
+                    id="airline"
+                    type="text"
+                    value={airlineQuery}
+                    onChange={(e) => {
+                      setAirlineQuery(e.target.value);
+                      setShowAirlineResults(true);
+                      if (!e.target.value) {
+                        setSelectedAirline(null);
+                      }
+                    }}
+                    placeholder="Search for an airline"
+                    className="h-12 pr-10"
+                    required
+                    onFocus={() => setShowAirlineResults(true)}
+                  />
+                  <Search className="absolute right-3 top-3.5 w-5 h-5 text-slate-400" />
+                </div>
+                
+                {showAirlineResults && airlineResults.length > 0 && (
+                  <div className="absolute z-10 mt-1 w-full bg-white rounded-md shadow-lg max-h-60 overflow-auto">
+                    <ul className="py-1">
+                      {airlineResults.map((airline) => (
+                        <li
+                          key={airline.iata}
+                          className="px-4 py-2 hover:bg-slate-100 cursor-pointer"
+                          onClick={() => selectAirline(airline)}
+                        >
+                          <div className="font-medium">{airline.name} ({airline.iata})</div>
+                          <div className="text-sm text-slate-500">{airline.country}</div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+
               <div className="space-y-2">
                 <label htmlFor="flightNumber" className="block text-sm font-medium text-slate-700">
                   Flight Number
                 </label>
-                <Input
-                  id="flightNumber"
-                  type="text"
-                  value={flightNumber}
-                  onChange={(e) => setFlightNumber(formatFlightNumber(e.target.value))}
-                  placeholder="Enter flight number (e.g., BA1234)"
-                  className="h-12"
-                  required
-                  pattern="^[A-Z]{2}\d{1,4}$"
-                  title="Please enter a valid flight number (e.g., BA1234)"
-                />
+                <div className="flex items-center space-x-2">
+                  <div className="bg-slate-100 px-3 py-2 rounded-lg text-slate-800 font-mono min-w-[60px] text-center">
+                    {selectedAirline?.iata || '??'}
+                  </div>
+                  <Input
+                    id="flightNumber"
+                    type="text"
+                    value={flightNumber}
+                    onChange={(e) => setFlightNumber(e.target.value.replace(/\D/g, ''))}
+                    placeholder="Enter flight number only (e.g., 1234)"
+                    className="h-12"
+                    required
+                    pattern="^\d{1,4}$"
+                    title="Please enter a valid flight number (numbers only)"
+                  />
+                </div>
+                <p className="text-xs text-slate-500">
+                  Enter only the numeric part of your flight number
+                </p>
               </div>
 
               <div className="space-y-2">
@@ -874,12 +972,14 @@ export function FlightCheck() {
               </h2>
             </div>
 
-            {checkResult && (
+            {checkResult && checkResult.flightDetails && (
               <div className="mb-6 p-4 bg-slate-50 rounded-xl">
-                <p className="font-medium text-slate-700">{checkResult.flightDetails.airline} {checkResult.flightDetails.flightNumber}</p>
+                <p className="font-medium text-slate-700">
+                  {checkResult.flightDetails.airline} {checkResult.flightDetails.flightNumber}
+                </p>
                 <p className="text-sm text-slate-600">
-                  {checkResult.flightDetails.departure.airport} ({checkResult.flightDetails.departure.iata}) → 
-                  {checkResult.flightDetails.arrival.airport} ({checkResult.flightDetails.arrival.iata})
+                  {checkResult.flightDetails.departure?.airport || ''} ({checkResult.flightDetails.departure?.iata || ''}) → 
+                  {checkResult.flightDetails.arrival?.airport || ''} ({checkResult.flightDetails.arrival?.iata || ''})
                 </p>
                 <p className="text-sm text-slate-500">
                   {new Date(flightDate).toLocaleDateString('en-GB', {
@@ -988,7 +1088,7 @@ export function FlightCheck() {
 
       {step === 'results' && checkResult && (
         <FlightCheckResults
-          flightNumber={flightNumber}
+          flightNumber={checkResult.flightDetails?.flightNumber || ''}
           flightDate={flightDate}
           checkResult={checkResult as FlightCheckResponse}
           onReset={handleReset}
