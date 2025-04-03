@@ -596,8 +596,39 @@ export function calculateEligibility(
   // Extract airline's country code from first two letters of flight number
   const airlineCode = flightDetails.flightNumber.substring(0, 2);
   
+  // Map specific airline codes to their correct countries
+  const AIRLINE_COUNTRY_MAP: Record<string, string> = {
+    // UK airlines
+    'BA': 'GBR', // British Airways
+    'VS': 'GBR', // Virgin Atlantic
+    'U2': 'GBR', // EasyJet
+    'LS': 'GBR', // Jet2
+    'BY': 'GBR', // TUI Airways
+    'BE': 'GBR', // Flybe
+    'MT': 'GBR', // Thomas Cook Airlines
+    'T3': 'GBR', // Eastern Airways
+    'LM': 'GBR', // LoganAir
+    'W9': 'GBR', // Wizz Air UK
+    
+    // EU airlines
+    'LH': 'DEU', // Lufthansa (Germany)
+    'EW': 'DEU', // Eurowings (Germany)
+    'AF': 'FRA', // Air France
+    'KL': 'NLD', // KLM (Netherlands)
+    'IB': 'ESP', // Iberia (Spain)
+    'AZ': 'ITA', // ITA Airways (Italy)
+    
+    // Non-EU/UK airlines (for reference)
+    'EK': 'UAE', // Emirates
+    'QR': 'QAT', // Qatar Airways
+    'TK': 'TUR', // Turkish Airlines
+  };
+  
   // Determine airline country based on code using the mapping
-  let airlineCountry = AIRLINE_COUNTRY_MAP[airlineCode] || 'EU';
+  const airlineCountry = AIRLINE_COUNTRY_MAP[airlineCode] || 'EU';
+  
+  // For debugging
+  console.log(`Airline code: ${airlineCode}, mapped country: ${airlineCountry}`);
   
   // Setup route information
   const route = {
@@ -605,6 +636,11 @@ export function calculateEligibility(
     arrivalCountry: flightDetails.arrival.country || 'Europe',
     airlineCountry: airlineCountry,
   };
+  
+  // For debugging
+  console.log(`Route: dep=${route.departureCountry}, arr=${route.arrivalCountry}, airline=${route.airlineCountry}`);
+  const isUK = EligibilityChecker.isUKFlight(route);
+  console.log(`Is UK flight: ${isUK}`);
   
   // Calculate eligibility based on user provided disruption
   const eligibility = EligibilityChecker.checkEligibility(route, disruption, distance);
