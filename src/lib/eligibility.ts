@@ -142,19 +142,22 @@ export class EligibilityChecker {
     regulation: 'EU261' | 'UK261'
   ): number {
     const compensation = regulation === 'EU261' ? EU_COMPENSATION : UK_COMPENSATION;
+    let tier = 'LONG';
+    let amount = compensation.LONG.amount;
 
-    // For short flights
+    // For short flights (up to 1,500km)
     if (distance <= compensation.SHORT.distance) {
-      return compensation.SHORT.amount;
+      tier = 'SHORT';
+      amount = compensation.SHORT.amount;
+    }
+    // For medium flights (1,500-3,500km)
+    else if (distance <= compensation.MEDIUM.distance) {
+      tier = 'MEDIUM';
+      amount = compensation.MEDIUM.amount;
     }
     
-    // For medium flights
-    if (distance <= compensation.MEDIUM.distance) {
-      return compensation.MEDIUM.amount;
-    }
-    
-    // For long flights
-    return compensation.LONG.amount;
+    console.log(`Flight distance: ${distance}km, Tier: ${tier}, Regulation: ${regulation}, Compensation: ${amount}`);
+    return amount;
   }
 
   private static isExtraordinaryCircumstance(reason: string): boolean {

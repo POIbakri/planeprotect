@@ -643,8 +643,17 @@ export function FlightCheck() {
     }
 
     // Calculate distance based on departure and arrival airports
-    const routeKey = `${checkResult.flightDetails.departure?.iata || ''}${checkResult.flightDetails.arrival?.iata || ''}`;
-    const distance = flightDistances[routeKey as keyof typeof flightDistances] || 1500; // Default distance if not found
+    const departureIata = checkResult.flightDetails.departure?.iata || '';
+    const arrivalIata = checkResult.flightDetails.arrival?.iata || '';
+    const routeKey = `${departureIata}${arrivalIata}`;
+    const reverseRouteKey = `${arrivalIata}${departureIata}`;
+    
+    // Try both orientations of the route key, then default to a safe value
+    const distance = flightDistances[routeKey as keyof typeof flightDistances] || 
+                    flightDistances[reverseRouteKey as keyof typeof flightDistances] || 
+                    3600; // Default to a higher safe value to ensure proper compensation
+    
+    console.log(`Flight route: ${routeKey}, Using distance: ${distance}km for compensation calculation`);
     
     // Now calculate eligibility based on user-provided disruption details
     const updatedResult = calculateEligibility(

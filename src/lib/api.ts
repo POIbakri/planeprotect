@@ -73,7 +73,7 @@ const flightDistances: Record<string, number> = {
   'LHRMEX': 8910, // London to Mexico City
   'LHRGIG': 9300, // London to Rio de Janeiro
   'LHRDOH': 5220, // London to Doha
-  'LHRAUX': 5625, // London to Abu Dhabi
+  'LHRAUH': 5625, // London to Abu Dhabi
   'LHRMEL': 16915, // London to Melbourne
   'LHRBNE': 16560, // London to Brisbane
   'LHRPER': 14485, // London to Perth
@@ -151,12 +151,12 @@ const flightDistances: Record<string, number> = {
   'FRALHR': 650,  // Frankfurt to London
   'FRACDG': 450,  // Frankfurt to Paris
   'FRAIST': 1867, // Frankfurt to Istanbul
-  'FRASIA': 9374, // Frankfurt to Singapore
+  'FRASIN': 9374, // Frankfurt to Singapore
   'FRACAI': 2896, // Frankfurt to Cairo
   'FRAHKG': 9230, // Frankfurt to Hong Kong
   'FRAPEK': 7785, // Frankfurt to Beijing
   'FRASFO': 9136, // Frankfurt to San Francisco
-  'FRANZL': 9974, // Frankfurt to Auckland
+  'FRAAKL': 9974, // Frankfurt to Auckland
   'FRANBO': 6430, // Frankfurt to Nairobi
   'FRAPTV': 6990, // Frankfurt to Punta Cana
   'FRACCS': 8455, // Frankfurt to Caracas
@@ -1246,12 +1246,17 @@ export async function checkFlightEligibility(flightData: FlightData): Promise<Co
 
     // Get route key from IATA codes
     const routeKey = `${flightData.departure.iata}${flightData.arrival.iata}`;
+    const reverseRouteKey = `${flightData.arrival.iata}${flightData.departure.iata}`;
     
-    // Get distance from our database or calculate it
+    // Get distance from our database, try both route key orientations
     const distance = flightDistances[routeKey] || 
+                     flightDistances[reverseRouteKey] ||
                      calculateDistance(flightData.departure.iata, flightData.arrival.iata) || 
                      1500; // Default to 1500km if all else fails
 
+    // Log the route and distance information for debugging
+    console.log(`Flight route: ${routeKey}, Distance: ${distance}km`);
+    
     // Pass to eligibility checker
     const result = EligibilityChecker.checkEligibility(
       {
@@ -1306,6 +1311,21 @@ export function calculateEligibility(
   disruption: DisruptionDetails,
   distance: number
 ): FlightCheckResponse {
+  // If distance is not provided, try to look it up from the flightDistances record
+  if (!distance || distance <= 0) {
+    const departureIata = flightDetails.departure.iata;
+    const arrivalIata = flightDetails.arrival.iata;
+    const routeKey = `${departureIata}${arrivalIata}`;
+    const reverseRouteKey = `${arrivalIata}${departureIata}`;
+    
+    distance = flightDistances[routeKey] || 
+               flightDistances[reverseRouteKey] || 
+               calculateDistance(departureIata, arrivalIata) || 
+               1500; // Default to 1500km if all else fails
+    
+    console.log(`Flight route: ${routeKey}, Using calculated distance: ${distance}km`);
+  }
+  
   // Extract airline's country code from first two letters of flight number
   const airlineCode = flightDetails.flightNumber.substring(0, 2);
   
@@ -1384,30 +1404,30 @@ export function calculateEligibility(
   };
   
   // Calculate eligibility based on user provided disruption
-  const eligibility = EligibilityChecker.checkEligibility(route, disruption, distance);
+        const eligibility = EligibilityChecker.checkEligibility(route, disruption, distance);
 
   // Return FlightCheckResponse with both amount and compensation properties
-  return {
+        return {
     ...eligibility,
-    compensation: eligibility.amount,
-    processingTime: '2-3 weeks',
-    flightDetails: {
+          compensation: eligibility.amount,
+          processingTime: '2-3 weeks',
+          flightDetails: {
       airline: flightDetails.airline.name,
       flightNumber: flightDetails.flightNumber,
-      departure: {
+            departure: {
         airport: flightDetails.departure.airport,
         iata: flightDetails.departure.iata,
         terminal: flightDetails.departure.terminal || '',
         country: flightDetails.departure.country,
-      },
-      arrival: {
+            },
+            arrival: {
         airport: flightDetails.arrival.airport,
         iata: flightDetails.arrival.iata,
         terminal: flightDetails.arrival.terminal || '',
         country: flightDetails.arrival.country,
-      },
-    },
-  };
+            },
+          },
+        };
 }
 
 // Create basic flight template with the minimum info needed
