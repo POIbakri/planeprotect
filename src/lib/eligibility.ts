@@ -156,7 +156,7 @@ export class EligibilityChecker {
       amount = compensation.MEDIUM.amount;
     }
     
-    console.log(`Flight distance: ${distance}km, Tier: ${tier}, Regulation: ${regulation}, Compensation: ${amount}`);
+    console.log(`Compensation calculation: Distance=${distance}km, Tier=${tier}, Regulation=${regulation}, Amount=${amount}, ThresholdMedium=${compensation.MEDIUM.distance}km`);
     return amount;
   }
 

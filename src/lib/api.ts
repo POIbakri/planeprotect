@@ -95,6 +95,7 @@ const flightDistances: Record<string, number> = {
   'LGWBGI': 6760, // London Gatwick to Bridgetown (Barbados)
   'LGWCUN': 8145, // London Gatwick to Cancun
   'LGWMIA': 7125, // London Gatwick to Miami
+  'LGWFNC': 2480, // London Gatwick to Funchal (Madeira)
   
   // Manchester routes
   'MANJFK': 5370, // Manchester to New York
@@ -724,6 +725,9 @@ const flightDistances: Record<string, number> = {
   'LHRMBJ': 7800, // London to Montserrat
   'LHRRAB': 6620, // London to Rabat
   'LHRAGD': 2290, // London to Agadir
+  'LHRHBE': 3565, // London to Alexandria (Borg El Arab)
+  'LHRTCP': 3990, // London to Taba
+  'LHRMUH': 3450, // London to Mersa Matruh
   
   // Manchester to holiday resorts
   'MANHGH': 4050, // Manchester to Hurghada
@@ -739,6 +743,10 @@ const flightDistances: Record<string, number> = {
   'MANUVA': 7770, // Manchester to St. Lucia
   'MANCUN': 8260, // Manchester to Cancun
   'MANMGF': 10630, // Manchester to Marsa Alam
+  'MANLXR': 4060, // Manchester to Luxor
+  'MANASW': 3920, // Manchester to Aswan
+  'MANHBE': 3725, // Manchester to Alexandria (Borg El Arab)
+  'MANTCP': 4150, // Manchester to Taba
   
   // Amsterdam to holiday resorts
   'AMSHGH': 3650, // Amsterdam to Hurghada
@@ -750,6 +758,10 @@ const flightDistances: Record<string, number> = {
   'AMSPFO': 2970, // Amsterdam to Paphos
   'AMSHKT': 9560, // Amsterdam to Phuket
   'AMSUSM': 9390, // Amsterdam to Koh Samui
+  'AMSLXR': 3660, // Amsterdam to Luxor
+  'AMSASW': 3520, // Amsterdam to Aswan
+  'AMSMGF': 3700, // Amsterdam to Marsa Alam
+  'AMSHBE': 3325, // Amsterdam to Alexandria (Borg El Arab)
   
   // Paris to holiday resorts
   'CDGHGH': 3675, // Paris to Hurghada
@@ -763,7 +775,10 @@ const flightDistances: Record<string, number> = {
   'CDGMGB': 7675, // Paris to Montego Bay
   'CDGAUQ': 6860, // Paris to Antigua
   'CDGUVA': 6950, // Paris to St. Lucia
-  // 'CDGCUN': 8225, // Paris to Cancun - duplicate entry, already defined above
+  'CDGLXR': 3730, // Paris to Luxor
+  'CDGASW': 3590, // Paris to Aswan
+  'CDGMGF': 3775, // Paris to Marsa Alam
+  'CDGHBE': 3375, // Paris to Alexandria (Borg El Arab)
   
   // Frankfurt to holiday resorts
   'FRAHGH': 3375, // Frankfurt to Hurghada
@@ -778,16 +793,10 @@ const flightDistances: Record<string, number> = {
   'FRAAUQ': 7160, // Frankfurt to Antigua
   'FRAUVA': 7280, // Frankfurt to St. Lucia
   'FRACUN': 8585, // Frankfurt to Cancun
-  
-  // Bangkok connections to nearby beach destinations
-  'BKKHKT': 675, // Bangkok to Phuket
-  'BKKUSM': 485, // Bangkok to Koh Samui
-  'BKKKRB': 645, // Bangkok to Krabi
-  'BKKUTH': 505, // Bangkok to Utapao (Pattaya)
-  'BKKHDX': 550, // Bangkok to Hat Yai
-  'BKKCNX': 580, // Bangkok to Chiang Mai
-  'BKKLPQ': 540, // Bangkok to Lampang
-  'BKKNSN': 140, // Bangkok to Nakhon Si Thammarat
+  'FRALXR': 3480, // Frankfurt to Luxor
+  'FRAASW': 3340, // Frankfurt to Aswan
+  'FRAMGF': 3525, // Frankfurt to Marsa Alam
+  'FRAHBE': 3125, // Frankfurt to Alexandria (Borg El Arab)
   
   // Dubai to holiday destinations
   'DXBHGH': 2325, // Dubai to Hurghada
@@ -807,69 +816,207 @@ const flightDistances: Record<string, number> = {
   'DXBNUN': 11025, // Dubai to Noumea (New Caledonia)
   'DXBNNT': 12300, // Dubai to Nadi (Fiji)
   'DXBPPT': 15620, // Dubai to Papeete (Tahiti)
+  'DXBLXR': 1800, // Dubai to Luxor
+  'DXBASW': 1945, // Dubai to Aswan
+  'DXBMGF': 1905, // Dubai to Marsa Alam
+  'DXBHBE': 2495, // Dubai to Alexandria (Borg El Arab)
+  'DXBTCP': 1215, // Dubai to Taba
   
-  // Popular Caribbean and tropical connections
-  'JFKMBJ': 1590, // New York to Montego Bay
-  'JFKAUQ': 1770, // New York to Antigua
-  'JFKUVA': 1860, // New York to St. Lucia
-  'JFKNER': 1670, // New York to Nevis
-  'JFKBGI': 2090, // New York to Barbados
-  'JFKPOS': 2040, // New York to Port of Spain (Trinidad)
-  'JFKPLS': 1770, // New York to St. Kitts & Nevis
-  'JFKPRX': 1020, // New York to Puerto Rico
-  'JFKCUN': 2050, // New York to Cancun
-  'JFKPUJ': 1560, // New York to Punta Cana
-  'JFKUVF': 1850, // New York to St. Vincent
-  'JFKGCM': 1625, // New York to Grand Cayman
-  'JFKCMW': 2240, // New York to Camaguey (Cuba)
-  'JFKHAV': 1390, // New York to Havana
-  'JFKBDA': 775,  // New York to Bermuda
-  'JFKMHH': 1185, // New York to Marsh Harbour (Bahamas)
-  'JFKNAS': 1101, // New York to Nassau (Bahamas)
-  'JFKMFL': 1090, // New York to Miami FL (using alternative code to avoid duplication with JFK-MIA)
+  // Cairo connections
+  'CAILHR': 3530, // Cairo to London
+  'CAICDG': 3205, // Cairo to Paris
+  'CAIFRA': 2896, // Cairo to Frankfurt
+  'CAIFCO': 2065, // Cairo to Rome
+  'CAIFCOIB': 2065, // Cairo to Rome ibis
+  'CAIAMS': 3211, // Cairo to Amsterdam
+  'CAIMAD': 3212, // Cairo to Madrid
+  'CAIDXB': 2405, // Cairo to Dubai
+  'CAIDOH': 2066, // Cairo to Doha
+  'CAIATH': 1121, // Cairo to Athens
+  'CAIIST': 1227, // Cairo to Istanbul
+  'CAIJFK': 9073, // Cairo to New York
+  'CAILAX': 12035, // Cairo to Los Angeles
+  'CAIPEK': 7840, // Cairo to Beijing
+  'CAIZRH': 2582, // Cairo to Zurich
+  'CAIVIK': 3211, // Cairo to Reykjavik
+  'CAIBRN': 2725, // Cairo to Bern
+  'CAIDME': 7250, // Cairo to Moscow
+  'CAIHAM': 2980, // Cairo to Hamburg
+  'CAIBER': 2630, // Cairo to Berlin
+  'CAIJED': 1050, // Cairo to Jeddah
+  'CAIMED': 900, // Cairo to Medina
+  'CAIADJ': 7750, // Cairo to Amritsar
+  'CAIADD': 3210, // Cairo to Addis Ababa
+  'CAINBO': 3425, // Cairo to Nairobi
+  'CAILAS': 10895, // Cairo to Las Vegas
+  'CAIYVR': 10900, // Cairo to Vancouver
+  'CAIKWI': 1339, // Cairo to Kuwait
+  'CAIMCT': 2880, // Cairo to Muscat
+  'CAIMAA': 4675, // Cairo to Chennai
+  'CAIDEL': 4200, // Cairo to Delhi
+  'CAIBOM': 4000, // Cairo to Mumbai
+  'CAICSB': 3380, // Cairo to Casablanca (renamed from CAICMN to avoid duplicate key)
   
-  // Madrid to holiday resorts
-  'MADHGH': 3630, // Madrid to Hurghada
-  'MADSHM': 3730, // Madrid to Sharm El Sheikh
-  'MADALY': 3005, // Madrid to Antalya
-  'MADDLM': 3010, // Madrid to Dalaman
-  'MADBJV': 2850, // Madrid to Bodrum
-  'MADLCA': 3470, // Madrid to Larnaca
-  'MADPFO': 3490, // Madrid to Paphos
-  'MADMBJ': 7180, // Madrid to Montego Bay
-  'MADAUQ': 6495, // Madrid to Antigua
-  'MADUVA': 6630, // Madrid to St. Lucia
-  'MADCUN': 7750, // Madrid to Cancun
+  // Additional Egyptian city pairs
+  'HRGDXB': 2325, // Hurghada to Dubai
+  'HRGJFK': 9640, // Hurghada to New York
+  'HRGCDG': 3675, // Hurghada to Paris
+  'HRGFRA': 3375, // Hurghada to Frankfurt
+  'HRGLHR': 3890, // Hurghada to London
+  'HRGAMS': 3650, // Hurghada to Amsterdam
+  'HRGCAI': 450, // Hurghada to Cairo
+  'HRGLXR': 235, // Hurghada to Luxor
+  'HRGSHM': 145, // Hurghada to Sharm El Sheikh
+  'HRGASW': 280, // Hurghada to Aswan
   
-  // Rome to holiday resorts
-  'FCOHGH': 2770, // Rome to Hurghada
-  'FCOSHM': 2795, // Rome to Sharm El Sheikh
-  'FCOALY': 1520, // Rome to Antalya
-  'FCODLM': 1790, // Rome to Dalaman
-  'FCOBJV': 1640, // Rome to Bodrum
-  'FCOLCA': 2050, // Rome to Larnaca
-  'FCOPFO': 2075, // Rome to Paphos
-  'FCOHKT': 8690, // Rome to Phuket
-  'FCOAUE': 460,  // Rome to Bucharest (Romania)
+  'SHMDXB': 2270, // Sharm El Sheikh to Dubai
+  'SHMJFK': 9720, // Sharm El Sheikh to New York
+  'SHMCDG': 3760, // Sharm El Sheikh to Paris
+  'SHMFRA': 3440, // Sharm El Sheikh to Frankfurt
+  'SHMLHR': 3980, // Sharm El Sheikh to London
+  'SHMAMS': 3720, // Sharm El Sheikh to Amsterdam
+  'SHMCAI': 385, // Sharm El Sheikh to Cairo
+  'SHMLXR': 345, // Sharm El Sheikh to Luxor
+  'SHMASW': 390, // Sharm El Sheikh to Aswan
   
-  // More connections to exotic destinations
-  'LHRBRC': 10900, // London to Barbados 
-  'LHRDSM': 7530, // London to Des Moines
-  'LHRCVT': 6650, // London to Covilha
-  'LHRPOZ': 1170, // London to Poznan
-  'LHRSAL': 2390, // London to San Salvador
-  'LHRMKC': 7030, // London to Kansas City
-  'LHRBSL': 770,  // London to Basel
-  'LHRGSO': 6940, // London to Greensboro
-  'LHRHLZ': 290,  // London to St Helier (Jersey)
-  'LHRLYZ': 1180, // London to Limoges
-  'LHRXRY': 18750 // London to Jiuzhai Valley (China)
+  'LXRDXB': 1800, // Luxor to Dubai
+  'LXRJFK': 9470, // Luxor to New York
+  'LXRCDG': 3730, // Luxor to Paris
+  'LXRFRA': 3480, // Luxor to Frankfurt
+  'LXRLHR': 3900, // Luxor to London
+  'LXRSHM': 345, // Luxor to Sharm El Sheikh
+  'LXRCAI': 505, // Luxor to Cairo
+  'LXRASM': 3660, // Luxor to Amsterdam
+  
+  // Add some regional airport pairs
+  'CAIRAK': 3250, // Cairo to Marrakesh
+  'CAITUN': 2175, // Cairo to Tunis
+  'CAIALG': 2575, // Cairo to Algiers
+  'CAIACC': 3785, // Cairo to Accra
+  'CAILOS': 3715, // Cairo to Lagos
+  'CAIDAR': 3525, // Cairo to Dar es Salaam
+  'CAIHRE': 4095, // Cairo to Harare
+  'CAIJNB': 5075, // Cairo to Johannesburg
+  'CAICPT': 6650, // Cairo to Cape Town
+  'CAIBEY': 610, // Cairo to Beirut
+  'CAIAMM': 500, // Cairo to Amman
+  
+  // Additional European routes to Egyptian destinations
+  'BCNHGH': 3410, // Barcelona to Hurghada
+  'BCNSHM': 3495, // Barcelona to Sharm El Sheikh
+  'BCNLXR': 3465, // Barcelona to Luxor
+  'BCNCAI': 3080, // Barcelona to Cairo
+  
+  'CPHCAI': 3120, // Copenhagen to Cairo
+  'CPHHGH': 3690, // Copenhagen to Hurghada
+  'CPHSHM': 3770, // Copenhagen to Sharm El Sheikh
+  
+  'MUCAI': 2695, // Munich to Cairo
+  'MUHGH': 3165, // Munich to Hurghada
+  'MUSHM': 3230, // Munich to Sharm El Sheikh
+  
+  'VIECAI': 2320, // Vienna to Cairo
+  'VIEHRG': 2950, // Vienna to Hurghada
+  'VIESHM': 3010, // Vienna to Sharm El Sheikh
+  
+  'ZRHCAI': 2582, // Zurich to Cairo
+  'ZRHHRG': 3110, // Zurich to Hurghada
+  'ZRHSHM': 3175, // Zurich to Sharm El Sheikh
+  
+  'BRUCAI': 3235, // Brussels to Cairo
+  'BRUHRG': 3645, // Brussels to Hurghada
+  'BRUSHM': 3710, // Brussels to Sharm El Sheikh
+  
+  'ATHHGH': 1050, // Athens to Hurghada
+  'ATHSHM': 985, // Athens to Sharm El Sheikh
+  'ATHLXR': 1270, // Athens to Luxor
+  'ATHCAI': 1121, // Athens to Cairo
+  
+  // New African routes
+  'CAISEZ': 3980, // Cairo to Seychelles
+  'CAIMRU': 5010, // Cairo to Mauritius
+  'CAITNR': 5845, // Cairo to Antananarivo
+  
+  // Europe to Africa routes
+  'LHRLOS': 5075, // London to Lagos
+  'LHRACC': 5130, // London to Accra
+  'LHRALG': 1805, // London to Algiers
+  'LHRTUN': 1835, // London to Tunis
+  'LHRADD': 5830, // London to Addis Ababa
+  'LHRDAR': 7305, // London to Dar es Salaam
+  'LHRHRE': 8250, // London to Harare
+  'LHRMRS': 9700, // London to Mauritius (alternate key, renamed from LHRMRU to avoid duplication)
+  
+  'CDGLOS': 4245, // Paris to Lagos
+  'CDGACC': 4310, // Paris to Accra
+  'CDGALG': 1305, // Paris to Algiers
+  'CDGTUN': 1270, // Paris to Tunis
+  'CDGADD': 5220, // Paris to Addis Ababa
+  'CDGDAR': 6700, // Paris to Dar es Salaam
+  'CDGHRE': 7700, // Paris to Harare
+  'CDGMRU': 9100, // Paris to Mauritius
+  
+  'FRAACC': 4910, // Frankfurt to Accra
+  'FRALOS': 4860, // Frankfurt to Lagos
+  'FRADAR': 6850, // Frankfurt to Dar es Salaam
+  'FRAADD': 5050, // Frankfurt to Addis Ababa
+  'FRATUN': 1580, // Frankfurt to Tunis
+  'FRAALG': 1640, // Frankfurt to Algiers
+  
+  // Asian connections to Egypt
+  'DELHGH': 4625, // Delhi to Hurghada
+  'DELSHM': 4590, // Delhi to Sharm El Sheikh
+  'DELCAI': 4200, // Delhi to Cairo
+  'DELLXR': 4400, // Delhi to Luxor
+  
+  'BOMCAI': 4000, // Mumbai to Cairo
+  'BOMHRG': 4380, // Mumbai to Hurghada
+  'BOMSHM': 4345, // Mumbai to Sharm El Sheikh
+  
+  'PEKHRG': 7640, // Beijing to Hurghada
+  'PEKSHM': 7610, // Beijing to Sharm El Sheikh
+  'PEKCAI': 7840, // Beijing to Cairo
+  
+  'CANHGH': 8060, // Guangzhou to Hurghada
+  'CANSHM': 8035, // Guangzhou to Sharm El Sheikh
+  'CANCAI': 8280, // Guangzhou to Cairo
+  
+  'SINHGH': 7250, // Singapore to Hurghada
+  'SINSHM': 7220, // Singapore to Sharm El Sheikh
+  'SINCAI': 8070, // Singapore to Cairo
+  
+  'BKKCAI': 7380, // Bangkok to Cairo
+  'BKKHRG': 7070, // Bangkok to Hurghada
+  'BKKSHM': 7045, // Bangkok to Sharm El Sheikh
+  
+  // Adding additional airports in Europe and Middle East to worldwide routes
+  'LISBOM': 8575, // Lisbon to Mumbai
+  'LISDEL': 8790, // Lisbon to Delhi
+  'LISCAI': 3470, // Lisbon to Cairo
+  'LISDXB': 5825, // Lisbon to Dubai
+  'LISSIN': 11980, // Lisbon to Singapore
+  'LISBKK': 10840, // Lisbon to Bangkok
+  
+  'PRGLAX': 9790, // Prague to Los Angeles
+  'PRGDXB': 4390, // Prague to Dubai
+  'PRGCAI': 2600, // Prague to Cairo
+  'PRGJFK': 6600, // Prague to New York
+  'PRGSIN': 9725, // Prague to Singapore
+  'PRGBKK': 8410, // Prague to Bangkok
+  
+  'WAWCAI': 2525, // Warsaw to Cairo
+  'WAWDXB': 4050, // Warsaw to Dubai
+  'WAWBKK': 8195, // Warsaw to Bangkok
+  'WAWSIN': 9510, // Warsaw to Singapore
+  'WAWJFK': 6850, // Warsaw to New York
+  'WAWLAX': 9700, // Warsaw to Los Angeles
 };
 
 // Fallback distance calculation using Haversine formula and airport coordinates
 const airportCoordinates: Record<string, [number, number]> = {
   // Major airports [latitude, longitude]
   'LHR': [51.4700, -0.4543],   // London Heathrow
+  'LGW': [51.1537, -0.1821],   // London Gatwick
   'CDG': [49.0097, 2.5479],    // Paris Charles de Gaulle
   'FRA': [50.0379, 8.5622],    // Frankfurt
   'MAD': [40.4983, -3.5676],   // Madrid
@@ -923,7 +1070,62 @@ const airportCoordinates: Record<string, [number, number]> = {
   'SVO': [55.9736, 37.4125],   // Moscow
   'LED': [59.8003, 30.2625],   // St. Petersburg
   'DEL': [28.5562, 77.1000],   // Delhi
-  'BOM': [19.0896, 72.8656]    // Mumbai
+  'BOM': [19.0896, 72.8656],   // Mumbai
+  // Adding more Egyptian airports
+  'HRG': [27.1783, 33.7994],   // Hurghada 
+  'SSH': [27.9773, 34.3946],   // Sharm El Sheikh
+  'LXR': [25.6710, 32.7066],   // Luxor
+  'ASW': [23.9644, 32.8199],   // Aswan
+  'ALY': [31.1839, 29.9489],   // Alexandria (El Nouzha)
+  'HBE': [30.9176, 29.6964],   // Alexandria (Borg El Arab)
+  'MGF': [25.5569, 34.5836],   // Marsa Alam
+  'SPX': [31.3972, 27.0225],   // Sphinx International Airport
+  'MUH': [31.3256, 27.2207],   // Mersa Matruh
+  'TCP': [29.5877, 34.7781],   // Taba
+  // Adding more African airports
+  'HRE': [-17.9318, 31.0928],  // Harare
+  'LOS': [6.5774, 3.3215],     // Lagos
+  'ACC': [5.6052, -0.1670],    // Accra
+  'DKR': [14.7397, -17.4902],  // Dakar
+  'ADD': [8.9778, 38.7993],    // Addis Ababa
+  'TNR': [-18.7969, 47.4788],  // Antananarivo
+  'MRU': [-20.4303, 57.6836],  // Mauritius
+  'SEZ': [-4.6741, 55.5218],   // Seychelles
+  'DAR': [-6.8780, 39.2026],   // Dar es Salaam
+  'TUN': [36.8512, 10.2272],   // Tunis
+  'ALG': [36.6910, 3.2153],    // Algiers
+  'CMN': [33.3675, -7.5900],   // Casablanca
+  'RAK': [31.6069, -8.0363],   // Marrakesh
+  'LPA': [27.9319, -15.3866],  // Gran Canaria
+  'TFS': [28.0445, -16.5725],  // Tenerife
+  'FNC': [32.6942, -16.7781],  // Funchal (Madeira)
+  // Adding more Middle Eastern airports
+  'AMM': [31.7226, 35.9932],   // Amman
+  'BEY': [33.8208, 35.4885],   // Beirut
+  'BAH': [26.2708, 50.6336],   // Bahrain
+  'MCT': [23.5931, 58.2844],   // Muscat
+  'KWI': [29.2266, 47.9689],   // Kuwait
+  'THR': [35.6892, 51.3134],   // Tehran
+  'JED': [21.6795, 39.1564],   // Jeddah
+  'MED': [24.5545, 39.7051],   // Medina
+  'DMM': [26.4712, 49.7977],   // Dammam
+  // Adding more Asian airports
+  'MLE': [4.1918, 73.5290],    // Male (Maldives)
+  'CMB': [7.1801, 79.8841],    // Colombo
+  'BLR': [13.1979, 77.7063],   // Bangalore
+  'HYD': [17.2404, 78.4294],   // Hyderabad
+  'MAA': [12.9941, 80.1709],   // Chennai
+  'CGK': [-6.1255, 106.6560],  // Jakarta
+  'DPS': [-8.7480, 115.1675],  // Denpasar (Bali)
+  'HAN': [21.2187, 105.8047],  // Hanoi
+  'SGN': [10.8188, 106.6520],  // Ho Chi Minh City
+  'CAN': [23.3959, 113.3080],  // Guangzhou
+  'CTU': [30.5784, 103.9473],  // Chengdu
+  'XIY': [34.4471, 108.7516],  // Xi'an
+  'HND': [35.5493, 139.7798],  // Tokyo Haneda
+  'KIX': [34.4344, 135.2436],  // Osaka
+  'TPE': [25.0797, 121.2342],  // Taipei
+  'MNL': [14.5086, 121.0198]   // Manila
 };
 
 /**
@@ -935,8 +1137,33 @@ const airportCoordinates: Record<string, [number, number]> = {
 export function calculateDistance(departure: string, arrival: string): number | undefined {
   // First check if we have this route in our predefined distances
   const routeKey = `${departure}${arrival}`;
+  const reverseRouteKey = `${arrival}${departure}`;
+  
   if (flightDistances[routeKey]) {
+    console.log(`Using predefined distance for ${routeKey}: ${flightDistances[routeKey]}km`);
     return flightDistances[routeKey];
+  }
+  
+  if (flightDistances[reverseRouteKey]) {
+    console.log(`Using predefined distance for ${reverseRouteKey}: ${flightDistances[reverseRouteKey]}km`);
+    return flightDistances[reverseRouteKey];
+  }
+  
+  // Important routes with known distances that might not be in flightDistances
+  const knownRoutes: Record<string, number> = {
+    'LGWFNC': 2480, // London Gatwick to Funchal (Madeira)
+    'FNCLGW': 2480, // Funchal to London Gatwick
+    // Add other important routes here
+  };
+  
+  if (knownRoutes[routeKey]) {
+    console.log(`Using known distance for ${routeKey}: ${knownRoutes[routeKey]}km`);
+    return knownRoutes[routeKey];
+  }
+  
+  if (knownRoutes[reverseRouteKey]) {
+    console.log(`Using known distance for ${reverseRouteKey}: ${knownRoutes[reverseRouteKey]}km`);
+    return knownRoutes[reverseRouteKey];
   }
   
   // Otherwise calculate using coordinates if available
@@ -944,6 +1171,7 @@ export function calculateDistance(departure: string, arrival: string): number | 
   const arrCoords = airportCoordinates[arrival];
   
   if (!depCoords || !arrCoords) {
+    console.warn(`Missing coordinates for ${departure} or ${arrival}, using default distance of 1500km`);
     // Return a default value if coordinates not found
     return 1500; // A reasonable medium-distance default
   }
@@ -957,7 +1185,10 @@ export function calculateDistance(departure: string, arrival: string): number | 
     Math.cos(toRad(depCoords[0])) * Math.cos(toRad(arrCoords[0])) * 
     Math.sin(dLon/2) * Math.sin(dLon/2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  return Math.round(R * c); // Round to nearest kilometer
+  const calculatedDistance = Math.round(R * c); // Round to nearest kilometer
+  
+  console.log(`Calculated distance from ${departure} to ${arrival}: ${calculatedDistance}km`);
+  return calculatedDistance;
 }
 
 function toRad(degrees: number): number {
@@ -1744,7 +1975,7 @@ export async function searchAirports(query: string): Promise<Airport[]> {
       return [];
     }
 
-    // Mock data for testing
+    // Comprehensive airports list that includes all airports from airportCoordinates
     const airports = [
       // UK Airports
       { iata: 'LHR', name: 'London Heathrow', city: 'London', country: 'United Kingdom' },
@@ -1780,6 +2011,7 @@ export async function searchAirports(query: string): Promise<Airport[]> {
       { iata: 'MXP', name: 'Milan Malpensa', city: 'Milan', country: 'Italy' },
       { iata: 'BRU', name: 'Brussels', city: 'Brussels', country: 'Belgium' },
       { iata: 'ZRH', name: 'Zurich', city: 'Zurich', country: 'Switzerland' },
+      { iata: 'GVA', name: 'Geneva', city: 'Geneva', country: 'Switzerland' },
       { iata: 'CPH', name: 'Copenhagen', city: 'Copenhagen', country: 'Denmark' },
       { iata: 'ARN', name: 'Stockholm Arlanda', city: 'Stockholm', country: 'Sweden' },
       { iata: 'HEL', name: 'Helsinki Vantaa', city: 'Helsinki', country: 'Finland' },
@@ -1791,48 +2023,140 @@ export async function searchAirports(query: string): Promise<Airport[]> {
       { iata: 'VIE', name: 'Vienna', city: 'Vienna', country: 'Austria' },
       { iata: 'LIS', name: 'Lisbon', city: 'Lisbon', country: 'Portugal' },
       { iata: 'ATH', name: 'Athens', city: 'Athens', country: 'Greece' },
-      { iata: 'IST', name: 'Istanbul', city: 'Istanbul', country: 'Turkey' },
-
+      
       // Middle East Airports
+      { iata: 'IST', name: 'Istanbul', city: 'Istanbul', country: 'Turkey' },
       { iata: 'DXB', name: 'Dubai International', city: 'Dubai', country: 'UAE' },
       { iata: 'AUH', name: 'Abu Dhabi', city: 'Abu Dhabi', country: 'UAE' },
       { iata: 'DOH', name: 'Doha Hamad', city: 'Doha', country: 'Qatar' },
-      { iata: 'BAH', name: 'Bahrain', city: 'Manama', country: 'Bahrain' },
-      { iata: 'KWI', name: 'Kuwait', city: 'Kuwait City', country: 'Kuwait' },
-      { iata: 'RUH', name: 'Riyadh', city: 'Riyadh', country: 'Saudi Arabia' },
-      { iata: 'JED', name: 'Jeddah', city: 'Jeddah', country: 'Saudi Arabia' },
-      { iata: 'TLV', name: 'Tel Aviv', city: 'Tel Aviv', country: 'Israel' },
-      { iata: 'AMM', name: 'Amman', city: 'Amman', country: 'Jordan' },
-      { iata: 'BEY', name: 'Beirut', city: 'Beirut', country: 'Lebanon' },
-
+      { iata: 'BAH', name: 'Bahrain International', city: 'Manama', country: 'Bahrain' },
+      { iata: 'KWI', name: 'Kuwait International', city: 'Kuwait City', country: 'Kuwait' },
+      { iata: 'RUH', name: 'King Khalid International', city: 'Riyadh', country: 'Saudi Arabia' },
+      { iata: 'JED', name: 'King Abdulaziz International', city: 'Jeddah', country: 'Saudi Arabia' },
+      { iata: 'MED', name: 'Prince Mohammad Bin Abdulaziz', city: 'Medina', country: 'Saudi Arabia' },
+      { iata: 'DMM', name: 'King Fahd International', city: 'Dammam', country: 'Saudi Arabia' },
+      { iata: 'TLV', name: 'Ben Gurion International', city: 'Tel Aviv', country: 'Israel' },
+      { iata: 'AMM', name: 'Queen Alia International', city: 'Amman', country: 'Jordan' },
+      { iata: 'BEY', name: 'Beirut Rafic Hariri', city: 'Beirut', country: 'Lebanon' },
+      { iata: 'MCT', name: 'Muscat International', city: 'Muscat', country: 'Oman' },
+      { iata: 'THR', name: 'Imam Khomeini International', city: 'Tehran', country: 'Iran' },
+      
       // Asian Airports
-      { iata: 'HKG', name: 'Hong Kong', city: 'Hong Kong', country: 'China' },
+      { iata: 'HKG', name: 'Hong Kong International', city: 'Hong Kong', country: 'China' },
       { iata: 'PEK', name: 'Beijing Capital', city: 'Beijing', country: 'China' },
       { iata: 'PVG', name: 'Shanghai Pudong', city: 'Shanghai', country: 'China' },
+      { iata: 'CAN', name: 'Guangzhou Baiyun', city: 'Guangzhou', country: 'China' },
+      { iata: 'CTU', name: 'Chengdu Shuangliu', city: 'Chengdu', country: 'China' },
+      { iata: 'XIY', name: 'Xi\'an Xianyang', city: 'Xi\'an', country: 'China' },
       { iata: 'NRT', name: 'Tokyo Narita', city: 'Tokyo', country: 'Japan' },
       { iata: 'HND', name: 'Tokyo Haneda', city: 'Tokyo', country: 'Japan' },
+      { iata: 'KIX', name: 'Osaka Kansai', city: 'Osaka', country: 'Japan' },
       { iata: 'ICN', name: 'Seoul Incheon', city: 'Seoul', country: 'South Korea' },
       { iata: 'SIN', name: 'Singapore Changi', city: 'Singapore', country: 'Singapore' },
       { iata: 'BKK', name: 'Bangkok Suvarnabhumi', city: 'Bangkok', country: 'Thailand' },
-      { iata: 'KUL', name: 'Kuala Lumpur', city: 'Kuala Lumpur', country: 'Malaysia' },
-      { iata: 'DEL', name: 'Delhi', city: 'Delhi', country: 'India' },
-      { iata: 'BOM', name: 'Mumbai', city: 'Mumbai', country: 'India' },
-      { iata: 'MNL', name: 'Manila', city: 'Manila', country: 'Philippines' },
-      { iata: 'CGK', name: 'Jakarta', city: 'Jakarta', country: 'Indonesia' },
-
+      { iata: 'HKT', name: 'Phuket International', city: 'Phuket', country: 'Thailand' },
+      { iata: 'USM', name: 'Samui International', city: 'Koh Samui', country: 'Thailand' },
+      { iata: 'KRB', name: 'Krabi International', city: 'Krabi', country: 'Thailand' },
+      { iata: 'KUL', name: 'Kuala Lumpur International', city: 'Kuala Lumpur', country: 'Malaysia' },
+      { iata: 'DEL', name: 'Indira Gandhi International', city: 'Delhi', country: 'India' },
+      { iata: 'BOM', name: 'Chhatrapati Shivaji International', city: 'Mumbai', country: 'India' },
+      { iata: 'BLR', name: 'Kempegowda International', city: 'Bangalore', country: 'India' },
+      { iata: 'HYD', name: 'Rajiv Gandhi International', city: 'Hyderabad', country: 'India' },
+      { iata: 'MAA', name: 'Chennai International', city: 'Chennai', country: 'India' },
+      { iata: 'MNL', name: 'Ninoy Aquino International', city: 'Manila', country: 'Philippines' },
+      { iata: 'CGK', name: 'Soekarno-Hatta International', city: 'Jakarta', country: 'Indonesia' },
+      { iata: 'DPS', name: 'Ngurah Rai International', city: 'Denpasar', country: 'Indonesia' },
+      { iata: 'HAN', name: 'Noi Bai International', city: 'Hanoi', country: 'Vietnam' },
+      { iata: 'SGN', name: 'Tan Son Nhat International', city: 'Ho Chi Minh City', country: 'Vietnam' },
+      { iata: 'TPE', name: 'Taiwan Taoyuan International', city: 'Taipei', country: 'Taiwan' },
+      { iata: 'MLE', name: 'Velana International', city: 'Male', country: 'Maldives' },
+      { iata: 'CMB', name: 'Bandaranaike International', city: 'Colombo', country: 'Sri Lanka' },
+      
       // North American Airports
       { iata: 'JFK', name: 'New York JFK', city: 'New York', country: 'USA' },
-      { iata: 'EWR', name: 'Newark', city: 'New York', country: 'USA' },
-      { iata: 'LAX', name: 'Los Angeles', city: 'Los Angeles', country: 'USA' },
+      { iata: 'EWR', name: 'Newark Liberty International', city: 'New York', country: 'USA' },
+      { iata: 'LAX', name: 'Los Angeles International', city: 'Los Angeles', country: 'USA' },
       { iata: 'ORD', name: 'Chicago O\'Hare', city: 'Chicago', country: 'USA' },
-      { iata: 'DFW', name: 'Dallas/Fort Worth', city: 'Dallas', country: 'USA' },
-      { iata: 'SFO', name: 'San Francisco', city: 'San Francisco', country: 'USA' },
-      { iata: 'MIA', name: 'Miami', city: 'Miami', country: 'USA' },
-      { iata: 'BOS', name: 'Boston', city: 'Boston', country: 'USA' },
-      { iata: 'SEA', name: 'Seattle', city: 'Seattle', country: 'USA' },
+      { iata: 'DFW', name: 'Dallas/Fort Worth International', city: 'Dallas', country: 'USA' },
+      { iata: 'SFO', name: 'San Francisco International', city: 'San Francisco', country: 'USA' },
+      { iata: 'MIA', name: 'Miami International', city: 'Miami', country: 'USA' },
+      { iata: 'BOS', name: 'Boston Logan International', city: 'Boston', country: 'USA' },
+      { iata: 'SEA', name: 'Seattle-Tacoma International', city: 'Seattle', country: 'USA' },
       { iata: 'YYZ', name: 'Toronto Pearson', city: 'Toronto', country: 'Canada' },
-      { iata: 'YUL', name: 'Montreal', city: 'Montreal', country: 'Canada' },
-      { iata: 'YVR', name: 'Vancouver', city: 'Vancouver', country: 'Canada' },
+      { iata: 'YUL', name: 'Montreal-Trudeau', city: 'Montreal', country: 'Canada' },
+      { iata: 'YVR', name: 'Vancouver International', city: 'Vancouver', country: 'Canada' },
+      { iata: 'MEX', name: 'Mexico City International', city: 'Mexico City', country: 'Mexico' },
+      
+      // South American Airports
+      { iata: 'GRU', name: 'São Paulo-Guarulhos International', city: 'São Paulo', country: 'Brazil' },
+      { iata: 'GIG', name: 'Rio de Janeiro-Galeão International', city: 'Rio de Janeiro', country: 'Brazil' },
+      { iata: 'EZE', name: 'Ministro Pistarini International', city: 'Buenos Aires', country: 'Argentina' },
+      { iata: 'SCL', name: 'Comodoro Arturo Merino Benítez', city: 'Santiago', country: 'Chile' },
+      
+      // African Airports
+      { iata: 'CAI', name: 'Cairo International', city: 'Cairo', country: 'Egypt' },
+      { iata: 'HRG', name: 'Hurghada International', city: 'Hurghada', country: 'Egypt' },
+      { iata: 'SSH', name: 'Sharm El Sheikh International', city: 'Sharm El Sheikh', country: 'Egypt' },
+      { iata: 'LXR', name: 'Luxor International', city: 'Luxor', country: 'Egypt' },
+      { iata: 'ASW', name: 'Aswan International', city: 'Aswan', country: 'Egypt' },
+      { iata: 'ALY', name: 'Alexandria El Nouzha', city: 'Alexandria', country: 'Egypt' },
+      { iata: 'HBE', name: 'Alexandria Borg El Arab', city: 'Alexandria', country: 'Egypt' },
+      { iata: 'MGF', name: 'Marsa Alam International', city: 'Marsa Alam', country: 'Egypt' },
+      { iata: 'SPX', name: 'Sphinx International', city: 'Giza', country: 'Egypt' },
+      { iata: 'MUH', name: 'Mersa Matruh', city: 'Mersa Matruh', country: 'Egypt' },
+      { iata: 'TCP', name: 'Taba International', city: 'Taba', country: 'Egypt' },
+      { iata: 'JNB', name: 'O.R. Tambo International', city: 'Johannesburg', country: 'South Africa' },
+      { iata: 'CPT', name: 'Cape Town International', city: 'Cape Town', country: 'South Africa' },
+      { iata: 'NBO', name: 'Jomo Kenyatta International', city: 'Nairobi', country: 'Kenya' },
+      { iata: 'LOS', name: 'Murtala Muhammed International', city: 'Lagos', country: 'Nigeria' },
+      { iata: 'CMN', name: 'Mohammed V International', city: 'Casablanca', country: 'Morocco' },
+      { iata: 'RAK', name: 'Marrakesh Menara', city: 'Marrakesh', country: 'Morocco' },
+      { iata: 'TUN', name: 'Tunis Carthage', city: 'Tunis', country: 'Tunisia' },
+      { iata: 'ALG', name: 'Houari Boumediene', city: 'Algiers', country: 'Algeria' },
+      { iata: 'ACC', name: 'Kotoka International', city: 'Accra', country: 'Ghana' },
+      { iata: 'DKR', name: 'Blaise Diagne International', city: 'Dakar', country: 'Senegal' },
+      { iata: 'ADD', name: 'Bole International', city: 'Addis Ababa', country: 'Ethiopia' },
+      { iata: 'DAR', name: 'Julius Nyerere International', city: 'Dar es Salaam', country: 'Tanzania' },
+      { iata: 'HRE', name: 'Robert Gabriel Mugabe', city: 'Harare', country: 'Zimbabwe' },
+      { iata: 'SEZ', name: 'Seychelles International', city: 'Victoria', country: 'Seychelles' },
+      { iata: 'MRU', name: 'Sir Seewoosagur Ramgoolam', city: 'Port Louis', country: 'Mauritius' },
+      { iata: 'TNR', name: 'Ivato International', city: 'Antananarivo', country: 'Madagascar' },
+      
+      // Europe Holiday Destinations
+      { iata: 'PMI', name: 'Palma de Mallorca', city: 'Palma', country: 'Spain' },
+      { iata: 'IBZ', name: 'Ibiza', city: 'Ibiza', country: 'Spain' },
+      { iata: 'MAH', name: 'Menorca', city: 'Mahon', country: 'Spain' },
+      { iata: 'TFS', name: 'Tenerife South', city: 'Tenerife', country: 'Spain' },
+      { iata: 'LPA', name: 'Gran Canaria', city: 'Las Palmas', country: 'Spain' },
+      { iata: 'ACE', name: 'Lanzarote', city: 'Arrecife', country: 'Spain' },
+      { iata: 'FUE', name: 'Fuerteventura', city: 'Puerto del Rosario', country: 'Spain' },
+      { iata: 'FNC', name: 'Madeira', city: 'Funchal', country: 'Portugal' },
+      { iata: 'FAO', name: 'Faro', city: 'Faro', country: 'Portugal' },
+      { iata: 'CFU', name: 'Corfu', city: 'Corfu', country: 'Greece' },
+      { iata: 'RHO', name: 'Rhodes', city: 'Rhodes', country: 'Greece' },
+      { iata: 'JTR', name: 'Santorini', city: 'Thira', country: 'Greece' },
+      { iata: 'JMK', name: 'Mykonos', city: 'Mykonos', country: 'Greece' },
+      { iata: 'HER', name: 'Heraklion', city: 'Crete', country: 'Greece' },
+      { iata: 'CHQ', name: 'Chania', city: 'Crete', country: 'Greece' },
+      { iata: 'KGS', name: 'Kos', city: 'Kos', country: 'Greece' },
+      { iata: 'MLA', name: 'Malta International', city: 'Valletta', country: 'Malta' },
+      
+      // Turkish & Cyprus Holiday Destinations 
+      { iata: 'AYT', name: 'Antalya', city: 'Antalya', country: 'Turkey' },
+      { iata: 'DLM', name: 'Dalaman', city: 'Dalaman', country: 'Turkey' },
+      { iata: 'BJV', name: 'Bodrum Milas', city: 'Bodrum', country: 'Turkey' },
+      { iata: 'LCA', name: 'Larnaca International', city: 'Larnaca', country: 'Cyprus' },
+      { iata: 'PFO', name: 'Paphos International', city: 'Paphos', country: 'Cyprus' },
+      
+      // Caribbean/Mexico Destinations
+      { iata: 'CUN', name: 'Cancun International', city: 'Cancun', country: 'Mexico' },
+      { iata: 'MBJ', name: 'Sangster International', city: 'Montego Bay', country: 'Jamaica' },
+      { iata: 'ANU', name: 'V. C. Bird International', city: 'St. John\'s', country: 'Antigua and Barbuda' },
+      { iata: 'UVF', name: 'Hewanorra International', city: 'Vieux Fort', country: 'Saint Lucia' },
+      
+      // Russia Airports
+      { iata: 'SVO', name: 'Sheremetyevo International', city: 'Moscow', country: 'Russia' },
+      { iata: 'LED', name: 'Pulkovo International', city: 'St. Petersburg', country: 'Russia' }
     ];
     
     const searchQuery = query.toLowerCase().trim();

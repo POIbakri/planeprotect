@@ -441,7 +441,7 @@ const flightDistances = {
   'JFKHNL': 8000, // New York to Honolulu
 } as const;
 
-export function FlightCheck() {
+export function FlightCheck({ onSuccess }: { onSuccess?: () => void }) {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [airlineQuery, setAirlineQuery] = useState('');
@@ -710,21 +710,10 @@ export function FlightCheck() {
   };
 
   const handleContinue = () => {
-    if (!checkResult) return;
-    
-    if (!user) {
-      navigate('/login', { 
-        state: { from: '/claim' }
-      });
+    if (onSuccess) {
+      onSuccess();
     } else {
-      navigate('/claim', {
-        state: {
-          flightNumber: checkResult.flightDetails?.flightNumber || '',
-          flightDate,
-          compensation: checkResult.compensation,
-          disruption: checkResult.disruption,
-        }
-      });
+      user ? navigate('/claim') : navigate('/login');
     }
   };
 
@@ -738,87 +727,116 @@ export function FlightCheck() {
           exit={{ opacity: 0, y: -20 }}
           className="w-full max-w-lg mx-auto px-4 sm:px-0"
         >
-          <div className="bg-white/90 backdrop-blur-xl rounded-[2rem] p-6 sm:p-10 shadow-sm border border-slate-100">
+          <div className="bg-white/70 backdrop-blur-2xl rounded-[2.5rem] p-6 sm:p-10 shadow-lg border border-white/50 overflow-hidden relative">
+            {/* Decorative elements */}
+            <div className="absolute -top-24 -right-24 w-48 h-48 bg-gradient-to-br from-blue-200/30 to-purple-200/30 rounded-full blur-3xl"></div>
+            <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-gradient-to-br from-purple-200/30 to-blue-200/30 rounded-full blur-3xl"></div>
+            
+            <div className="relative">
             <div className="flex items-center justify-center mb-8">
-              <div className="bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl p-3 shadow-lg">
+                <motion.div 
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                  className="bg-gradient-to-br from-blue-600 to-purple-600 rounded-full p-4 shadow-md"
+                >
                 <Plane className="w-8 h-8 text-white" />
-              </div>
+                </motion.div>
               <h2 className="text-2xl sm:text-3xl font-bold ml-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 Check Your Flight
               </h2>
             </div>
 
-            <form onSubmit={handleCheckEligibility} className="space-y-6">
-              {/* Airline Selection */}
-              <div className="space-y-2 relative">
-                <label htmlFor="airline" className="block text-sm font-medium text-slate-700">
-                  Airline
-                </label>
-                <div className="relative">
-                  <Input
-                    id="airline"
-                    type="text"
-                    value={airlineQuery}
-                    onChange={(e) => {
-                      setAirlineQuery(e.target.value);
-                      setShowAirlineResults(true);
-                      if (!e.target.value) {
-                        setSelectedAirline(null);
-                      }
-                    }}
-                    placeholder="Search for an airline"
-                    className="h-12 pr-10"
-                    required
-                    onFocus={() => setShowAirlineResults(true)}
-                  />
-                  <Search className="absolute right-3 top-3.5 w-5 h-5 text-slate-400" />
-                </div>
-                
-                {showAirlineResults && airlineResults.length > 0 && (
-                  <div className="absolute z-10 mt-1 w-full bg-white rounded-md shadow-lg max-h-60 overflow-auto">
-                    <ul className="py-1">
-                      {airlineResults.map((airline) => (
-                        <li
-                          key={airline.iata}
-                          className="px-4 py-2 hover:bg-slate-100 cursor-pointer"
-                          onClick={() => selectAirline(airline)}
-                        >
-                          <div className="font-medium">{airline.name} ({airline.iata})</div>
-                          <div className="text-sm text-slate-500">{airline.country}</div>
-                        </li>
-                      ))}
-                    </ul>
+              <form onSubmit={handleCheckEligibility} className="space-y-6">
+                {/* Airline Selection */}
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1, duration: 0.4 }}
+                  className="space-y-2 relative"
+                >
+                  <label htmlFor="airline" className="block text-sm font-medium text-[#1D1D1F]">
+                    Airline
+                  </label>
+                  <div className="relative">
+                    <Input
+                      id="airline"
+                      type="text"
+                      value={airlineQuery}
+                      onChange={(e) => {
+                        setAirlineQuery(e.target.value);
+                        setShowAirlineResults(true);
+                        if (!e.target.value) {
+                          setSelectedAirline(null);
+                        }
+                      }}
+                      placeholder="Search for an airline"
+                      className="h-12 pr-10 rounded-xl bg-white/80 backdrop-blur-sm border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
+                      required
+                      onFocus={() => setShowAirlineResults(true)}
+                    />
+                    <Search className="absolute right-3 top-3.5 w-5 h-5 text-slate-400" />
                   </div>
-                )}
-              </div>
+                  
+                  {showAirlineResults && airlineResults.length > 0 && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="absolute z-10 mt-1 w-full bg-white/90 backdrop-blur-lg rounded-xl shadow-lg max-h-60 overflow-auto border border-slate-200"
+                    >
+                      <ul className="py-1">
+                        {airlineResults.map((airline) => (
+                          <li
+                            key={airline.iata}
+                            className="px-4 py-2 hover:bg-slate-50 cursor-pointer transition-colors duration-150"
+                            onClick={() => selectAirline(airline)}
+                          >
+                            <div className="font-medium text-[#1D1D1F]">{airline.name} ({airline.iata})</div>
+                            <div className="text-sm text-[#6e6e73]">{airline.country}</div>
+                          </li>
+                        ))}
+                      </ul>
+                    </motion.div>
+                  )}
+                </motion.div>
 
-              <div className="space-y-2">
-                <label htmlFor="flightNumber" className="block text-sm font-medium text-slate-700">
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2, duration: 0.4 }}
+                  className="space-y-2"
+                >
+                  <label htmlFor="flightNumber" className="block text-sm font-medium text-[#1D1D1F]">
                   Flight Number
                 </label>
-                <div className="flex items-center space-x-2">
-                  <div className="bg-slate-100 px-3 py-2 rounded-lg text-slate-800 font-mono min-w-[60px] text-center">
-                    {selectedAirline?.iata || '??'}
-                  </div>
-                  <Input
-                    id="flightNumber"
-                    type="text"
-                    value={flightNumber}
-                    onChange={(e) => setFlightNumber(e.target.value.replace(/\D/g, ''))}
-                    placeholder="Enter flight number only (e.g., 1234)"
-                    className="h-12"
-                    required
-                    pattern="^\d{1,4}$"
-                    title="Please enter a valid flight number (numbers only)"
-                  />
-                </div>
-                <p className="text-xs text-slate-500">
-                  Enter only the numeric part of your flight number
-                </p>
+                  <div className="flex items-center space-x-2">
+                    <div className="bg-gradient-to-br from-blue-50 to-purple-50 px-3 py-2 rounded-xl text-[#1D1D1F] font-mono min-w-[60px] text-center border border-slate-200 shadow-sm">
+                      {selectedAirline?.iata || '??'}
+                    </div>
+                <Input
+                  id="flightNumber"
+                  type="text"
+                  value={flightNumber}
+                      onChange={(e) => setFlightNumber(e.target.value.replace(/\D/g, ''))}
+                      placeholder="Enter flight number only (e.g., 1234)"
+                      className="h-12 rounded-xl bg-white/80 backdrop-blur-sm border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
+                  required
+                      pattern="^\d{1,4}$"
+                      title="Please enter a valid flight number (numbers only)"
+                />
               </div>
+                  <p className="text-xs text-[#6e6e73]">
+                    Enter only the numeric part of your flight number
+                  </p>
+                </motion.div>
 
-              <div className="space-y-2">
-                <label htmlFor="flightDate" className="block text-sm font-medium text-slate-700">
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3, duration: 0.4 }}
+                  className="space-y-2"
+                >
+                  <label htmlFor="flightDate" className="block text-sm font-medium text-[#1D1D1F]">
                   Flight Date
                 </label>
                 <Input
@@ -826,106 +844,129 @@ export function FlightCheck() {
                   type="date"
                   value={flightDate}
                   onChange={(e) => setFlightDate(e.target.value)}
-                  className="h-12"
+                    className="h-12 rounded-xl bg-white/80 backdrop-blur-sm border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
                   required
                   min={minDateStr}
                   max={maxDate}
                 />
-                <p className="text-sm text-slate-500">
+                  <p className="text-sm text-[#6e6e73]">
                   Claims can be made for flights within the last 6 years
                 </p>
-              </div>
+                </motion.div>
 
-              {/* Departure Airport Selection */}
-              <div className="space-y-2 relative">
-                <label htmlFor="departureAirport" className="block text-sm font-medium text-slate-700">
-                  Departure Airport
-                </label>
-                <div className="relative">
-                  <Input
-                    id="departureAirport"
-                    type="text"
-                    value={departureQuery}
-                    onChange={(e) => {
-                      setDepartureQuery(e.target.value);
-                      setShowDepartureResults(true);
-                      if (!e.target.value) {
-                        setDepartureAirport(null);
-                      }
-                    }}
-                    placeholder="Search airport by name or code"
-                    className="h-12 pr-10"
-                    required
-                    onFocus={() => setShowDepartureResults(true)}
-                  />
-                  <Search className="absolute right-3 top-3.5 w-5 h-5 text-slate-400" />
-                </div>
-                
-                {showDepartureResults && departureResults.length > 0 && (
-                  <div className="absolute z-10 mt-1 w-full bg-white rounded-md shadow-lg max-h-60 overflow-auto">
-                    <ul className="py-1">
-                      {departureResults.map((airport) => (
-                        <li
-                          key={airport.iata}
-                          className="px-4 py-2 hover:bg-slate-100 cursor-pointer"
-                          onClick={() => selectDepartureAirport(airport)}
-                        >
-                          <div className="font-medium">{airport.name} ({airport.iata})</div>
-                          <div className="text-sm text-slate-500">{airport.city}, {airport.country}</div>
-                        </li>
-                      ))}
-                    </ul>
+                {/* Departure Airport Selection */}
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4, duration: 0.4 }}
+                  className="space-y-2 relative"
+                >
+                  <label htmlFor="departureAirport" className="block text-sm font-medium text-[#1D1D1F]">
+                    Departure Airport
+                  </label>
+                  <div className="relative">
+                    <Input
+                      id="departureAirport"
+                      type="text"
+                      value={departureQuery}
+                      onChange={(e) => {
+                        setDepartureQuery(e.target.value);
+                        setShowDepartureResults(true);
+                        if (!e.target.value) {
+                          setDepartureAirport(null);
+                        }
+                      }}
+                      placeholder="Search airport by name or code"
+                      className="h-12 pr-10 rounded-xl bg-white/80 backdrop-blur-sm border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
+                      required
+                      onFocus={() => setShowDepartureResults(true)}
+                    />
+                    <Search className="absolute right-3 top-3.5 w-5 h-5 text-slate-400" />
                   </div>
-                )}
+                  
+                  {showDepartureResults && departureResults.length > 0 && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="absolute z-10 mt-1 w-full bg-white/90 backdrop-blur-lg rounded-xl shadow-lg max-h-60 overflow-auto border border-slate-200"
+                    >
+                      <ul className="py-1">
+                        {departureResults.map((airport) => (
+                          <li
+                            key={airport.iata}
+                            className="px-4 py-2 hover:bg-slate-50 cursor-pointer transition-colors duration-150"
+                            onClick={() => selectDepartureAirport(airport)}
+                          >
+                            <div className="font-medium text-[#1D1D1F]">{airport.name} ({airport.iata})</div>
+                            <div className="text-sm text-[#6e6e73]">{airport.city}, {airport.country}</div>
+                          </li>
+                        ))}
+                      </ul>
+                    </motion.div>
+                  )}
+                </motion.div>
+
+                {/* Destination Airport Selection */}
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5, duration: 0.4 }}
+                  className="space-y-2 relative"
+                >
+                  <label htmlFor="destinationAirport" className="block text-sm font-medium text-[#1D1D1F]">
+                    Destination Airport
+                  </label>
+                  <div className="relative">
+                    <Input
+                      id="destinationAirport"
+                      type="text"
+                      value={destinationQuery}
+                      onChange={(e) => {
+                        setDestinationQuery(e.target.value);
+                        setShowDestinationResults(true);
+                        if (!e.target.value) {
+                          setDestinationAirport(null);
+                        }
+                      }}
+                      placeholder="Search airport by name or code"
+                      className="h-12 pr-10 rounded-xl bg-white/80 backdrop-blur-sm border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
+                      required
+                      onFocus={() => setShowDestinationResults(true)}
+                    />
+                    <Search className="absolute right-3 top-3.5 w-5 h-5 text-slate-400" />
               </div>
 
-              {/* Destination Airport Selection */}
-              <div className="space-y-2 relative">
-                <label htmlFor="destinationAirport" className="block text-sm font-medium text-slate-700">
-                  Destination Airport
-                </label>
-                <div className="relative">
-                  <Input
-                    id="destinationAirport"
-                    type="text"
-                    value={destinationQuery}
-                    onChange={(e) => {
-                      setDestinationQuery(e.target.value);
-                      setShowDestinationResults(true);
-                      if (!e.target.value) {
-                        setDestinationAirport(null);
-                      }
-                    }}
-                    placeholder="Search airport by name or code"
-                    className="h-12 pr-10"
-                    required
-                    onFocus={() => setShowDestinationResults(true)}
-                  />
-                  <Search className="absolute right-3 top-3.5 w-5 h-5 text-slate-400" />
-                </div>
-                
-                {showDestinationResults && destinationResults.length > 0 && (
-                  <div className="absolute z-10 mt-1 w-full bg-white rounded-md shadow-lg max-h-60 overflow-auto">
-                    <ul className="py-1">
-                      {destinationResults.map((airport) => (
-                        <li
-                          key={airport.iata}
-                          className="px-4 py-2 hover:bg-slate-100 cursor-pointer"
-                          onClick={() => selectDestinationAirport(airport)}
-                        >
-                          <div className="font-medium">{airport.name} ({airport.iata})</div>
-                          <div className="text-sm text-slate-500">{airport.city}, {airport.country}</div>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
+                  {showDestinationResults && destinationResults.length > 0 && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="absolute z-10 mt-1 w-full bg-white/90 backdrop-blur-lg rounded-xl shadow-lg max-h-60 overflow-auto border border-slate-200"
+                    >
+                      <ul className="py-1">
+                        {destinationResults.map((airport) => (
+                          <li
+                            key={airport.iata}
+                            className="px-4 py-2 hover:bg-slate-50 cursor-pointer transition-colors duration-150"
+                            onClick={() => selectDestinationAirport(airport)}
+                          >
+                            <div className="font-medium text-[#1D1D1F]">{airport.name} ({airport.iata})</div>
+                            <div className="text-sm text-[#6e6e73]">{airport.city}, {airport.country}</div>
+                          </li>
+                        ))}
+                      </ul>
+                    </motion.div>
+                  )}
+                </motion.div>
 
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6, duration: 0.4 }}
+                >
               <Button
                 type="submit"
                 variant="gradient"
-                className="w-full h-12"
+                    className="w-full h-14 rounded-xl text-base font-medium shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
                 disabled={isChecking}
               >
                 {isChecking ? (
@@ -941,16 +982,23 @@ export function FlightCheck() {
                     Checking...
                   </motion.div>
                 ) : (
-                  'Next: Add Flight Details'
+                      'Next: Add Flight Details'
                 )}
               </Button>
+                </motion.div>
             </form>
 
-            <p className="mt-6 text-sm text-slate-600 text-center">
+              <motion.p 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.7, duration: 0.4 }}
+                className="mt-6 text-sm text-[#6e6e73] text-center"
+              >
               Get up to €600 in compensation for delayed or cancelled flights.
               <br />
-              <span className="text-slate-500">No win, no fee. It's that simple.</span>
-            </p>
+                <span className="text-[#86868b]">No win, no fee. It's that simple.</span>
+              </motion.p>
+            </div>
           </div>
         </motion.div>
       )}
@@ -963,39 +1011,59 @@ export function FlightCheck() {
           exit={{ opacity: 0, y: -20 }}
           className="w-full max-w-lg mx-auto px-4 sm:px-0"
         >
-          <div className="bg-white/90 backdrop-blur-xl rounded-[2rem] p-6 sm:p-10 shadow-sm border border-slate-100">
+          <div className="bg-white/70 backdrop-blur-2xl rounded-[2.5rem] p-6 sm:p-10 shadow-lg border border-white/50 overflow-hidden relative">
+            {/* Decorative elements */}
+            <div className="absolute -top-24 -right-24 w-48 h-48 bg-gradient-to-br from-blue-200/30 to-purple-200/30 rounded-full blur-3xl"></div>
+            <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-gradient-to-br from-purple-200/30 to-blue-200/30 rounded-full blur-3xl"></div>
+            
+            <div className="relative">
             <div className="flex items-center justify-center mb-8">
-              <div className="bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl p-3 shadow-lg">
+                <motion.div 
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ duration: 0.5 }}
+                  className="bg-gradient-to-br from-blue-600 to-purple-600 rounded-full p-4 shadow-md"
+                >
                 <AlertTriangle className="w-8 h-8 text-white" />
-              </div>
+                </motion.div>
               <h2 className="text-2xl sm:text-3xl font-bold ml-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 Flight Disruption Details
               </h2>
             </div>
 
-            {checkResult && checkResult.flightDetails && (
-              <div className="mb-6 p-4 bg-slate-50 rounded-xl">
-                <p className="font-medium text-slate-700">
-                  {checkResult.flightDetails.airline} {checkResult.flightDetails.flightNumber}
-                </p>
-                <p className="text-sm text-slate-600">
-                  {checkResult.flightDetails.departure?.airport || ''} ({checkResult.flightDetails.departure?.iata || ''}) → 
-                  {checkResult.flightDetails.arrival?.airport || ''} ({checkResult.flightDetails.arrival?.iata || ''})
-                </p>
-                <p className="text-sm text-slate-500">
-                  {new Date(flightDate).toLocaleDateString('en-GB', {
-                    day: 'numeric',
-                    month: 'short',
-                    year: 'numeric'
-                  })}
-                </p>
-              </div>
-            )}
+              {checkResult && checkResult.flightDetails && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="mb-8 p-5 bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm border border-white/50"
+                >
+                  <p className="font-medium text-[#1D1D1F]">
+                    {checkResult.flightDetails.airline} {checkResult.flightDetails.flightNumber}
+                  </p>
+                  <p className="text-sm text-[#6e6e73]">
+                    {checkResult.flightDetails.departure?.airport || ''} ({checkResult.flightDetails.departure?.iata || ''}) → 
+                    {checkResult.flightDetails.arrival?.airport || ''} ({checkResult.flightDetails.arrival?.iata || ''})
+                  </p>
+                  <p className="text-sm text-[#86868b]">
+                    {new Date(flightDate).toLocaleDateString('en-GB', {
+                      day: 'numeric',
+                      month: 'short',
+                      year: 'numeric'
+                    })}
+                  </p>
+                </motion.div>
+              )}
 
             <form onSubmit={handleDisruptionSubmit} className="space-y-6">
-              <div className="space-y-4">
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="space-y-4"
+                >
                 <div className="flex flex-col space-y-2">
-                  <label className="text-sm font-medium text-slate-700">
+                    <label className="text-sm font-medium text-[#1D1D1F]">
                     Type of Disruption
                   </label>
                   <div className="flex gap-4">
@@ -1003,7 +1071,7 @@ export function FlightCheck() {
                       type="button"
                       variant={disruption.type === 'delay' ? 'gradient' : 'outline'}
                       onClick={() => setDisruption({ ...disruption, type: 'delay' })}
-                      className="flex-1"
+                        className="flex-1 rounded-xl h-12 shadow-sm hover:shadow transition-all duration-200"
                     >
                       <Clock className="w-4 h-4 mr-2" />
                       Delay
@@ -1012,7 +1080,7 @@ export function FlightCheck() {
                       type="button"
                       variant={disruption.type === 'cancellation' ? 'gradient' : 'outline'}
                       onClick={() => setDisruption({ ...disruption, type: 'cancellation' })}
-                      className="flex-1"
+                        className="flex-1 rounded-xl h-12 shadow-sm hover:shadow transition-all duration-200"
                     >
                       <XCircle className="w-4 h-4 mr-2" />
                       Cancellation
@@ -1021,8 +1089,12 @@ export function FlightCheck() {
                 </div>
 
                 {disruption.type === 'delay' && (
-                  <div className="space-y-2">
-                    <label htmlFor="delayDuration" className="text-sm font-medium text-slate-700">
+                    <motion.div 
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      className="space-y-2 overflow-hidden"
+                    >
+                      <label htmlFor="delayDuration" className="text-sm font-medium text-[#1D1D1F]">
                       How long was the delay? (hours)
                     </label>
                     <Input
@@ -1035,54 +1107,71 @@ export function FlightCheck() {
                         ...disruption,
                         delayDuration: parseInt(e.target.value),
                       })}
-                      className="h-12"
+                        className="h-12 rounded-xl bg-white/80 backdrop-blur-sm border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
                       required
                     />
-                  </div>
-                )}
+                    </motion.div>
+                  )}
 
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-700">
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                    className="space-y-2"
+                  >
+                    <label className="text-sm font-medium text-[#1D1D1F]">
                     What was the reason?
                   </label>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {disruptionReasons.map(({ id, label, icon: Icon }) => (
+                      {disruptionReasons.map(({ id, label, icon: Icon }, index) => (
+                        <motion.div
+                          key={id}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.3 + index * 0.05 }}
+                        >
                       <Button
-                        key={id}
                         type="button"
                         variant={disruption.reason === id ? 'gradient' : 'outline'}
-                        onClick={() => setDisruption({ 
-                          ...disruption, 
-                          reason: id as DisruptionReason 
-                        })}
-                        className="justify-start h-auto py-3"
+                            onClick={() => setDisruption({ 
+                              ...disruption, 
+                              reason: id as DisruptionReason 
+                            })}
+                            className="justify-start h-auto py-3 w-full rounded-xl shadow-sm hover:shadow transition-all duration-200"
                       >
                         <Icon className="w-4 h-4 mr-2 flex-shrink-0" />
                         <span className="text-sm">{label}</span>
                       </Button>
+                        </motion.div>
                     ))}
                   </div>
-                </div>
-              </div>
+                  </motion.div>
+                </motion.div>
 
-              <div className="flex gap-3">
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                  className="flex gap-3 pt-4"
+                >
                 <Button
                   type="button"
                   variant="outline"
                   onClick={handleReset}
-                  className="flex-1"
+                    className="flex-1 rounded-xl h-12 shadow-sm hover:shadow transition-all duration-200"
                 >
                   Back
                 </Button>
                 <Button
                   type="submit"
                   variant="gradient"
-                  className="flex-1"
+                    className="flex-1 rounded-xl h-12 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
                 >
-                  Check Eligibility
+                    Check Eligibility
                 </Button>
+                </motion.div>
+              </form>
               </div>
-            </form>
           </div>
         </motion.div>
       )}

@@ -21,6 +21,7 @@ import { PrivateRoute } from './components/PrivateRoute';
 import { AdminRoute } from './components/AdminRoute';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { performanceMonitor } from './lib/performance';
+import { AboutUs } from './components/AboutUs';
 
 // Initialize monitoring
 performanceMonitor.startMonitoring();
@@ -92,6 +93,11 @@ function App() {
               <Route path="help" element={
                 <ErrorBoundary>
                   <HelpCenter />
+                </ErrorBoundary>
+              } />
+              <Route path="about" element={
+                <ErrorBoundary>
+                  <AboutUs />
                 </ErrorBoundary>
               } />
               
