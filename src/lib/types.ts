@@ -150,7 +150,7 @@ export interface DisruptionDetails {
   reason?: DisruptionReason;
   reroutingTime?: number;    // in hours
   voluntary?: boolean;
-  alternativeFlight?: {
+  alternativeFlight?: boolean | {
     airline: string;
     flightNumber: string;
     departureTime: string;
@@ -200,7 +200,7 @@ export interface CompensationResult {
     delayDuration?: number;
     reroutingTime?: number;
     voluntary?: boolean;
-    alternativeFlight?: {
+    alternativeFlight?: boolean | {
       airline: string;
       flightNumber: string;
       departureTime: string;
@@ -208,6 +208,7 @@ export interface CompensationResult {
     };
     additionalInfo?: string;
     isDomestic?: boolean;
+    dutyOfCare?: any;
   };
   flightDetails: {
     airline: string;

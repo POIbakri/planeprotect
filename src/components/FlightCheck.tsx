@@ -466,12 +466,7 @@ export function FlightCheck() {
     delayDuration: 0,
     reason: 'technical_issue',
     voluntary: false,
-    alternativeFlight: {
-      airline: '',
-      flightNumber: '',
-      departureTime: '',
-      arrivalTime: ''
-    },
+    alternativeFlight: false,
     additionalInfo: '',
     isDomestic: false
   });
@@ -610,7 +605,9 @@ export function FlightCheck() {
         disruption
       };
 
+      console.log('Flight data being sent:', flightData);
       const result = await checkFlightEligibility(flightData);
+      console.log('Eligibility result:', result);
       
       setCheckResult({
         ...result,
@@ -697,12 +694,7 @@ export function FlightCheck() {
       delayDuration: 0,
       reason: 'technical_issue',
       voluntary: false,
-      alternativeFlight: {
-        airline: '',
-        flightNumber: '',
-        departureTime: '',
-        arrivalTime: ''
-      },
+      alternativeFlight: false,
       additionalInfo: '',
       isDomestic: false
     });

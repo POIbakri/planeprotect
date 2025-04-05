@@ -1,10 +1,21 @@
 import { logger } from './logger';
-import type { DisruptionDetails, CompensationResult } from './types';
+import type { DisruptionDetails, CompensationResult, DisruptionType, DisruptionReason } from './types';
 
 interface FlightRoute {
   departureCountry: string;
   arrivalCountry: string;
   airlineCountry: string;
+  distance: number;
+  disruptionType?: DisruptionType;
+  disruptionReason?: DisruptionReason;
+  delayDuration?: number;
+  voluntary?: boolean;
+  alternativeFlight?: boolean;
+  reRoutingDelay?: number;
+  noticeGiven?: number;
+  isDomestic?: boolean;
+  dutyOfCare?: any;
+  additionalInfo?: string;
 }
 
 // EU member states
@@ -229,6 +240,20 @@ export class EligibilityChecker {
             airlineCountry: route.airlineCountry,
             distance,
             isDomestic: true,
+          },
+          flightDetails: {
+            airline: '',
+            flightNumber: '',
+            departure: {
+              airport: '',
+              iata: '',
+              country: route.departureCountry
+            },
+            arrival: {
+              airport: '',
+              iata: '',
+              country: route.arrivalCountry
+            }
           }
         };
       }
@@ -252,6 +277,20 @@ export class EligibilityChecker {
             airlineCountry: route.airlineCountry,
             distance,
             isDomestic: false,
+          },
+          flightDetails: {
+            airline: '',
+            flightNumber: '',
+            departure: {
+              airport: '',
+              iata: '',
+              country: route.departureCountry
+            },
+            arrival: {
+              airport: '',
+              iata: '',
+              country: route.arrivalCountry
+            }
           }
         };
       }
@@ -322,8 +361,22 @@ export class EligibilityChecker {
             noticeGiven: disruption.noticeGiven,
             delayDuration: disruption.delayDuration,
             reroutingTime: disruption.reroutingTime,
-            isVoluntary: disruption.voluntary,
+            voluntary: disruption.voluntary,
             dutyOfCare,
+          },
+          flightDetails: {
+            airline: '',
+            flightNumber: '',
+            departure: {
+              airport: '',
+              iata: '',
+              country: route.departureCountry
+            },
+            arrival: {
+              airport: '',
+              iata: '',
+              country: route.arrivalCountry
+            }
           }
         };
       }
@@ -340,7 +393,12 @@ export class EligibilityChecker {
         case 'cancellation':
           reason = 'Flight cancelled with insufficient notice';
           if (disruption.alternativeFlight) {
-            reason += ` (Alternative flight: ${disruption.alternativeFlight.airline} ${disruption.alternativeFlight.flightNumber})`;
+            // Check if it's an object or boolean
+            if (typeof disruption.alternativeFlight === 'object') {
+              reason += ` (Alternative flight: ${disruption.alternativeFlight.airline} ${disruption.alternativeFlight.flightNumber})`;
+            } else {
+              reason += ' (Alternative flight offered)';
+            }
           }
           break;
         case 'denied_boarding':
@@ -364,10 +422,25 @@ export class EligibilityChecker {
           noticeGiven: disruption.noticeGiven,
           delayDuration: disruption.delayDuration,
           reroutingTime: disruption.reroutingTime,
-          isVoluntary: disruption.voluntary,
+          voluntary: disruption.voluntary,
           alternativeFlight: disruption.alternativeFlight,
           additionalInfo: disruption.additionalInfo,
+          isDomestic: disruption.isDomestic,
           dutyOfCare,
+        },
+        flightDetails: {
+          airline: '',
+          flightNumber: '',
+          departure: {
+            airport: '',
+            iata: '',
+            country: route.departureCountry
+          },
+          arrival: {
+            airport: '',
+            iata: '',
+            country: route.arrivalCountry
+          }
         }
       };
     } catch (error) {

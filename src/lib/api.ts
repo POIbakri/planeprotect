@@ -545,7 +545,8 @@ export async function checkFlightEligibility(flightData: FlightData): Promise<Co
       {
         departureCountry: flightData.departure.country,
         arrivalCountry: flightData.arrival.country,
-        airlineCountry: flightData.airline.country || 'Unknown'
+        airlineCountry: flightData.airline.country || 'Unknown',
+        distance
       }, 
       flightData.disruption,
       distance
@@ -624,23 +625,35 @@ export function calculateEligibility(
     'TK': 'TUR', // Turkish Airlines
   };
   
+  // Convert country names to ISO codes for consistency
+  const COUNTRY_NAME_TO_CODE: Record<string, string> = {
+    'United Kingdom': 'GBR',
+    'UK': 'GBR',
+    'Great Britain': 'GBR',
+    'Germany': 'DEU',
+    'France': 'FRA',
+    'Spain': 'ESP',
+    'Italy': 'ITA',
+    'Netherlands': 'NLD',
+    'Turkey': 'TUR',
+    'United Arab Emirates': 'UAE',
+    'UAE': 'UAE'
+  };
+  
   // Determine airline country based on code using the mapping
   const airlineCountry = AIRLINE_COUNTRY_MAP[airlineCode] || 'EU';
   
-  // For debugging
-  console.log(`Airline code: ${airlineCode}, mapped country: ${airlineCountry}`);
+  // Convert country names to codes
+  const departureCountryCode = COUNTRY_NAME_TO_CODE[flightDetails.departure.country] || flightDetails.departure.country;
+  const arrivalCountryCode = COUNTRY_NAME_TO_CODE[flightDetails.arrival.country] || flightDetails.arrival.country;
   
   // Setup route information
   const route = {
-    departureCountry: flightDetails.departure.country || 'Europe',
-    arrivalCountry: flightDetails.arrival.country || 'Europe',
+    departureCountry: departureCountryCode,
+    arrivalCountry: arrivalCountryCode,
     airlineCountry: airlineCountry,
+    distance: distance
   };
-  
-  // For debugging
-  console.log(`Route: dep=${route.departureCountry}, arr=${route.arrivalCountry}, airline=${route.airlineCountry}`);
-  const isUK = EligibilityChecker.isUKFlight(route);
-  console.log(`Is UK flight: ${isUK}`);
   
   // Calculate eligibility based on user provided disruption
   const eligibility = EligibilityChecker.checkEligibility(route, disruption, distance);
