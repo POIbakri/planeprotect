@@ -105,7 +105,7 @@ export interface ClaimDocument {
   verification_status: 'pending' | 'verified' | 'rejected';
 }
 
-export type ClaimStatus = 'pending' | 'in-review' | 'approved' | 'paid';
+export type ClaimStatus = 'pending' | 'in-review' | 'approved' | 'paid' | 'rejected' | 'archived';
 export type DisruptionType = 'delay' | 'cancellation' | 'denied_boarding';
 export type DisruptionReason = 
   | 'technical_issue'      // General technical issues

@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Upload, CreditCard, Import as Passport, Plane, User, Mail, Phone, CheckCircle2, Info } from 'lucide-react';
+import { Upload, CreditCard, Import as Passport, Plane, User, Mail, Phone, CheckCircle2, Info, BanknoteIcon, Building } from 'lucide-react';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { formatFlightNumber } from '@/lib/utils';
@@ -9,6 +9,13 @@ import { submitClaim, uploadDocument } from '@/lib/api';
 import toast from 'react-hot-toast';
 
 type Step = 'personal' | 'documents' | 'payment' | 'success';
+
+// Helper function to get file name or default text
+const getFileName = (file: File | null, defaultText: string) => {
+  if (!file) return defaultText;
+  // Truncate long file names
+  return file.name.length > 30 ? `${file.name.substring(0, 27)}...` : file.name;
+};
 
 export function ClaimForm() {
   const location = useLocation();
@@ -67,12 +74,12 @@ export function ClaimForm() {
       const maxSize = 5 * 1024 * 1024; // 5MB
       
       if (!validTypes.includes(file.type)) {
-        toast.error(`Invalid file type. Please upload a JPEG, PNG, or PDF file for ${type}.`);
+        toast.error(`Invalid file type. Use JPEG, PNG, or PDF.`);
         return;
       }
       
       if (file.size > maxSize) {
-        toast.error(`File is too large. Maximum size is 5MB.`);
+        toast.error(`File too large (Max 5MB).`);
         return;
       }
       
@@ -81,8 +88,10 @@ export function ClaimForm() {
         documents: { ...prev.documents, [type]: file },
       }));
       
-      // Show success message
-      toast.success(`${type.replace('_', ' ')} uploaded successfully`);
+      // Use a more specific success message
+      toast.success(`${type === 'boardingPass' ? 'Boarding Pass' : type === 'bookingConfirmation' ? 'Booking Confirmation' : 'Passport/ID'} uploaded!`, {
+        icon: <CheckCircle2 className="w-5 h-5 text-green-500" />,
+      });
     }
   };
 
@@ -206,73 +215,88 @@ export function ClaimForm() {
     else if (step === 'payment') setStep('documents');
   };
 
-  const renderStepIndicator = () => (
-    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4 sm:gap-0">
-      <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-        {step === 'personal' && 'Personal Details'}
-        {step === 'documents' && 'Upload Documents'}
-        {step === 'payment' && 'Payment Details'}
-        {step === 'success' && 'Claim Submitted'}
-      </h2>
-      {step !== 'success' && (
-        <div className="flex gap-2">
-          {(['personal', 'documents', 'payment'] as const).map((s) => (
-            <div
-              key={s}
-              className={`w-3 h-3 rounded-full transition-colors duration-300 ${
-                s === step
-                  ? 'bg-blue-600'
-                  : step === 'documents' && s === 'personal'
-                  ? 'bg-blue-600'
-                  : step === 'payment' && (s === 'personal' || s === 'documents')
-                  ? 'bg-blue-600'
-                  : 'bg-gray-200'
-              }`}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  );
+  // Refined Step Indicator
+  const renderStepIndicator = () => {
+    const steps: { id: Step; name: string }[] = [
+      { id: 'personal', name: 'Personal' },
+      { id: 'documents', name: 'Documents' },
+      { id: 'payment', name: 'Payment' },
+    ];
+    const currentStepIndex = steps.findIndex(s => s.id === step);
 
+    return (
+      <div className="mb-8">
+        <h2 className="text-xl sm:text-2xl font-semibold text-center text-[#1D1D1F] mb-6">
+          {step === 'personal' && 'Enter Your Details'}
+          {step === 'documents' && 'Upload Required Documents'}
+          {step === 'payment' && 'Provide Payment Information'}
+          {step === 'success' && 'Claim Submitted'}
+        </h2>
+        {step !== 'success' && (
+          <div className="flex justify-center items-center gap-2 sm:gap-4">
+            {steps.map((s, index) => {
+              const isActive = index <= currentStepIndex;
+              return (
+                <React.Fragment key={s.id}>
+                  <div className="flex flex-col items-center">
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center transition-colors duration-300 ${isActive ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-400'}`}>
+                      <span className="text-xs font-medium">{index + 1}</span>
+                    </div>
+                    <span className={`mt-1 text-xs text-center ${isActive ? 'text-blue-600 font-medium' : 'text-gray-500'}`}>
+                      {s.name}
+                    </span>
+                  </div>
+                  {index < steps.length - 1 && (
+                    <div className={`flex-1 h-0.5 rounded-full ${isActive ? 'bg-blue-500' : 'bg-gray-200'}`}></div>
+                  )}
+                </React.Fragment>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // Personal Details Form - Refined Styling
   const renderPersonalDetails = () => (
     <motion.form
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="space-y-6"
+      key="personal"
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: 20 }}
+      transition={{ duration: 0.3 }}
+      className="space-y-5" // Adjusted spacing
       onSubmit={(e) => {
         e.preventDefault();
         handleNext();
       }}
     >
-      <div className="bg-slate-50 rounded-xl p-4 sm:p-6 mb-6">
-        <div className="flex items-center gap-3 text-slate-600 mb-4">
-          <Plane className="w-5 h-5" />
-          <span className="font-medium">Flight Details</span>
+      {/* Flight Details Summary - Adjusted Style */}
+      <div className="bg-gray-50/70 rounded-xl p-4 border border-gray-200/60 mb-6">
+        <div className="flex items-center gap-2 text-gray-600 mb-2">
+          <Plane className="w-4 h-4" />
+          <span className="text-sm font-medium">Flight Summary</span>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-sm">
           <div>
-            <label className="block text-sm text-slate-600 mb-1">Flight Number</label>
-            <div className="font-semibold text-slate-900">{flightNumber || 'N/A'}</div>
+            <span className="text-gray-500">Flight No:</span>
+            <span className="font-medium text-gray-800 ml-1">{flightNumber || 'N/A'}</span>
           </div>
           <div>
-            <label className="block text-sm text-slate-600 mb-1">Flight Date</label>
-            <div className="font-semibold text-slate-900">
-              {flightDate ? new Date(flightDate).toLocaleDateString() : 'N/A'}
-            </div>
+            <span className="text-gray-500">Date:</span>
+            <span className="font-medium text-gray-800 ml-1">
+              {flightDate ? new Date(flightDate).toLocaleDateString('en-GB') : 'N/A'}
+            </span>
           </div>
         </div>
       </div>
 
       <div className="space-y-4">
-        <div className="flex items-center gap-3 text-slate-600 mb-2">
-          <User className="w-5 h-5" />
-          <span className="font-medium">Personal Information</span>
-        </div>
-        
-        <div className="space-y-2">
-          <label htmlFor="fullName" className="block text-sm font-medium text-slate-700">
+        {/* Inputs with updated styling and icons */}
+        <div className="space-y-1">
+          <label htmlFor="fullName" className="flex items-center text-sm font-medium text-[#333] mb-1">
+            <User className="w-4 h-4 mr-2 text-gray-400" />
             Full Name
           </label>
           <Input
@@ -280,75 +304,65 @@ export function ClaimForm() {
             name="fullName"
             value={formData.fullName}
             onChange={handleInputChange}
-            placeholder="Enter your full name"
-            className="h-12"
+            placeholder="As shown on passport"
+            className="h-11 rounded-lg border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-300 text-sm"
             required
           />
         </div>
 
-        <div className="space-y-2">
-          <label htmlFor="email" className="block text-sm font-medium text-slate-700">
+        <div className="space-y-1">
+          <label htmlFor="email" className="flex items-center text-sm font-medium text-[#333] mb-1">
+            <Mail className="w-4 h-4 mr-2 text-gray-400" />
             Email Address
           </label>
-          <div className="relative">
-            <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              value={formData.email}
-              onChange={handleInputChange}
-              placeholder="Enter your email"
-              className="h-12 pl-12"
-              required
-            />
-          </div>
+          <Input
+            id="email"
+            name="email"
+            type="email"
+            value={formData.email}
+            onChange={handleInputChange}
+            placeholder="your.email@example.com"
+            className="h-11 rounded-lg border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-300 text-sm"
+            required
+          />
         </div>
 
-        <div className="space-y-2">
-          <label htmlFor="phone" className="block text-sm font-medium text-slate-700">
+        <div className="space-y-1">
+          <label htmlFor="phone" className="flex items-center text-sm font-medium text-[#333] mb-1">
+            <Phone className="w-4 h-4 mr-2 text-gray-400" />
             Phone Number
           </label>
-          <div className="relative">
-            <Phone className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
-            <Input
-              id="phone"
-              name="phone"
-              type="tel"
-              value={formData.phone}
-              onChange={handleInputChange}
-              placeholder="Enter your phone number"
-              className="h-12 pl-12"
-              required
-            />
-          </div>
+          <Input
+            id="phone"
+            name="phone"
+            type="tel"
+            value={formData.phone}
+            onChange={handleInputChange}
+            placeholder="+44 123 456 7890"
+            className="h-11 rounded-lg border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-300 text-sm"
+            required
+          />
         </div>
 
-        <div className="space-y-2">
-          <label htmlFor="passportNumber" className="block text-sm font-medium text-slate-700">
-            Passport Number
+        <div className="space-y-1">
+          <label htmlFor="passportNumber" className="flex items-center text-sm font-medium text-[#333] mb-1">
+            <Passport className="w-4 h-4 mr-2 text-gray-400" />
+            Passport/ID Number
           </label>
-          <div className="relative">
-            <Passport className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
-            <Input
-              id="passportNumber"
-              name="passportNumber"
-              value={formData.passportNumber}
-              onChange={handleInputChange}
-              placeholder="Enter your passport number"
-              className="h-12 pl-12"
-              required
-            />
-          </div>
+          <Input
+            id="passportNumber"
+            name="passportNumber"
+            value={formData.passportNumber}
+            onChange={handleInputChange}
+            placeholder="Document number"
+            className="h-11 rounded-lg border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-300 text-sm"
+            required
+          />
         </div>
 
-        <div className="space-y-4 pt-4">
-          <div className="flex items-center gap-3 text-slate-600">
-            <Info className="w-5 h-5" />
-            <span className="font-medium">Legal Consent</span>
-          </div>
-          
-          <div className="bg-blue-50 rounded-xl p-4 space-y-4">
+        {/* Legal Consent Section - Refined */}
+        <div className="pt-4">
+          <div className="bg-blue-50/60 rounded-xl p-4 border border-blue-100/80">
             <div className="flex items-start gap-3">
               <input
                 type="checkbox"
@@ -356,126 +370,146 @@ export function ClaimForm() {
                 name="consentGiven"
                 checked={formData.consentGiven}
                 onChange={handleInputChange}
-                className="mt-1"
+                className="mt-1 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 flex-shrink-0"
                 required
               />
-              <label htmlFor="consentGiven" className="text-sm text-slate-700">
-                I hereby authorize RefundHero to act as my representative in pursuing compensation under EC Regulation 261/2004 or other applicable regulations for my flight disruption claim. I confirm that I am the passenger or have the legal authority to act on behalf of the passenger, and I have not received any previous compensation for this claim. I understand that RefundHero will handle all communication with the airline and legal proceedings if necessary. I declare that all information provided is true and accurate.
+              <label htmlFor="consentGiven" className="text-xs text-gray-700">
+                 I authorize RefundHero to represent me in pursuing compensation for this flight disruption under applicable regulations (e.g., EC 261/2004). I confirm I'm the passenger (or have authority) and haven't received prior compensation for this. I understand RefundHero handles communications and potential legal action, and confirm my provided details are accurate. I agree to the Terms & Conditions.
               </label>
             </div>
-            <p className="text-xs text-slate-500">
-              By checking this box, you agree to our terms and conditions and authorize us to represent you in your compensation claim. You can revoke this authorization at any time by contacting us.
-            </p>
           </div>
         </div>
       </div>
 
+      {/* Navigation Button - Updated Style */}
       <Button
         type="submit"
         variant="gradient"
-        className="w-full h-12"
+        className="w-full h-12 rounded-lg text-base font-medium mt-6"
       >
-        Continue to Documents
+        Next: Upload Documents
       </Button>
     </motion.form>
   );
 
+  // Document Upload Section - Refined Styling
   const renderDocumentUpload = () => (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="space-y-8"
+      key="documents"
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: 20 }}
+      transition={{ duration: 0.3 }}
+      className="space-y-6"
     >
-      <div className="space-y-6">
-        <div className="border-2 border-dashed border-slate-200 rounded-xl p-6 sm:p-8 text-center transition-colors hover:border-blue-400 cursor-pointer group">
-          <Upload className="w-8 h-8 mx-auto mb-4 text-slate-400 group-hover:text-blue-500 transition-colors" />
-          <label className="block cursor-pointer">
-            <span className="text-sm font-medium text-slate-700">Boarding Pass</span>
-            <input
-              type="file"
-              className="hidden"
-              onChange={(e) => handleFileUpload(e, 'boardingPass')}
-              accept=".pdf,.jpg,.jpeg,.png"
-            />
-            <p className="mt-1 text-sm text-slate-500">
-              {formData.documents.boardingPass
-                ? formData.documents.boardingPass.name
-                : 'Drop your file here or tap to upload'}
-            </p>
+      <div className="space-y-4">
+        {/* File Upload Area - Boarding Pass */}
+        <div className={`border-2 border-dashed rounded-xl p-4 transition-colors group relative ${formData.documents.boardingPass ? 'border-green-400 bg-green-50/50' : 'border-gray-300 hover:border-blue-400'}`}>
+          <label htmlFor="boardingPassUpload" className="block cursor-pointer">
+            <div className="flex items-center">
+              <Upload className={`w-6 h-6 mr-3 flex-shrink-0 ${formData.documents.boardingPass ? 'text-green-600' : 'text-gray-400 group-hover:text-blue-500'}`} />
+              <div>
+                <span className={`text-sm font-medium ${formData.documents.boardingPass ? 'text-green-800' : 'text-gray-700'}`}>Boarding Pass</span>
+                <p className={`mt-0.5 text-xs ${formData.documents.boardingPass ? 'text-green-700 font-medium' : 'text-gray-500'}`}>
+                  {getFileName(formData.documents.boardingPass, 'Click or drop PDF, JPG, PNG (Max 5MB)')}
+                </p>
+              </div>
+            </div>
           </label>
+          <input
+            id="boardingPassUpload"
+            type="file"
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            onChange={(e) => handleFileUpload(e, 'boardingPass')}
+            accept=".pdf,.jpg,.jpeg,.png"
+          />
         </div>
 
-        <div className="border-2 border-dashed border-slate-200 rounded-xl p-6 sm:p-8 text-center transition-colors hover:border-blue-400 cursor-pointer group">
-          <CreditCard className="w-8 h-8 mx-auto mb-4 text-slate-400 group-hover:text-blue-500 transition-colors" />
-          <label className="block cursor-pointer">
-            <span className="text-sm font-medium text-slate-700">Booking Confirmation</span>
-            <input
-              type="file"
-              className="hidden"
-              onChange={(e) => handleFileUpload(e, 'bookingConfirmation')}
-              accept=".pdf,.jpg,.jpeg,.png"
-            />
-            <p className="mt-1 text-sm text-slate-500">
-              {formData.documents.bookingConfirmation
-                ? formData.documents.bookingConfirmation.name
-                : 'Drop your file here or tap to upload'}
-            </p>
+        {/* File Upload Area - Booking Confirmation */}
+        <div className={`border-2 border-dashed rounded-xl p-4 transition-colors group relative ${formData.documents.bookingConfirmation ? 'border-green-400 bg-green-50/50' : 'border-gray-300 hover:border-blue-400'}`}>
+           <label htmlFor="bookingConfirmationUpload" className="block cursor-pointer">
+            <div className="flex items-center">
+              <CreditCard className={`w-6 h-6 mr-3 flex-shrink-0 ${formData.documents.bookingConfirmation ? 'text-green-600' : 'text-gray-400 group-hover:text-blue-500'}`} />
+              <div>
+                <span className={`text-sm font-medium ${formData.documents.bookingConfirmation ? 'text-green-800' : 'text-gray-700'}`}>Booking Confirmation</span>
+                 <p className={`mt-0.5 text-xs ${formData.documents.bookingConfirmation ? 'text-green-700 font-medium' : 'text-gray-500'}`}>
+                  {getFileName(formData.documents.bookingConfirmation, 'Click or drop PDF, JPG, PNG (Max 5MB)')}
+                </p>
+              </div>
+            </div>
           </label>
+          <input
+             id="bookingConfirmationUpload"
+            type="file"
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            onChange={(e) => handleFileUpload(e, 'bookingConfirmation')}
+            accept=".pdf,.jpg,.jpeg,.png"
+          />
         </div>
 
-        <div className="border-2 border-dashed border-slate-200 rounded-xl p-6 sm:p-8 text-center transition-colors hover:border-blue-400 cursor-pointer group">
-          <Passport className="w-8 h-8 mx-auto mb-4 text-slate-400 group-hover:text-blue-500 transition-colors" />
-          <label className="block cursor-pointer">
-            <span className="text-sm font-medium text-slate-700">Passport or ID</span>
-            <input
-              type="file"
-              className="hidden"
-              onChange={(e) => handleFileUpload(e, 'passport')}
-              accept=".pdf,.jpg,.jpeg,.png"
-            />
-            <p className="mt-1 text-sm text-slate-500">
-              {formData.documents.passport
-                ? formData.documents.passport.name
-                : 'Drop your file here or tap to upload'}
-            </p>
+        {/* File Upload Area - Passport/ID */}
+        <div className={`border-2 border-dashed rounded-xl p-4 transition-colors group relative ${formData.documents.passport ? 'border-green-400 bg-green-50/50' : 'border-gray-300 hover:border-blue-400'}`}>
+           <label htmlFor="passportUpload" className="block cursor-pointer">
+            <div className="flex items-center">
+              <Passport className={`w-6 h-6 mr-3 flex-shrink-0 ${formData.documents.passport ? 'text-green-600' : 'text-gray-400 group-hover:text-blue-500'}`} />
+              <div>
+                <span className={`text-sm font-medium ${formData.documents.passport ? 'text-green-800' : 'text-gray-700'}`}>Passport or ID (Optional)</span>
+                 <p className={`mt-0.5 text-xs ${formData.documents.passport ? 'text-green-700 font-medium' : 'text-gray-500'}`}>
+                  {getFileName(formData.documents.passport, 'Click or drop PDF, JPG, PNG (Max 5MB)')}
+                </p>
+              </div>
+            </div>
           </label>
+          <input
+             id="passportUpload"
+            type="file"
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            onChange={(e) => handleFileUpload(e, 'passport')}
+            accept=".pdf,.jpg,.jpeg,.png"
+          />
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-3">
+      {/* Navigation Buttons - Updated Style */}
+      <div className="flex flex-col sm:flex-row gap-3 mt-6">
         <Button
+          type="button"
           onClick={handleBack}
           variant="outline"
-          className="flex-1 h-12 order-1 sm:order-none"
+          className="flex-1 h-12 rounded-lg order-1 sm:order-none border-gray-300 text-gray-700 hover:bg-gray-50"
         >
           Back
         </Button>
         <Button
+          type="button"
           onClick={handleNext}
           variant="gradient"
-          className="flex-1 h-12"
+          className="flex-1 h-12 rounded-lg"
         >
-          Continue to Payment
+          Next: Payment Details
         </Button>
       </div>
     </motion.div>
   );
 
+  // Payment Details Form - Refined Styling
   const renderPaymentDetails = () => (
     <motion.form
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="space-y-6"
+      key="payment"
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: 20 }}
+      transition={{ duration: 0.3 }}
+      className="space-y-5" // Adjusted spacing
       onSubmit={(e) => {
         e.preventDefault();
-        handleNext();
+        handleNext(); // Will trigger handleSubmit inside
       }}
     >
       <div className="space-y-4">
-        <div className="space-y-2">
-          <label htmlFor="bankName" className="block text-sm font-medium text-slate-700">
+        <div className="space-y-1">
+          <label htmlFor="bankName" className="flex items-center text-sm font-medium text-[#333] mb-1">
+            <Building className="w-4 h-4 mr-2 text-gray-400" /> {/* Changed Icon */}
             Bank Name
           </label>
           <Input
@@ -483,14 +517,15 @@ export function ClaimForm() {
             name="bankName"
             value={formData.bankName}
             onChange={handleInputChange}
-            placeholder="Enter your bank name"
-            className="h-12"
+            placeholder="e.g., Monzo, Barclays, etc."
+            className="h-11 rounded-lg border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-300 text-sm"
             required
           />
         </div>
 
-        <div className="space-y-2">
-          <label htmlFor="bankHolder" className="block text-sm font-medium text-slate-700">
+        <div className="space-y-1">
+          <label htmlFor="bankHolder" className="flex items-center text-sm font-medium text-[#333] mb-1">
+            <User className="w-4 h-4 mr-2 text-gray-400" /> {/* Changed Icon */}
             Account Holder Name
           </label>
           <Input
@@ -498,14 +533,15 @@ export function ClaimForm() {
             name="bankHolder"
             value={formData.bankHolder}
             onChange={handleInputChange}
-            placeholder="Enter account holder name"
-            className="h-12"
+            placeholder="Full name on the account"
+            className="h-11 rounded-lg border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-300 text-sm"
             required
           />
         </div>
 
-        <div className="space-y-2">
-          <label htmlFor="bankAccount" className="block text-sm font-medium text-slate-700">
+        <div className="space-y-1">
+          <label htmlFor="bankAccount" className="flex items-center text-sm font-medium text-[#333] mb-1">
+            <BanknoteIcon className="w-4 h-4 mr-2 text-gray-400" /> {/* Changed Icon */}
             IBAN / Account Number
           </label>
           <Input
@@ -513,25 +549,27 @@ export function ClaimForm() {
             name="bankAccount"
             value={formData.bankAccount}
             onChange={handleInputChange}
-            placeholder="Enter your IBAN or account number"
-            className="h-12"
+            placeholder="Enter IBAN or Account Number & Sort Code"
+            className="h-11 rounded-lg border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-300 text-sm"
             required
           />
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-3">
+      {/* Navigation Buttons - Updated Style */}
+      <div className="flex flex-col sm:flex-row gap-3 mt-6">
         <Button
+          type="button"
           onClick={handleBack}
           variant="outline"
-          className="flex-1 h-12 order-1 sm:order-none"
+          className="flex-1 h-12 rounded-lg order-1 sm:order-none border-gray-300 text-gray-700 hover:bg-gray-50"
         >
           Back
         </Button>
         <Button
           type="submit"
           variant="gradient"
-          className="flex-1 h-12"
+          className="flex-1 h-12 rounded-lg"
         >
           Submit Claim
         </Button>
@@ -539,47 +577,57 @@ export function ClaimForm() {
     </motion.form>
   );
 
+  // Success Screen - Refined Styling
   const renderSuccess = () => (
     <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
+      key="success"
+      initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="text-center space-y-6"
+      transition={{ duration: 0.4, ease: "backOut" }}
+      className="text-center py-8 space-y-5" // Added padding
     >
-      <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full mx-auto flex items-center justify-center">
-        <CheckCircle2 className="w-10 h-10 text-white" />
-      </div>
-      <h3 className="text-2xl font-bold text-slate-900">Claim Submitted Successfully!</h3>
-      <p className="text-slate-600">
-        We've received your claim and will start processing it right away. You'll receive
-        updates via email about the status of your claim.
+      <motion.div
+         initial={{ scale: 0 }} 
+         animate={{ scale: 1 }} 
+         transition={{ delay: 0.1, type: "spring", stiffness: 200, damping: 15 }}
+         className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full mx-auto flex items-center justify-center shadow-lg"
+      >
+        <CheckCircle2 className="w-9 h-9 text-white" />
+      </motion.div>
+      <h3 className="text-xl font-semibold text-gray-800">Claim Submitted Successfully!</h3>
+      <p className="text-sm text-gray-600 max-w-sm mx-auto">
+        Thank you! We've received your claim details and documents. Our team will review everything and keep you updated via email.
       </p>
-      <div className="pt-6">
+      <div className="pt-4">
         <Button
           onClick={() => navigate('/dashboard')}
           variant="gradient"
-          className="w-full sm:w-auto h-12"
+          className="rounded-lg h-11 px-6 text-sm"
         >
-          View Claim Status
+          Go to My Dashboard
         </Button>
       </div>
     </motion.div>
   );
 
+  // Main Component Return - Updated Container Style
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-      className="w-full max-w-2xl mx-auto px-4 sm:px-0"
+      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      className="w-full max-w-lg mx-auto px-4 sm:px-0"
     >
-      <div className="bg-white/90 backdrop-blur-xl rounded-[2rem] p-6 sm:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/20">
+      <div className="bg-white/80 backdrop-blur-xl rounded-[2rem] p-6 sm:p-8 shadow-md border border-gray-200/50">
         {renderStepIndicator()}
-        <AnimatePresence mode="wait">
-          {step === 'personal' && renderPersonalDetails()}
-          {step === 'documents' && renderDocumentUpload()}
-          {step === 'payment' && renderPaymentDetails()}
-          {step === 'success' && renderSuccess()}
-        </AnimatePresence>
+        <div className="mt-8">
+          <AnimatePresence mode="wait">
+            {step === 'personal' && renderPersonalDetails()}
+            {step === 'documents' && renderDocumentUpload()}
+            {step === 'payment' && renderPaymentDetails()}
+            {step === 'success' && renderSuccess()}
+          </AnimatePresence>
+        </div>
       </div>
     </motion.div>
   );

@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { CheckCircle2, AlertTriangle, BanknoteIcon, Plane, ArrowRight } from "lucide-react";
+import { CheckCircle2, AlertTriangle, BanknoteIcon, Plane, ArrowRight, Info, Tag, Clock, AlertCircle } from "lucide-react";
 import { Button } from "./ui/button";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { formatCurrency, formatDate } from "@/lib/utils";
@@ -98,6 +98,14 @@ export function FlightCheckResults({
   const departureCountry = flightDetails?.departure?.country || '';
   const arrivalCountry = flightDetails?.arrival?.country || '';
 
+  // Format date nicely
+  const formattedDate = new Date(flightDate).toLocaleDateString('en-GB', {
+    weekday: 'long', // Use full weekday
+    day: 'numeric',
+    month: 'long', // Use full month
+    year: 'numeric'
+  });
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -105,11 +113,7 @@ export function FlightCheckResults({
       exit={{ opacity: 0, y: -20 }}
       className="w-full max-w-lg mx-auto px-4 sm:px-0"
     >
-      <div className="bg-white/70 backdrop-blur-2xl rounded-[2.5rem] p-6 sm:p-10 shadow-lg border border-white/50 overflow-hidden relative">
-        {/* Decorative elements */}
-        <div className="absolute -top-24 -right-24 w-48 h-48 bg-gradient-to-br from-blue-200/30 to-purple-200/30 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-gradient-to-br from-purple-200/30 to-blue-200/30 rounded-full blur-3xl"></div>
-        
+      <div className="bg-white/80 backdrop-blur-xl rounded-[2rem] p-6 sm:p-8 shadow-md border border-gray-200/50 overflow-hidden relative">
         <div className="relative">
           <div className="flex flex-col items-center text-center mb-8">
             {isEligible ? (
@@ -117,155 +121,146 @@ export function FlightCheckResults({
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                className="bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full p-4 mb-4 shadow-md"
+                className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-full p-3 mb-3 shadow-lg"
               >
-                <CheckCircle2 className="w-8 h-8 text-white" />
+                <CheckCircle2 className="w-7 h-7 text-white" />
               </motion.div>
             ) : (
               <motion.div 
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                className="bg-gradient-to-br from-amber-400 to-amber-600 rounded-full p-4 mb-4 shadow-md"
+                className="bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full p-3 mb-3 shadow-lg"
               >
-                <AlertTriangle className="w-8 h-8 text-white" />
+                <AlertTriangle className="w-7 h-7 text-white" />
               </motion.div>
             )}
             <motion.h2 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.2 }}
-              className="text-2xl font-bold text-[#1D1D1F] mb-2"
+              className={`text-2xl font-semibold mb-1 ${isEligible ? 'text-emerald-700' : 'text-orange-700'}`}
             >
-              {isEligible ? "Good News!" : "Initial Assessment"}
+              {isEligible ? "You May Be Eligible!" : "Initial Assessment"}
             </motion.h2>
             <motion.p 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 }}
-              className="text-[#6e6e73]"
+              className="text-[#444] text-sm max-w-xs mx-auto"
             >
               {isEligible
-                ? `You're eligible for compensation under ${regulation}`
-                : "Our initial assessment suggests this flight may not be eligible for compensation"}
+                ? `Based on the details, you could claim under ${regulation}.`
+                : `Our initial check suggests this flight might not qualify due to: ${reason}.`}
             </motion.p>
           </div>
 
-          <div className="space-y-5 mb-8">
-            {/* Airline section */}
+          <div className="space-y-4 mb-8">
             <motion.div 
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              className="bg-white/80 backdrop-blur-sm rounded-2xl p-5 shadow-sm border border-white/50 mb-4"
+              className="bg-white/90 backdrop-blur-sm rounded-xl p-4 shadow-sm border border-gray-200/60"
             >
-              <div className="flex items-center mb-3">
-                <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-2 rounded-xl shadow-sm mr-3">
-                  <Plane className="w-5 h-5 text-blue-600" />
+              <div className="flex items-center mb-2">
+                <div className="bg-gradient-to-br from-blue-100 to-blue-200 p-1.5 rounded-lg shadow-sm mr-3">
+                  <Plane className="w-4 h-4 text-blue-700" />
                 </div>
-                <h3 className="font-medium text-[#1D1D1F] uppercase tracking-wide text-sm">Airline</h3>
+                <h3 className="font-medium text-[#1D1D1F] uppercase tracking-wide text-xs">Airline</h3>
               </div>
-              <p className="text-lg font-semibold text-[#1D1D1F]">{airlineName}</p>
-              <p className="text-[#6e6e73] text-sm">Flight {displayFlightNumber}</p>
+              <p className="text-base font-semibold text-[#1D1D1F]">{airlineName}</p>
+              <p className="text-[#6e6e73] text-xs">Flight {displayFlightNumber}</p>
             </motion.div>
             
-            {/* Route details */}
             <motion.div 
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
-              className="bg-white/80 backdrop-blur-sm rounded-2xl p-5 shadow-sm border border-white/50"
+              className="bg-white/90 backdrop-blur-sm rounded-xl p-4 shadow-sm border border-gray-200/60"
             >
-              <h3 className="font-medium text-[#1D1D1F] uppercase tracking-wide text-sm mb-4">Route Details</h3>
-              <div className="flex justify-between items-center">
+              <h3 className="font-medium text-[#1D1D1F] uppercase tracking-wide text-xs mb-3">Route & Date</h3>
+              <div className="flex justify-between items-center mb-3">
                 <div className="text-left">
-                  <div className="font-medium text-[#1D1D1F] text-lg">{departureIata}</div>
-                  <div className="text-xs text-[#6e6e73]">{departureAirport}</div>
+                  <div className="font-semibold text-[#1D1D1F] text-base">{departureIata}</div>
+                  <div className="text-xs text-[#6e6e73] max-w-[100px] truncate">{departureAirport}</div>
                   <div className="text-xs text-[#86868b]">{departureCountry}</div>
                 </div>
-                <div className="flex-1 px-4">
-                  <div className="border-t-2 border-slate-200 border-dashed relative">
-                    <div className="absolute -top-1.5 left-0 w-3 h-3 rounded-full bg-gradient-to-br from-blue-400 to-blue-600"></div>
-                    <div className="absolute -top-1.5 right-0 w-3 h-3 rounded-full bg-gradient-to-br from-purple-400 to-purple-600"></div>
-                    <Plane className="absolute -top-3 left-1/2 -translate-x-1/2 w-5 h-5 text-slate-400" />
+                <div className="flex-1 px-3">
+                  <div className="border-t border-gray-300 border-dashed relative">
+                    <div className="absolute -top-1.5 left-0 w-2.5 h-2.5 rounded-full bg-gradient-to-br from-blue-400 to-blue-600"></div>
+                    <div className="absolute -top-1.5 right-0 w-2.5 h-2.5 rounded-full bg-gradient-to-br from-purple-400 to-purple-600"></div>
+                    <Plane className="absolute -top-2.5 left-1/2 -translate-x-1/2 w-4 h-4 text-gray-400" />
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="font-medium text-[#1D1D1F] text-lg">{arrivalIata}</div>
-                  <div className="text-xs text-[#6e6e73]">{arrivalAirport}</div>
+                  <div className="font-semibold text-[#1D1D1F] text-base">{arrivalIata}</div>
+                  <div className="text-xs text-[#6e6e73] max-w-[100px] truncate">{arrivalAirport}</div>
                   <div className="text-xs text-[#86868b]">{arrivalCountry}</div>
                 </div>
               </div>
-              <div className="mt-5 text-sm text-[#6e6e73] text-center">
-                {new Date(flightDate).toLocaleDateString('en-GB', {
-                  weekday: 'short',
-                  day: 'numeric',
-                  month: 'short',
-                  year: 'numeric'
-                })}
+              <div className="text-xs text-[#6e6e73] text-center pt-2 border-t border-gray-100">
+                {formattedDate}
               </div>
             </motion.div>
 
-            {isEligible && (
+            {isEligible ? (
               <motion.div 
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6 }}
-                className="bg-gradient-to-br from-emerald-50 to-emerald-100/70 backdrop-blur-sm rounded-2xl p-5 mt-4 shadow-sm border border-emerald-100"
+                className="bg-gradient-to-br from-emerald-50/80 to-green-100/60 backdrop-blur-sm rounded-xl p-4 mt-4 shadow-sm border border-emerald-200/70"
               >
-                <h3 className="font-medium text-emerald-800 uppercase tracking-wide text-sm mb-4">Compensation Details</h3>
-                <div className="space-y-3">
+                <h3 className="font-medium text-emerald-800 uppercase tracking-wide text-xs mb-3">Potential Compensation</h3>
+                <div className="space-y-2 text-sm">
                   <div className="flex justify-between items-center">
-                    <span className="text-[#1D1D1F]">Amount</span>
-                    <span className="font-semibold text-emerald-700 text-lg">
+                    <span className="text-emerald-900 flex items-center"><BanknoteIcon className="w-4 h-4 mr-1.5 opacity-70" />Amount</span>
+                    <span className="font-semibold text-emerald-700 text-base">
                       {formatCurrency(validatedCompensation, currency)}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-[#1D1D1F]">Regulation</span>
+                    <span className="text-emerald-900 flex items-center"><Info className="w-4 h-4 mr-1.5 opacity-70"/>Regulation</span>
                     <span className="font-medium text-[#1D1D1F]">{regulation}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-[#1D1D1F]">Processing Time</span>
+                    <span className="text-emerald-900 flex items-center"><Clock className="w-4 h-4 mr-1.5 opacity-70"/>Est. Time</span>
                     <span className="font-medium text-[#1D1D1F]">{processingTime}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-[#1D1D1F]">Reason</span>
-                    <span className="font-medium text-[#1D1D1F]">{reason}</span>
+                    <span className="text-emerald-900 flex items-center"><Tag className="w-4 h-4 mr-1.5 opacity-70"/>Reason Code</span>
+                    <span className="font-medium text-[#1D1D1F] capitalize">{reason.replace(/_/g, ' ')}</span>
                   </div>
                 </div>
               </motion.div>
-            )}
-
-            {!isEligible && (
+            ) : (
               <motion.div 
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6 }}
-                className="bg-gradient-to-br from-amber-50 to-amber-100/70 backdrop-blur-sm rounded-2xl p-5 mt-4 shadow-sm border border-amber-100 text-[#1D1D1F]"
+                className="bg-gradient-to-br from-amber-50/80 to-orange-100/60 backdrop-blur-sm rounded-xl p-4 mt-4 shadow-sm border border-amber-200/70 text-orange-900"
               >
-                <p className="text-sm mb-3">
-                  <strong className="font-medium">Note:</strong> {reason}
+                 <h3 className="font-medium uppercase tracking-wide text-xs mb-2 flex items-center"><AlertCircle className="w-4 h-4 mr-1.5"/> Note</h3>
+                <p className="text-sm mb-2">
+                  <strong className="font-medium">Reason Given:</strong> {reason.replace(/_/g, ' ')} 
                 </p>
-                <p className="text-sm leading-relaxed">
-                  If you believe you are eligible, you can still proceed with your claim. 
-                  Our team will review your case in detail and consider any additional circumstances.
+                <p className="text-xs leading-relaxed opacity-90">
+                  Even if the initial check suggests ineligibility, you can proceed. Our experts will perform a detailed review.
                 </p>
               </motion.div>
             )}
           </div>
 
           <motion.div 
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.7 }}
-            className="flex gap-4"
+            className="flex gap-3 pt-2"
           >
             <Button
               type="button"
               variant="outline"
               onClick={onReset}
-              className="flex-1 rounded-xl h-12 shadow-sm hover:shadow transition-all duration-200"
+              className="flex-1 rounded-lg h-12 text-base font-medium shadow-sm hover:shadow border-gray-300 text-gray-700 hover:bg-gray-50 transition-all duration-200"
             >
               Back
             </Button>
@@ -273,12 +268,14 @@ export function FlightCheckResults({
               type="button"
               variant={isEligible ? "gradient" : "outline"}
               onClick={onContinue}
-              className="flex-1 rounded-xl h-12 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+              className={`flex-1 rounded-lg h-12 text-base font-medium shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0 ${
+                !isEligible && 'border-blue-500 text-blue-600 hover:bg-blue-50' 
+              }`}
             >
               {isEligible ? (
-                <><span>Continue to Claim</span><ArrowRight className="ml-2 w-4 h-4" /></>
+                <><span>Continue Claim</span><ArrowRight className="ml-1.5 w-4 h-4" /></>
               ) : (
-                "Proceed with Claim"
+                "Proceed Anyway"
               )}
             </Button>
           </motion.div>

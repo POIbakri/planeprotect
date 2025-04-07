@@ -29,8 +29,8 @@ performanceMonitor.startMonitoring();
 function App() {
   return (
     <ErrorBoundary>
-      <Router>
-        <AuthProvider>
+      <AuthProvider>
+        <Router>
           <Toaster 
             position="top-right"
             toastOptions={{
@@ -101,7 +101,6 @@ function App() {
                 </ErrorBoundary>
               } />
               
-              {/* Protected Routes */}
               <Route path="dashboard" element={
                 <ErrorBoundary>
                   <PrivateRoute>
@@ -159,12 +158,11 @@ function App() {
                 </ErrorBoundary>
               } />
               
-              {/* 404 Route */}
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>
-        </AuthProvider>
-      </Router>
+        </Router>
+      </AuthProvider>
     </ErrorBoundary>
   );
 }
