@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Upload, CreditCard, Import as Passport, Plane, User, Mail, Phone, CheckCircle2, Info, BanknoteIcon, Building } from 'lucide-react';
 import { Input } from './ui/input';
@@ -20,7 +20,18 @@ const getFileName = (file: File | null, defaultText: string) => {
 export function ClaimForm() {
   const location = useLocation();
   const navigate = useNavigate();
+  
+  console.log('ClaimForm received location.state:', location.state);
   const { flightNumber, flightDate, compensation } = location.state || {};
+  console.log('ClaimForm destructured flightNumber:', flightNumber);
+
+  // Add effect to check for required state and redirect if missing
+  useEffect(() => {
+    if (!flightNumber || !flightDate) {
+      toast.error('Missing flight details. Please check your flight again.', { id: 'missing-flight-details' });
+      navigate('/'); // Redirect to home or flight check page
+    }
+  }, [flightNumber, flightDate, navigate]);
 
   const [step, setStep] = useState<Step>('personal');
   const [formData, setFormData] = useState({
@@ -169,11 +180,15 @@ export function ClaimForm() {
       const loadingToast = toast.loading('Submitting your claim...');
       
       // Submit claim data
+      // Pass only the required fields to submitClaim
       const claim = await submitClaim({
         flightNumber,
         flightDate,
         compensationAmount: compensation,
-        ...formData,
+        fullName: formData.fullName,
+        email: formData.email,
+        phone: formData.phone,
+        passportNumber: formData.passportNumber,
       });
 
       // Upload documents with progress tracking

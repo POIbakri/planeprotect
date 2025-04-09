@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Plane, Mail, Lock, ArrowLeft } from 'lucide-react';
@@ -12,9 +12,35 @@ export function LoginPage() {
   const [password, setPassword] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [loginSuccess, setLoginSuccess] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, isAdmin, user } = useAuth();
+
+  // Effect for redirection after successful login
+  useEffect(() => {
+    if (loginSuccess && user) {
+      let claimDetails = null;
+      const pendingClaimData = sessionStorage.getItem('pendingClaimDetails');
+      if (pendingClaimData) {
+        try {
+          claimDetails = JSON.parse(pendingClaimData);
+          console.log('Found pending claim details in sessionStorage:', claimDetails);
+          sessionStorage.removeItem('pendingClaimDetails');
+        } catch (error) {
+          console.error('Failed to parse pending claim details:', error);
+        }
+      }
+
+      const state = location.state as { from?: string };
+      // Redirect admin users to admin dashboard
+      const redirectTo = isAdmin ? '/admin' : (state?.from || '/dashboard');
+      
+      console.log(`Redirecting to ${redirectTo} with claim details:`, claimDetails);
+      navigate(redirectTo, { state: claimDetails });
+      setLoginSuccess(false);
+    }
+  }, [loginSuccess, user, isAdmin, navigate, location.state]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,17 +49,14 @@ export function LoginPage() {
     try {
       if (isSignUp) {
         await signUp(email, password);
-        toast.success('Account created successfully!');
+        toast.success('Account created! Check your email to verify.');
+        navigate('/'); 
       } else {
         await signIn(email, password);
-        toast.success('Welcome back!');
+        setLoginSuccess(true);
       }
-      
-      // Check if we have a redirect path from state
-      const state = location.state as { from?: string };
-      navigate(state?.from || '/dashboard');
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Authentication failed');
+      console.error('Authentication error in form handler:', error);
     } finally {
       setLoading(false);
     }

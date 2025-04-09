@@ -5,6 +5,7 @@ import { Plane, Clock, CheckCircle2, Shield, Star, ArrowRight } from 'lucide-rea
 import { FlightCheck } from './FlightCheck';
 import { HowItWorks } from './HowItWorks';
 import { WhyRefundHero } from './WhyRefundHero';
+import { toast } from 'react-hot-toast';
 
 const testimonials = [
   {
@@ -128,15 +129,34 @@ export function LandingPage() {
         </motion.div>
 
         {/* Flight Check Form */}
-        <motion.div 
-          id="check-flight" 
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.2, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="max-w-lg mx-auto mt-8 relative z-10"
-        >
-          <FlightCheck onSuccess={() => user ? navigate('/claim') : navigate('/login')} />
-        </motion.div>
+        <div id="check-flight" className="pt-16 sm:pt-24">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.3 }}
+            className="max-w-lg mx-auto"
+          >
+            <FlightCheck 
+              onSuccess={(details) => {
+                if (user) {
+                  console.log('LandingPage onSuccess: Navigating to /claim with details:', details);
+                  navigate('/claim', { state: details }); 
+                } else {
+                  // Store details in sessionStorage before login redirect
+                  try {
+                    sessionStorage.setItem('pendingClaimDetails', JSON.stringify(details));
+                    console.log('LandingPage onSuccess: User not logged in. Storing pending claim details and redirecting to login.');
+                    navigate('/login', { state: { from: '/claim' } });
+                  } catch (error) {
+                    console.error("LandingPage: Failed to save pending claim details:", error);
+                    toast.error("Could not save flight details. Please try again.");
+                  }
+                }
+              }}
+            />
+          </motion.div>
+        </div>
 
         {/* Stats Section */}
         <motion.div 

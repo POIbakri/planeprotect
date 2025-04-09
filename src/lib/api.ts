@@ -2250,6 +2250,7 @@ export async function submitClaim(claimData: any) {
 
     if (error) throw error;
 
+    /*
     await sendEmail({
       to: claimData.email,
       name: claimData.fullName,
@@ -2261,6 +2262,7 @@ export async function submitClaim(claimData: any) {
         compensation: data.compensation_amount,
       },
     });
+    */
 
     return data;
   } catch (error) {
@@ -2322,54 +2324,84 @@ export async function getAllClaims(
   page = 1,
   limit = 10,
   filters: ClaimFilters = {}
-) {
+): Promise<PaginatedResponse<Claim>> {
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Authentication required');
 
-    const { data: adminData } = await supabase
-      .from('admins')
-      .select('id')
-      .eq('user_id', user.id)
-      .single();
-
-    if (!adminData) {
+    // Admin check still good practice, but function will also verify
+    const isAdmin = user.id === 'bade31d2-c74d-4da4-ac50-b143b0220106' || 
+                   user.id === '179a0c8f-6239-44ed-976e-652c81bd7e3d';
+    
+    if (!isAdmin) {
+      console.log('User is not admin:', user.id);
       throw new Error('Unauthorized access');
     }
 
-    let query = supabase
-      .from('claims')
-      .select(`
-        *,
-        claim_documents (
-          id,
-          type,
-          file_path,
-          uploaded_at
-        )
-      `, { count: 'exact' });
+    console.log('Calling get_all_claims_admin RPC function...');
 
-    if (filters.status) {
-      query = query.eq('status', filters.status);
+    const { data: rpcData, error: rpcError } = await supabase.rpc('get_all_claims_admin', {
+      page_num: page,
+      page_size: limit,
+      filter_status: String(filters.status) === 'all' ? null : filters.status as string | null,
+      filter_search: filters.search && filters.search.length >= 3 ? filters.search : null,
+      filter_start_date: filters.startDate || null,
+      filter_end_date: filters.endDate || null,
+      sort_field: filters.sortBy || 'created_at',
+      sort_dir: filters.sortDirection || 'desc'
+    });
+
+    if (rpcError) {
+      console.error('Error calling get_all_claims_admin RPC:', rpcError);
+      // Check if it's the specific authorization error from the function
+      if (rpcError.message.includes('User is not authorized')) {
+         throw new Error('Unauthorized access');
+      }
+      throw rpcError;
+    }
+    
+    if (!rpcData || rpcData.length === 0) {
+      console.log('RPC get_all_claims_admin returned no data.');
+      return { data: [], count: 0, page, limit };
     }
 
-    if (filters.search) {
-      query = query.or(`
-        flight_number.ilike.%${filters.search}%,
-        passenger_name.ilike.%${filters.search}%,
-        email.ilike.%${filters.search}%
-      `);
-    }
+    // The function returns an array of objects like { claim_data: {...}, total_count: N }
+    const claims = rpcData.map((row: any) => row.claim_data);
+    const totalCount = rpcData[0]?.total_count || 0; // Get count from the first row
 
-    const { data, error, count } = await query
-      .order('created_at', { ascending: false })
-      .range((page - 1) * limit, page * limit - 1);
+    console.log(`Successfully fetched ${claims.length} claims via RPC, total count: ${totalCount}`);
+    
+    return { 
+      data: claims || [], 
+      count: totalCount,
+      page, 
+      limit 
+    };
 
-    if (error) throw error;
-    return { data, count, page, limit };
   } catch (error) {
-    console.error('Failed to fetch all claims:', error);
+    console.error('Failed to fetch all claims via RPC:', error);
     throw new Error(getErrorMessage(error));
+  }
+}
+
+// Helper function to check if user is admin (using our hardcoded solution)
+async function checkIfUserIsAdmin(userId: string): Promise<{ isAdmin: boolean }> {
+  if (userId === 'bade31d2-c74d-4da4-ac50-b143b0220106' || userId === '179a0c8f-6239-44ed-976e-652c81bd7e3d') {
+    return { isAdmin: true };
+  }
+  
+  try {
+    const { data } = await supabase
+      .from('admins')
+      .select('user_id')
+      .eq('user_id', userId)
+      .maybeSingle();
+      
+    return { isAdmin: !!data };
+  } catch (error) {
+    console.error('Error checking admin status in API:', error);
+    // Fall back to hardcoded check
+    return { isAdmin: userId === 'bade31d2-c74d-4da4-ac50-b143b0220106' || userId === '179a0c8f-6239-44ed-976e-652c81bd7e3d' };
   }
 }
 

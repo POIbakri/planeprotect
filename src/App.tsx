@@ -54,113 +54,61 @@ function App() {
               },
             }}
           />
-          <Routes>
-            <Route path="/" element={
-              <ErrorBoundary>
-                <Layout />
-              </ErrorBoundary>
-            }>
-              <Route index element={
-                <ErrorBoundary>
-                  <LandingPage />
-                </ErrorBoundary>
-              } />
-              <Route path="login" element={
-                <ErrorBoundary>
-                  <LoginPage />
-                </ErrorBoundary>
-              } />
-              <Route path="forgot-password" element={
-                <ErrorBoundary>
-                  <PasswordReset />
-                </ErrorBoundary>
-              } />
-              <Route path="reset-password" element={
-                <ErrorBoundary>
-                  <PasswordReset />
-                </ErrorBoundary>
-              } />
-              <Route path="terms" element={
-                <ErrorBoundary>
-                  <TermsPage />
-                </ErrorBoundary>
-              } />
-              <Route path="privacy" element={
-                <ErrorBoundary>
-                  <PrivacyPage />
-                </ErrorBoundary>
-              } />
-              <Route path="help" element={
-                <ErrorBoundary>
-                  <HelpCenter />
-                </ErrorBoundary>
-              } />
-              <Route path="about" element={
-                <ErrorBoundary>
-                  <AboutUs />
-                </ErrorBoundary>
-              } />
+          <Layout>
+            <Routes>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="login" element={<LoginPage />} />
+              <Route path="forgot-password" element={<PasswordReset />} />
+              <Route path="reset-password" element={<PasswordReset />} />
+              <Route path="terms" element={<TermsPage />} />
+              <Route path="privacy" element={<PrivacyPage />} />
+              <Route path="help" element={<HelpCenter />} />
+              <Route path="about" element={<AboutUs />} />
               
               <Route path="dashboard" element={
-                <ErrorBoundary>
-                  <PrivateRoute>
-                    <UserDashboard />
-                  </PrivateRoute>
-                </ErrorBoundary>
+                <PrivateRoute>
+                  <UserDashboard />
+                </PrivateRoute>
               } />
               <Route path="admin" element={
-                <ErrorBoundary>
-                  <AdminRoute>
-                    <AdminDashboard />
-                  </AdminRoute>
-                </ErrorBoundary>
+                <AdminRoute>
+                  <AdminDashboard />
+                </AdminRoute>
               } />
               <Route path="claim" element={
-                <ErrorBoundary>
-                  <PrivateRoute>
-                    <ClaimForm />
-                  </PrivateRoute>
-                </ErrorBoundary>
+                <PrivateRoute>
+                  <ClaimForm />
+                </PrivateRoute>
               } />
               <Route path="claim/:id" element={
-                <ErrorBoundary>
-                  <PrivateRoute>
-                    <ClaimStatus />
-                  </PrivateRoute>
-                </ErrorBoundary>
+                <PrivateRoute>
+                  <ClaimStatus />
+                </PrivateRoute>
               } />
               <Route path="settings" element={
-                <ErrorBoundary>
-                  <PrivateRoute>
-                    <ProfileSettings />
-                  </PrivateRoute>
-                </ErrorBoundary>
+                <PrivateRoute>
+                  <ProfileSettings />
+                </PrivateRoute>
               } />
               <Route path="documents/:claimId" element={
-                <ErrorBoundary>
-                  <PrivateRoute>
-                    <DocumentManagerWrapper />
-                  </PrivateRoute>
-                </ErrorBoundary>
+                <PrivateRoute>
+                  <DocumentManagerWrapper />
+                </PrivateRoute>
               } />
               <Route path="notifications" element={
-                <ErrorBoundary>
-                  <PrivateRoute>
-                    <NotificationsPage />
-                  </PrivateRoute>
-                </ErrorBoundary>
+                <PrivateRoute>
+                  <NotificationsPage />
+                </PrivateRoute>
               } />
               <Route path="delete-account" element={
-                <ErrorBoundary>
-                  <PrivateRoute>
-                    <DeleteAccount />
-                  </PrivateRoute>
-                </ErrorBoundary>
+                <PrivateRoute>
+                  <DeleteAccount />
+                </PrivateRoute>
               } />
               
               <Route path="*" element={<NotFound />} />
-            </Route>
-          </Routes>
+            </Routes>
+          </Layout>
         </Router>
       </AuthProvider>
     </ErrorBoundary>

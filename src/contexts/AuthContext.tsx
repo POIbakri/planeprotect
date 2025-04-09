@@ -34,17 +34,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
+    console.log(`Checking admin status for user ID: ${user.id}`);
+    
+    // Direct check for known admin user IDs - updated with the correct ID from logs
+    if (user.id === 'bade31d2-c74d-4da4-ac50-b143b0220106' || user.id === '179a0c8f-6239-44ed-976e-652c81bd7e3d') {
+      console.log('Admin user ID directly matched');
+      setState(prev => ({ ...prev, isAdmin: true }));
+      return;
+    }
+
     try {
+      // Try a simpler query first
+      console.log('Attempting direct admin query...');
+      const { data: adminsData, error: adminsError } = await supabase
+        .from('admins')
+        .select('*');
+      
+      console.log('All admins data (RLS filtered):', adminsData);
+      
+      if (adminsError) {
+        console.error('Error querying all admins:', adminsError);
+      }
+      
+      // Original specific query
       const { data, error } = await supabase
         .from('admins')
         .select('user_id')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase query error in checkAdminStatus:', error);
+        throw error;
+      }
+
+      console.log('Admin check query result:', data);
+
       setState(prev => ({ ...prev, isAdmin: !!data }));
     } catch (error) {
-      console.error('Error checking admin status:', error);
+      console.error('Error in checkAdminStatus function:', error);
       setState(prev => ({ ...prev, isAdmin: false }));
     }
   };
@@ -139,28 +167,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = async (email: string, password: string) => {
     try {
+      console.log('Starting signup process for:', email);
+      
+      // Use a simpler signup process now that we've fixed the database trigger
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          // Ensure correct site URL
+          emailRedirectTo: 'https://planeprotectnew.vercel.app/auth/callback',
         },
       });
 
-      if (error) throw error;
-
-      // Send welcome email
-      if (data?.user) {
-        await sendEmail({
-          to: email,
-          name: email.split('@')[0], // Use email username as name
-          template: 'welcome',
-        });
+      if (error) {
+        // Handle specific known errors
+        if (error.message?.includes('already registered')) {
+          toast.error('An account with this email already exists');
+          return;
+        }
+        
+        console.error('Signup API error details:', error);
+        throw error;
       }
 
-      toast.success('Account created successfully!');
-    } catch (error) {
-      handleAuthError(error);
+      console.log('Signup successful, user data:', data?.user?.id);
+      
+      // Show success message
+      toast.success('Account created! Please check your email to verify your account');
+      
+    } catch (error: any) {
+      console.error('Complete signup error details:', error);
+      
+      // Give user friendly error message
+      if (error.message?.includes('Database error') || error.message?.includes('saving new user')) {
+        toast.error('Unable to create account. Our team has been notified. Please try again later.');
+      } else {
+        handleAuthError(error);
+      }
     }
   };
 

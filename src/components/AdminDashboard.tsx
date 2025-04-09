@@ -87,16 +87,54 @@ export function AdminDashboard() {
         sortDirection: sortBy.direction,
       };
       
-      const result: PaginatedResponse<Claim> = await getAllClaims(currentPage, pageSize, filterParams);
+      console.log('Fetching claims with filters:', filterParams);
+      
+      // Try with 2 seconds delay to ensure admin policy is applied
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Try up to 3 times with exponential backoff
+      let result: PaginatedResponse<Claim> | null = null;
+      let attempts = 0;
+      
+      while (attempts < 3 && !result) {
+        try {
+          if (attempts > 0) {
+            console.log(`Retry attempt ${attempts} for claims fetch`);
+            // Wait before retrying (exponential backoff)
+            await new Promise(r => setTimeout(r, 1000 * Math.pow(2, attempts - 1)));
+          }
+          
+          result = await getAllClaims(currentPage, pageSize, filterParams);
+          
+          // Add this debug logging
+          console.log(`Got ${result?.data?.length || 0} claims with ${result?.data?.[0] ? 
+            Object.prototype.hasOwnProperty.call(result.data[0], 'claim_documents') ? 
+            (result.data[0] as any).claim_documents?.length || 0 : '0 (no documents property)' : 
+            '0 (no claims)'} documents for first claim`);
+          
+          break;
+        } catch (error) {
+          attempts++;
+          if (attempts >= 3) throw error;
+          console.warn(`Fetch attempt ${attempts} failed, retrying...`, error);
+        }
+      }
+      
+      if (!result) {
+        throw new Error('Failed to fetch claims after multiple attempts');
+      }
       
       setClaims(result.data || []);
       setTotalClaimsCount(result.count || 0);
-      
       setStats(prev => ({ ...prev, totalCount: result.count || 0 }));
       calculateStatsBasedOnFetchedData(result.data || []);
+      
+      console.log(`Successfully loaded ${result.data?.length || 0} claims`);
     } catch (error) {
       console.error('Error fetching claims:', error);
-      toast.error('Failed to fetch claims');
+      toast.error('Failed to fetch claims. Please try refreshing the page.');
+      setClaims([]);
+      setTotalClaimsCount(0);
     } finally {
       setLoading(false);
     }

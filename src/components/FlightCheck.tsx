@@ -444,7 +444,14 @@ const flightDistances = {
 // Define the steps for the multi-step form
 type CheckStep = 'initial-flight' | 'initial-airports' | 'disruption' | 'results';
 
-export function FlightCheck({ onSuccess }: { onSuccess?: () => void }) {
+// Define the structure for the details passed to onSuccess
+interface ClaimNavDetails {
+  flightNumber: string;
+  flightDate: string;
+  compensation: number;
+}
+
+export function FlightCheck({ onSuccess }: { onSuccess?: (details: ClaimNavDetails) => void }) {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [airlineQuery, setAirlineQuery] = useState('');
@@ -726,12 +733,48 @@ export function FlightCheck({ onSuccess }: { onSuccess?: () => void }) {
     });
   };
 
-  // handleContinue remains the same
+  // handleContinue needs to pass state to the claim form
   const handleContinue = () => {
+    // Ensure checkResult exists before navigating
+    if (!checkResult) {
+      toast.error('Cannot proceed without flight check results.');
+      return;
+    }
+    
+    // Construct the full flight number again if necessary or ensure it's available
+    // Assuming fullFlightNumber is accessible here or can be derived from checkResult
+    const finalFlightNumber = checkResult.flightDetails?.flightNumber || `${selectedAirline?.iata || ''}${flightNumber}`;
+    const finalFlightDate = flightDate; // Already available in state
+    const finalCompensation = checkResult.amount;
+
+    const detailsToPass: ClaimNavDetails = {
+      flightNumber: finalFlightNumber,
+      flightDate: finalFlightDate,
+      compensation: finalCompensation
+    };
+
     if (onSuccess) {
-      onSuccess();
+      console.log('Calling onSuccess with details:', detailsToPass); // Log before calling onSuccess
+      onSuccess(detailsToPass);
     } else {
-      user ? navigate('/claim') : navigate('/login');
+      if (user) {
+        console.log('Navigating to /claim with state:', detailsToPass); // <-- Use detailsToPass
+        navigate('/claim', { 
+          state: detailsToPass // <-- Use detailsToPass
+        });
+      } else {
+        // User is not logged in, store data and redirect to login
+        try {
+          // Use sessionStorage to temporarily store claim details
+          sessionStorage.setItem('pendingClaimDetails', JSON.stringify(detailsToPass)); // <-- Use detailsToPass
+          console.log('User not logged in. Storing pending claim details and redirecting to login.');
+          // Redirect to login, telling it to return to /claim
+          navigate('/login', { state: { from: '/claim' } }); 
+        } catch (error) {
+          console.error("Failed to save pending claim details to sessionStorage:", error);
+          toast.error("Could not save flight details before login. Please try again.");
+        }
+      }
     }
   };
 
@@ -911,7 +954,7 @@ export function FlightCheck({ onSuccess }: { onSuccess?: () => void }) {
           <Button
             type="submit"
             variant="gradient"
-            className="w-full h-12 rounded-lg text-base font-medium shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0"
+            className="w-full h-11 rounded-lg text-base font-medium shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0"
           >
             Next: Add Airports <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
@@ -1046,14 +1089,14 @@ export function FlightCheck({ onSuccess }: { onSuccess?: () => void }) {
             type="button"
             variant="outline"
             onClick={handlePreviousStep}
-            className="flex-1 rounded-lg h-12 text-base font-medium shadow-sm hover:shadow border-gray-300 text-gray-700 hover:bg-gray-50 transition-all duration-200"
+            className="flex-1 rounded-lg h-11 text-base font-medium shadow-sm hover:shadow border-gray-300 text-gray-700 hover:bg-gray-50 transition-all duration-200"
           >
             <ArrowLeft className="w-4 h-4 mr-2" /> Back
           </Button>
           <Button
             type="submit"
             variant="gradient"
-            className="flex-1 rounded-lg h-12 text-base font-medium shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0"
+            className="flex-1 rounded-lg h-11 text-base font-medium shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0"
             disabled={isChecking}
           >
             {isChecking ? (
@@ -1225,14 +1268,14 @@ export function FlightCheck({ onSuccess }: { onSuccess?: () => void }) {
               type="button"
               variant="outline"
               onClick={handlePreviousStep}
-              className="flex-1 rounded-lg h-12 text-base font-medium shadow-sm hover:shadow border-gray-300 text-gray-700 hover:bg-gray-50 transition-all duration-200"
+              className="flex-1 rounded-lg h-11 text-base font-medium shadow-sm hover:shadow border-gray-300 text-gray-700 hover:bg-gray-50 transition-all duration-200"
             >
               <ArrowLeft className="w-4 h-4 mr-2" /> Back
             </Button>
             <Button
               type="submit"
               variant="gradient"
-              className="flex-1 rounded-lg h-12 text-base font-medium shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0"
+              className="flex-1 rounded-lg h-11 text-base font-medium shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0"
             >
               Check Eligibility
             </Button>
@@ -1245,7 +1288,7 @@ export function FlightCheck({ onSuccess }: { onSuccess?: () => void }) {
       {step === 'initial-flight' && (
         <motion.div
           key="step-flight"
-          className="bg-white/80 backdrop-blur-xl rounded-[2rem] p-6 sm:p-8 shadow-md border border-gray-200/50 overflow-hidden relative"
+          className="bg-white/80 backdrop-blur-xl rounded-[2rem] p-5 sm:p-6 shadow-md border border-gray-200/50 overflow-hidden relative"
         >
            <StepIndicator />
            <h2 className="text-xl font-semibold text-center text-[#1D1D1F] mb-6">Enter Flight Info</h2>
@@ -1267,7 +1310,7 @@ export function FlightCheck({ onSuccess }: { onSuccess?: () => void }) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="bg-white/80 backdrop-blur-xl rounded-[2rem] p-6 sm:p-8 shadow-md border border-gray-200/50 overflow-hidden relative"
+          className="bg-white/80 backdrop-blur-xl rounded-[2rem] p-5 sm:p-6 shadow-md border border-gray-200/50 overflow-hidden relative"
         >
            <StepIndicator />
             <h2 className="text-xl font-semibold text-center text-[#1D1D1F] mb-6">Select Airports</h2>
@@ -1281,7 +1324,7 @@ export function FlightCheck({ onSuccess }: { onSuccess?: () => void }) {
            initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="bg-white/80 backdrop-blur-xl rounded-[2rem] p-6 sm:p-8 shadow-md border border-gray-200/50 overflow-hidden relative"
+          className="bg-white/80 backdrop-blur-xl rounded-[2rem] p-5 sm:p-6 shadow-md border border-gray-200/50 overflow-hidden relative"
         >
            <StepIndicator />
            <h2 className="text-xl font-semibold text-center text-[#1D1D1F] mb-6">Disruption Details</h2>
