@@ -1,0 +1,16 @@
+.git
+.github
+node_modules
+npm-debug.log
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.vscode
+.idea
+*.log
+tests
+coverage
+docs
+examples 
