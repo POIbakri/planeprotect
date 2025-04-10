@@ -172,8 +172,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email,
         password,
         options: {
-          // Ensure correct site URL
-          emailRedirectTo: 'https://planeprotectnew.vercel.app/auth/callback',
+          // Use a relative path instead of a hardcoded Vercel URL
+          emailRedirectTo: '/auth/callback',
         },
       });
 
