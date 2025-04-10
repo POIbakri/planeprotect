@@ -39,7 +39,7 @@ export function HowItWorks() {
           className="text-center mb-16"
         >
           <h2 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
-            Effortless Compensation in 4 Steps
+            Easy Compensation in 4 Steps
           </h2>
           <p className="text-[#6e6e73] max-w-2xl mx-auto text-lg">
             We've simplified the complex claim process. You focus on your travels, we focus on your compensation.
