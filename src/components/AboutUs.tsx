@@ -19,11 +19,12 @@ export function AboutUs() {
           className="text-center mb-20"
         >
           <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-6">
-            The World's Leading Flight Compensation Service
+            Europe's Premier Flight Compensation Specialists
           </h1>
           <p className="text-xl text-[#6e6e73] max-w-3xl mx-auto">
-            Since 2018, PlaneProtect has helped over 24,000 passengers secure €4.2 million in compensation 
-            from airlines. Our mission: make flight compensation simple, transparent, and accessible to everyone.
+            Since 2018, PlaneProtect has successfully recovered over €4.2 million for more than 24,000 passengers
+            affected by flight disruptions. Our mission: to make claiming your legal entitlement straightforward, 
+            transparent, and accessible for everyone.
           </p>
         </motion.div>
 
@@ -65,17 +66,20 @@ export function AboutUs() {
             <h2 className="text-3xl font-bold text-[#1D1D1F] mb-6">Our Story</h2>
             <div className="space-y-4 text-[#424245]">
               <p>
-                PlaneProtect was founded in 2018 by a team of travel enthusiasts and legal experts who experienced 
-                firsthand the frustration of flight disruptions and the challenge of claiming rightful compensation.
+                PlaneProtect was founded in 2018 by a team of aviation industry veterans and legal specialists who 
+                experienced firsthand the frustration of flight disruptions and the deliberately complex process of 
+                claiming rightful compensation.
               </p>
               <p>
-                Recognizing that airlines often make the claims process unnecessarily complex, we created a premium service 
-                that combines legal expertise with cutting-edge technology to simplify the entire process.
+                We observed how airlines routinely make the claims process unnecessarily complicated, often deterring 
+                eligible passengers from pursuing their legal entitlements under EU and UK regulations. In response, 
+                we developed a premium service that combines specialized legal expertise with proprietary technology 
+                to navigate these challenges with ease.
               </p>
               <p>
-                Today, we're proud to be the highest-rated flight compensation service with a 98% success rate. 
-                Our dedicated team works tirelessly to ensure passengers receive the compensation they deserve—completely 
-                risk-free with our transparent 30% success fee model.
+                Today, we proudly maintain an industry-leading 98% success rate. Our dedicated team of claims specialists 
+                and aviation lawyers works tirelessly to ensure passengers receive every penny they deserve—completely 
+                risk-free with our transparent success-based fee model of just 30%.
               </p>
             </div>
           </motion.div>
@@ -91,7 +95,7 @@ export function AboutUs() {
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-[#1D1D1F] mb-4">Our Values</h2>
             <p className="text-[#6e6e73] max-w-2xl mx-auto">
-              These core principles guide everything we do as we champion passenger rights.
+              These core principles guide our approach as we champion passenger rights across Europe and beyond.
             </p>
           </div>
 
@@ -100,28 +104,28 @@ export function AboutUs() {
               {
                 icon: Shield,
                 title: "Integrity",
-                description: "We maintain the highest ethical standards and only take on claims we believe have merit.",
+                description: "We maintain the highest ethical standards and only pursue claims with legitimate merit under EU261 and UK261 regulations.",
                 color: "blue",
                 delay: 0.1,
               },
               {
                 icon: BadgeCheck,
                 title: "Transparency",
-                description: "Our simple 30% success fee means no hidden costs. You'll always know where your claim stands.",
+                description: "Our straightforward 30% success fee model means no hidden costs, no upfront charges, and complete visibility throughout your claim.",
                 color: "purple",
                 delay: 0.2,
               },
               {
                 icon: Lightbulb,
                 title: "Innovation",
-                description: "Our AI-powered eligibility checker and digital processes ensure the fastest possible resolution.",
+                description: "Our proprietary technology and streamlined processes deliver the fastest possible claim resolution while maximizing your compensation.",
                 color: "amber",
                 delay: 0.3,
               },
               {
                 icon: Users,
                 title: "Client Focus",
-                description: "Your satisfaction is our priority. Our legal experts handle every aspect of your claim.",
+                description: "Your peace of mind is our priority. Our specialists handle every aspect of your claim, from initial assessment to final payment.",
                 color: "emerald",
                 delay: 0.4,
               },
@@ -167,19 +171,19 @@ export function AboutUs() {
               {
                 name: "Alexandra Richards",
                 role: "CEO & Co-Founder",
-                bio: "Former airline executive with 15+ years in the travel industry. Aviation law specialist.",
+                bio: "Former airline executive with 15+ years in the aviation industry and specialist expertise in EU and UK flight compensation legislation.",
                 image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=200&h=200"
               },
               {
                 name: "James Bennett",
                 role: "Legal Director",
-                bio: "EU aviation law expert with experience representing passengers in over 5,000 compensation cases.",
+                bio: "European aviation law expert with over a decade of experience successfully representing passengers in 5,000+ compensation cases.",
                 image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=200&h=200"
               },
               {
                 name: "Sophia Chen",
                 role: "CTO",
-                bio: "Tech innovator who built our AI eligibility checker and automated claims management system.",
+                bio: "Tech visionary who developed our industry-leading eligibility assessment platform and automated claims management system.",
                 image: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=200&h=200"
               },
             ].map((member, index) => (
@@ -223,7 +227,7 @@ export function AboutUs() {
             <div className="text-center mb-10">
               <h2 className="text-3xl font-bold text-[#1D1D1F] mb-4">Our Impact</h2>
               <p className="text-[#6e6e73] max-w-2xl mx-auto">
-                A track record of excellence in flight compensation
+                Our proven record of excellence in securing flight compensation under EU261 and UK261 regulations
               </p>
             </div>
             
@@ -260,10 +264,11 @@ export function AboutUs() {
           viewport={{ once: true }}
           className="text-center"
         >
-          <h2 className="text-3xl font-bold text-[#1D1D1F] mb-6">Ready to Claim Your Compensation?</h2>
+          <h2 className="text-3xl font-bold text-[#1D1D1F] mb-6">Discover If You're Entitled to Compensation</h2>
           <p className="text-xl text-[#6e6e73] max-w-3xl mx-auto mb-8">
-            Check your eligibility in just 2 minutes. Free to check, no upfront fees, 
-            and you only pay our 30% success fee if we win your claim.
+            Check your flight's eligibility in just 2 minutes. Whether your flight was delayed, cancelled, or you were denied boarding, 
+            we'll quickly determine if you're entitled to up to €600 (EU) or £520 (UK) compensation. Free to check, with absolutely 
+            no upfront fees.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 
@@ -271,7 +276,7 @@ export function AboutUs() {
               size="lg"
               className="rounded-full px-8 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
             >
-              Check My Eligibility
+              Check My Flight Now
             </Button>
             <Link to="/contact">
               <Button 
