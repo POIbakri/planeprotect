@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { Scale, Shield, Zap, Award, Calculator, Clock, Users, BadgePercent } from 'lucide-react';
 
-export function WhyRefundHero() {
+export function WhyPlaneProtect() {
   return (
     <div className="py-20 bg-gradient-to-b from-white to-[#F5F5F7] overflow-hidden">
       <div className="max-w-6xl mx-auto px-4">

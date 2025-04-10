@@ -1,29 +1,29 @@
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Plane, Clock, CheckCircle2, Shield, Star, ArrowRight } from 'lucide-react';
+import { Plane, Clock, CheckCircle2, Shield, Star, ArrowRight, AlertCircle, XCircle, BanknoteIcon } from 'lucide-react';
 import { FlightCheck } from './FlightCheck';
 import { HowItWorks } from './HowItWorks';
-import { WhyRefundHero } from './WhyRefundHero';
+import { WhyPlaneProtect } from './WhyPlaneProtect';
 import { toast } from 'react-hot-toast';
 
 const testimonials = [
   {
     name: "Sarah Johnson",
     role: "Business Traveler",
-    content: "With RefundHero, I received €600 for my delayed flight within just 11 days. Their process was remarkably simple.",
+    content: "With PlaneProtect, I received €600 for my delayed flight within just 11 days. Their process was remarkably simple.",
     image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&h=100"
   },
   {
     name: "Michael Chen",
     role: "Family Vacationer",
-    content: "After our flight was cancelled, RefundHero secured £1,040 in compensation for my family. Truly exceptional service!",
+    content: "After our flight was cancelled, PlaneProtect secured £1,040 in compensation for my family. Truly exceptional service!",
     image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&h=100"
   },
   {
     name: "Emma Davis",
     role: "Frequent Flyer",
-    content: "I've used RefundHero three times now. They handle everything, and I only pay when they win. It's brilliantly simple.",
+    content: "I've used PlaneProtect three times now. They handle everything, and I only pay when they win. It's brilliantly simple.",
     image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&h=100"
   }
 ];
@@ -44,92 +44,138 @@ export function LandingPage() {
       {/* Hero Background */}
       <div className="absolute inset-0 overflow-hidden">
         <div 
-          className="absolute inset-0 bg-center bg-cover opacity-[0.02]" 
+          className="absolute inset-0 bg-center bg-cover opacity-[0.04]" 
           style={{
             backgroundImage: `url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=2000')`
           }}
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-blue-50/10 via-transparent to-purple-50/10" />
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1.5 }}
+          className="absolute inset-0 bg-gradient-to-br from-blue-50/20 via-transparent to-purple-50/20" 
+        />
+        
+        {/* Animated airplane paths */}
+        <motion.div
+          initial={{ x: "-100%", y: "20%" }}
+          animate={{ x: "200%", y: "10%" }}
+          transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+          className="absolute w-40 h-1 bg-gradient-to-r from-transparent via-blue-200 to-transparent top-1/4 blur-sm"
+        />
+        <motion.div
+          initial={{ x: "-100%", y: "50%" }}
+          animate={{ x: "200%", y: "60%" }}
+          transition={{ duration: 20, repeat: Infinity, ease: "linear", delay: 2 }}
+          className="absolute w-32 h-0.5 bg-gradient-to-r from-transparent via-purple-200 to-transparent top-1/3 blur-sm"
+        />
       </div>
 
       {/* Hero Section */}
-      <div className="relative w-full px-4 py-16 sm:py-24">
+      <div className="relative w-full px-4 py-12 sm:py-20">
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="text-center mb-10 max-w-4xl mx-auto"
+          className="text-center mb-6 max-w-5xl mx-auto"
         >
-          <div className="flex flex-col items-center justify-center gap-5 sm:gap-6">
-            {/* Logo Badge */}
+          <div className="flex flex-col items-center justify-center gap-3">
+            {/* Alert Banner */}
+            <motion.div
+              initial={{ y: -20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.2, duration: 0.6 }}
+              className="bg-blue-50 border border-blue-200 rounded-full py-1.5 px-4 flex items-center gap-2 mb-4 shadow-sm max-w-max mx-auto"
+            >
+              <AlertCircle className="w-4 h-4 text-blue-600" />
+              <span className="text-sm text-blue-700 font-medium">Airlines won't tell you this!</span>
+            </motion.div>
+
+            {/* Logo Badge - Responsive for mobile */}
             <motion.div 
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.2, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-              className="bg-gradient-to-br from-blue-600 to-purple-600 rounded-full p-3 mb-1 shadow-md"
+              transition={{ delay: 0.3, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+              className="bg-gradient-to-br from-blue-600 to-purple-600 rounded-full p-3 sm:p-4 mb-3 sm:mb-5 shadow-lg"
             >
-              <Plane className="w-8 h-8 text-white" />
+              <Plane className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
             </motion.div>
 
-            {/* Main Headline */}
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-[#1D1D1F] tracking-tight leading-tight sm:leading-tight md:leading-tight">
-              <motion.span 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.4, duration: 0.8 }}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent inline-block"
+            {/* Main Headline - Better responsive sizing */}
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-[#1D1D1F] tracking-tight leading-tight">
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5, duration: 0.8 }}
+                className="inline-block mb-2"
               >
-                Flight Disrupted?
-              </motion.span>
+                <span className="bg-gradient-to-r from-blue-600 via-blue-500 to-purple-500 bg-clip-text text-transparent">DELAYED?</span>{" "}
+                <span className="bg-gradient-to-r from-purple-500 to-blue-600 bg-clip-text text-transparent">CANCELLED?</span>
+              </motion.div>
               <br />
-              <motion.span 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.6, duration: 0.8 }}
-                className="block"
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.8, duration: 0.8 }}
+                className="flex flex-col items-center mt-1"
               >
-                Claim Up to €600 / £520
-              </motion.span>
+                <div className="relative">
+                  <span className="block text-3xl sm:text-4xl md:text-5xl lg:text-6xl">YOU'RE OWED</span>
+                  <motion.div 
+                    initial={{ width: 0 }}
+                    animate={{ width: "100%" }}
+                    transition={{ delay: 1.5, duration: 0.8 }}
+                    className="absolute -bottom-1 sm:-bottom-2 left-0 h-2 sm:h-3 bg-blue-200/40 -z-10 rounded-full"
+                  />
+                </div>
+                <div className="flex items-center mt-2 sm:mt-3 gap-1 sm:gap-2">
+                  <BanknoteIcon className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 text-blue-500" />
+                  <span className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent font-extrabold">
+                    UP TO €600/£520
+                  </span>
+                  <BanknoteIcon className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 text-blue-500" />
+                </div>
+              </motion.div>
             </h1>
 
-            {/* Subheadline */}
+            {/* Subheadline - More Compelling */}
             <motion.p 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.8, duration: 0.8 }}
-              className="text-base sm:text-lg text-[#666] max-w-xl mx-auto font-normal leading-relaxed"
+              transition={{ delay: 1.1, duration: 0.8 }}
+              className="text-lg sm:text-xl text-[#444] max-w-xl mx-auto font-medium leading-relaxed mt-6"
             >
-              Check your eligibility for flight delay or cancellation compensation in minutes.
-              <span className="block mt-1 text-[#888]">
-                No win, no fee – Simple 30% success fee.
+              <span className="underline decoration-blue-400 decoration-2 underline-offset-2">Airlines won't pay unless you claim.</span> Check your eligibility in <span className="font-bold text-blue-600">under 2 minutes</span>.
+              <span className="block mt-2 text-[#666] font-bold">
+                No win, no fee — 30% success fee
               </span>
             </motion.p>
 
-            {/* Trust Badges */}
+            {/* Trust Badges - Better on small screens */}
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1, duration: 0.8 }}
-              className="flex flex-wrap justify-center gap-x-5 gap-y-2 mt-4 text-xs sm:text-sm text-[#555]"
+              transition={{ delay: 1.3, duration: 0.8 }}
+              className="flex flex-wrap justify-center gap-x-4 sm:gap-x-6 gap-y-2 sm:gap-y-3 mt-4 sm:mt-6 text-xs sm:text-sm md:text-base bg-white/50 backdrop-blur-sm py-2 sm:py-3 px-4 sm:px-6 rounded-xl sm:rounded-2xl shadow-sm border border-gray-100"
             >
-              <div className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                <span>High Success Rate</span>
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
+                <span className="font-medium text-gray-700">98% Success Rate</span>
               </div>
-              <div className="flex items-center gap-1.5">
-                <Clock className="w-4 h-4 text-blue-500" />
-                <span>Quick Check</span>
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
+                <span className="font-medium text-gray-700">2-Minute Check</span>
               </div>
-              <div className="flex items-center gap-1.5">
-                <Shield className="w-4 h-4 text-purple-500" />
-                <span>No Upfront Fees</span>
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
+                <span className="font-medium text-gray-700">Zero Upfront Fees</span>
               </div>
             </motion.div>
           </div>
         </motion.div>
 
         {/* Flight Check Form */}
-        <div id="check-flight" className="pt-16 sm:pt-24">
+        <div id="check-flight" className="pt-6 sm:pt-8 md:pt-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -164,7 +210,7 @@ export function LandingPage() {
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.2 }}
-          className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 max-w-3xl mx-auto mt-16 sm:mt-24"
+          className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 max-w-3xl mx-auto mt-12 sm:mt-16 md:mt-24"
         >
           {stats.map((stat, index) => (
             <motion.div
@@ -173,17 +219,17 @@ export function LandingPage() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.4 + index * 0.1 }}
-              className="bg-white/60 backdrop-blur-lg rounded-xl sm:rounded-2xl p-4 text-center shadow-sm border border-gray-200/50"
+              className="bg-white/60 backdrop-blur-lg rounded-xl sm:rounded-2xl p-3 sm:p-4 text-center shadow-sm border border-gray-200/50"
             >
-              <div className="text-2xl sm:text-3xl font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-1">{stat.value}</div>
-              <div className="text-xs sm:text-sm text-[#666]">{stat.label}</div>
+              <div className="text-xl sm:text-2xl md:text-3xl font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-1">{stat.value}</div>
+              <div className="text-xs md:text-sm text-[#666]">{stat.label}</div>
             </motion.div>
           ))}
         </motion.div>
       </div>
 
-      {/* Why RefundHero Section */}
-      <WhyRefundHero />
+      {/* Why PlaneProtect Section */}
+      <WhyPlaneProtect />
 
       {/* How It Works Section */}
       <div id="how-it-works" className="py-16 sm:py-24 bg-white/50">

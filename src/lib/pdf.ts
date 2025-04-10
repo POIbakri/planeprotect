@@ -13,7 +13,7 @@ export function generateClaimLetter(data: ClaimLetterData): Blob {
   
   // Add letterhead
   doc.setFontSize(20);
-  doc.text('RefundHero', 20, 20);
+  doc.text('PlaneProtect', 20, 20);
   
   doc.setFontSize(12);
   doc.text('Flight Compensation Claim Letter', 20, 30);

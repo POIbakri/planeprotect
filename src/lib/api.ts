@@ -1212,7 +1212,7 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
   },
   global: {
     headers: {
-      'x-application-name': 'RefundHero',
+      'x-application-name': 'PlaneProtect',
       'x-application-version': '1.0.0',
     },
   },
@@ -2407,42 +2407,62 @@ async function checkIfUserIsAdmin(userId: string): Promise<{ isAdmin: boolean }>
 
 export async function updateClaimStatus(claimId: string, status: string) {
   try {
-    const validStatuses = ['pending', 'in-review', 'approved', 'paid'];
+    const validStatuses = ['pending', 'in-review', 'approved', 'paid', 'rejected', 'archived']; // Make sure all statuses are covered
     if (!validStatuses.includes(status)) {
       throw new Error('Invalid status');
     }
 
+    // Fetch the claim to get email and other details if needed, though not for sending email anymore
     const { data: claim, error: claimError } = await supabase
       .from('claims')
-      .select('*')
+      .select('email, passenger_name, flight_number, flight_date, compensation_amount, id') // Select only necessary fields
       .eq('id', claimId)
       .single();
 
-    if (claimError) throw claimError;
+    if (claimError) {
+       console.error('Error fetching claim before update:', claimError);
+       throw new Error(`Could not fetch claim details: ${claimError.message}`);
+    }
+     if (!claim) {
+        throw new Error(`Claim with ID ${claimId} not found.`);
+     }
 
     const { error } = await supabase
       .from('claims')
-      .update({ 
+      .update({
         status,
         updated_at: new Date().toISOString()
       })
       .eq('id', claimId);
 
-    if (error) throw error;
+    if (error) {
+       console.error('Error updating claim status in DB:', error);
+       throw new Error(`Database update failed: ${error.message}`);
+    }
 
-    await sendEmail({
-      to: claim.email,
-      name: claim.passenger_name,
-      template: `claim_${status}` as any,
-      data: {
-        claimId: claim.id,
-        flightNumber: claim.flight_number,
-        flightDate: claim.flight_date,
-        compensation: claim.compensation_amount,
-      },
-    });
+    /* 
+      // Removed automatic email sending as requested
+      await sendEmail({
+        to: claim.email,
+        name: claim.passenger_name,
+        template: `claim_${status}` as any, // Ensure template names match enum/constants if applicable
+        data: {
+          claimId: claim.id,
+          flightNumber: claim.flight_number,
+          flightDate: claim.flight_date,
+          compensation: claim.compensation_amount,
+        },
+      });
+    */
+    
+    // Invalidate cache if you are caching claim status
+    invalidateClaimStatus(claimId); 
+    // Potentially invalidate admin claims list cache if needed
+    // invalidateAdminClaimsCache(); 
+
   } catch (error) {
     console.error('Failed to update claim status:', error);
-    throw new Error(getErrorMessage(error));
+    // Use getErrorMessage if it provides more context
+    throw new Error(getErrorMessage(error) || 'Failed to update claim status.');
   }
 }

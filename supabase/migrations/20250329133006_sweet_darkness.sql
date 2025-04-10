@@ -1,4 +1,4 @@
--- Initial Schema Setup for RefundHero
+-- Initial Schema Setup for PlaneProtect
 -- This migration creates all necessary tables, functions, triggers, and policies
 
 /*
@@ -534,7 +534,7 @@ INSERT INTO settings (key, value, description, category, is_public) VALUES
   ('allowed_file_types', '["pdf", "jpg", "png"]', 'Allowed document file types', 'claims', true),
   ('max_file_size', '10485760', 'Maximum file size in bytes (10MB)', 'claims', true),
   ('notification_types', '["email", "push"]', 'Available notification channels', 'notifications', true),
-  ('support_email', '"support@refundhero.com"', 'Support email address', 'system', true),
+  ('support_email', '"support@planeprotect.com"', 'Support email address', 'system', true),
   ('maintenance_mode', 'false', 'System maintenance mode', 'system', false),
   ('rate_limit_window', '60000', 'Rate limit window in milliseconds', 'security', false),
   ('max_login_attempts', '5', 'Maximum failed login attempts', 'security', false),
@@ -542,3 +542,5 @@ INSERT INTO settings (key, value, description, category, is_public) VALUES
 
 -- Re-enable triggers
 SET session_replication_role = DEFAULT;
+
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";

@@ -59,7 +59,7 @@ export async function sendEmail({ to, name, template, data = {} }: EmailData) {
 
     // Send email
     const response = await resend.emails.send({
-      from: 'RefundHero <claims@refundhero.com>',
+      from: 'PlaneProtect <claims@planeprotect.com>',
       to: [to],
       subject,
       html,

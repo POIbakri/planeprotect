@@ -53,38 +53,51 @@ export function DocumentManager({ claimId }: { claimId: string }) {
 
   async function handleFileDrop(acceptedFiles: File[]) {
     setUploading(true);
-
     try {
       for (const file of acceptedFiles) {
         const fileExt = file.name.split('.').pop();
         const fileName = `${claimId}/${Date.now()}.${fileExt}`;
 
-        // Upload file to storage
+        // --- Potential Failure Point 1: Storage Upload ---
+        console.log(`Attempting to upload to storage: ${fileName}`);
         const { error: uploadError } = await supabase.storage
           .from('claim-documents')
           .upload(fileName, file);
 
-        if (uploadError) throw uploadError;
+        if (uploadError) {
+          console.error('Storage upload error:', uploadError);
+          throw uploadError;
+        }
+        console.log(`Successfully uploaded to storage: ${fileName}`);
 
-        // Create document record
+        // --- Potential Failure Point 2: Database Insert ---
+        console.log(`Attempting to insert DB record for: ${fileName}`);
+        const documentType = file.type.startsWith('image/') ? 'image' : (file.type === 'application/pdf' ? 'pdf' : 'other');
         const { error: dbError } = await supabase
           .from('claim_documents')
           .insert([
             {
               claim_id: claimId,
-              type: file.type,
+              type: documentType,
               file_path: fileName,
             },
           ]);
 
-        if (dbError) throw dbError;
+        if (dbError) {
+          console.error('Database insert error:', dbError);
+          throw dbError;
+        }
+        console.log(`Successfully inserted DB record for: ${fileName}`);
       }
 
       toast.success('Documents uploaded successfully');
-      fetchDocuments();
+
     } catch (error) {
       toast.error('Failed to upload documents');
+      console.error('Error caught in handleFileDrop:', error);
     } finally {
+      console.log('Refreshing documents list...');
+      fetchDocuments();
       setUploading(false);
     }
   }

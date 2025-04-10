@@ -9,8 +9,8 @@ const faqs = [
     category: 'General',
     questions: [
       {
-        q: 'What is RefundHero?',
-        a: 'RefundHero is the world\'s leading flight compensation service, helping passengers secure compensation for flight delays, cancellations, and denied boarding under EU261 and UK261 regulations. Our premium service handles the entire claims process so you don\'t have to deal with airlines directly.',
+        q: 'What is PlaneProtect?',
+        a: 'PlaneProtect is the world\'s leading flight compensation service, helping passengers secure compensation for flight delays, cancellations, and denied boarding under EU261 and UK261 regulations. Our premium service handles the entire claims process so you don\'t have to deal with airlines directly.',
       },
       {
         q: 'How much does it cost?',
@@ -52,7 +52,7 @@ const faqs = [
       },
       {
         q: 'How do I track my claim?',
-        a: 'Access your personalized RefundHero dashboard for real-time updates on your claim\'s progress. Our transparent process keeps you informed at every stage, and our customer support team is available 24/7 to address any questions.',
+        a: 'Access your personalized PlaneProtect dashboard for real-time updates on your claim\'s progress. Our transparent process keeps you informed at every stage, and our customer support team is available 24/7 to address any questions.',
       },
     ],
   },

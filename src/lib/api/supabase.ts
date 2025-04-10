@@ -15,7 +15,7 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
   },
   global: {
     headers: {
-      'x-application-name': 'RefundHero',
+      'x-application-name': 'PlaneProtect',
       'x-application-version': '1.0.0',
     },
   },

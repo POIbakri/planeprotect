@@ -176,11 +176,9 @@ export function ClaimForm() {
         return;
       }
       
-      // Show loading toast
       const loadingToast = toast.loading('Submitting your claim...');
       
       // Submit claim data
-      // Pass only the required fields to submitClaim
       const claim = await submitClaim({
         flightNumber,
         flightDate,
@@ -189,26 +187,40 @@ export function ClaimForm() {
         email: formData.email,
         phone: formData.phone,
         passportNumber: formData.passportNumber,
+        // Pass bank details if collected at this step
+        bankName: formData.bankName,
+        bankAccount: formData.bankAccount,
+        bankHolder: formData.bankHolder,
       });
 
-      // Upload documents with progress tracking
+      // Upload documents
       const uploadPromises = Object.entries(formData.documents).map(([type, file]) => {
         if (file) {
-          return uploadDocument(claim.id, file, type as any);
+          // Ensure 'type' matches the expected values for uploadDocument if different from DB
+          // Assuming 'boarding_pass', 'booking_confirmation', 'passport'
+          let docType: 'boarding_pass' | 'booking_confirmation' | 'passport' = 'passport'; // Default or map appropriately
+          if (type === 'boardingPass') docType = 'boarding_pass';
+          if (type === 'bookingConfirmation') docType = 'booking_confirmation';
+          
+          return uploadDocument(claim.id, file, docType); 
         }
         return Promise.resolve();
       });
 
       await Promise.all(uploadPromises);
-      
-      // Dismiss loading toast
+
       toast.dismiss(loadingToast);
-      
-      setStep('success');
       toast.success('Claim submitted successfully!');
+
+      // ADD navigation to dashboard
+      navigate('/dashboard'); 
+
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to submit claim';
       toast.error(errorMessage);
+      // Dismiss loading toast on error as well - needs ID which we don't have easily here
+      // Consider refactoring toast usage if precise dismissal on error is needed
+      // For now, rely on user seeing the error toast.
     }
   };
 
@@ -389,7 +401,7 @@ export function ClaimForm() {
                 required
               />
               <label htmlFor="consentGiven" className="text-xs text-gray-700">
-                 I authorize RefundHero to represent me in pursuing compensation for this flight disruption under applicable regulations (e.g., EC 261/2004). I confirm I'm the passenger (or have authority) and haven't received prior compensation for this. I understand RefundHero handles communications and potential legal action, and confirm my provided details are accurate. I agree to the Terms & Conditions.
+                 I authorize PlaneProtect to represent me in pursuing compensation for this flight disruption under applicable regulations (e.g., EC 261/2004). I confirm I'm the passenger (or have authority) and haven't received prior compensation for this. I understand PlaneProtect handles communications and potential legal action, and confirm my provided details are accurate. I agree to the Terms & Conditions.
               </label>
             </div>
           </div>

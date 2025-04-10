@@ -1,0 +1,20 @@
+# PlaneProtect.com robots.txt
+User-agent: *
+Allow: /
+
+# Important content paths
+Allow: /about
+Allow: /privacy
+Allow: /terms
+Allow: /faq
+Allow: /help
+Allow: /claim
+Allow: /dashboard
+
+# Temporary content - hide from search engines
+Disallow: /dev/
+Disallow: /test/
+Disallow: /beta/
+
+# Sitemap
+Sitemap: https://planeprotect.com/sitemap.xml

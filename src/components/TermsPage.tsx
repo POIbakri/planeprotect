@@ -32,13 +32,13 @@ export function TermsPage() {
             <Scale className="w-6 h-6 text-blue-600" />
           </div>
           <div>
-            <h2 className="text-xl font-semibold text-slate-900">Welcome to RefundHero</h2>
+            <h2 className="text-xl font-semibold text-slate-900">Welcome to PlaneProtect</h2>
             <p className="text-slate-600 text-sm">Please read these terms carefully</p>
           </div>
         </div>
 
         <p className="text-slate-600 mb-6">
-          These Terms and Conditions govern your use of our website and services, which provide an automated solution to check your eligibility and assist in claiming compensation for flight disruptions under EU Regulation 261/2004 ("the Regulation"). By accessing or using RefundHero's website and services, you agree to be bound by these Terms.
+          These Terms and Conditions govern your use of our website and services, which provide an automated solution to check your eligibility and assist in claiming compensation for flight disruptions under EU Regulation 261/2004 ("the Regulation"). By accessing or using PlaneProtect's website and services, you agree to be bound by these Terms.
         </p>
 
         <div className="flex items-center gap-3 p-4 bg-amber-50 rounded-xl text-amber-700">
@@ -58,13 +58,13 @@ export function TermsPage() {
             <div>
               <h3 className="font-medium text-slate-900 mb-2">1.1 "Service"</h3>
               <p className="text-slate-600">
-                The flight compensation claim management service provided by RefundHero EU, which includes checking flight eligibility, generating claim documentation, and assisting in the submission of compensation claims to airlines.
+                The flight compensation claim management service provided by PlaneProtect EU, which includes checking flight eligibility, generating claim documentation, and assisting in the submission of compensation claims to airlines.
               </p>
             </div>
             <div>
               <h3 className="font-medium text-slate-900 mb-2">1.2 "User"</h3>
               <p className="text-slate-600">
-                "User", "you", or "your" refers to any individual or entity using RefundHero's services.
+                "User", "you", or "your" refers to any individual or entity using PlaneProtect's services.
               </p>
             </div>
             <div>
@@ -76,7 +76,7 @@ export function TermsPage() {
             <div>
               <h3 className="font-medium text-slate-900 mb-2">1.4 "Commission"</h3>
               <p className="text-slate-600">
-                The fee that RefundHero charges on successful compensation claims, currently set at 35% of the compensation awarded, inclusive of VAT.
+                The fee that PlaneProtect charges on successful compensation claims, currently set at 35% of the compensation awarded, inclusive of VAT.
               </p>
             </div>
             <div>
@@ -126,7 +126,7 @@ export function TermsPage() {
             <div>
               <h3 className="font-medium text-slate-900 mb-2">2.2 Service Limitations</h3>
               <p className="text-slate-600">
-                RefundHero does not guarantee a successful claim or a specific compensation amount. All claims are subject to the eligibility criteria outlined in EU Regulation 261/2004 and the airline's review process.
+                PlaneProtect does not guarantee a successful claim or a specific compensation amount. All claims are subject to the eligibility criteria outlined in EU Regulation 261/2004 and the airline's review process.
               </p>
             </div>
           </div>
@@ -139,19 +139,19 @@ export function TermsPage() {
             <div>
               <h3 className="font-medium text-slate-900 mb-2">3.1 Accurate Information</h3>
               <p className="text-slate-600">
-                You agree to provide complete, accurate, and current information when using our services. RefundHero is not responsible for any claims denied due to incorrect or incomplete data.
+                You agree to provide complete, accurate, and current information when using our services. PlaneProtect is not responsible for any claims denied due to incorrect or incomplete data.
               </p>
             </div>
             <div>
               <h3 className="font-medium text-slate-900 mb-2">3.2 Document Submission</h3>
               <p className="text-slate-600">
-                You must upload all required documents (e.g., boarding passes, e-tickets, passport or driving license) in the formats specified by RefundHero. Failure to do so may result in delays or rejection of your claim.
+                You must upload all required documents (e.g., boarding passes, e-tickets, passport or driving license) in the formats specified by PlaneProtect. Failure to do so may result in delays or rejection of your claim.
               </p>
             </div>
             <div>
               <h3 className="font-medium text-slate-900 mb-2">3.3 Authorization</h3>
               <p className="text-slate-600">
-                By using RefundHero, you grant us the right to act as your representative in pursuing compensation claims against airlines on your behalf. You agree to provide explicit consent that authorizes RefundHero to communicate with the relevant airline(s) and to use your data for the purposes of processing your claim.
+                By using PlaneProtect, you grant us the right to act as your representative in pursuing compensation claims against airlines on your behalf. You agree to provide explicit consent that authorizes PlaneProtect to communicate with the relevant airline(s) and to use your data for the purposes of processing your claim.
               </p>
             </div>
             <div>
@@ -173,7 +173,7 @@ export function TermsPage() {
             If you have any questions or concerns regarding these Terms, please contact us at:
           </p>
           <div className="space-y-2 text-slate-600">
-            <p>Email: support@refundhero.com</p>
+            <p>Email: support@planeprotect.com</p>
             <p>Phone: +44 (0) 20 1234 5678</p>
             <p>Address: 123 Flight Street, London, EC1A 1BB, United Kingdom</p>
           </div>
@@ -182,7 +182,7 @@ export function TermsPage() {
         {/* Acceptance Notice */}
         <div className="bg-slate-50 rounded-xl p-6 text-center">
           <p className="text-slate-600">
-            By using RefundHero's services, you acknowledge that you have read, understood, and agree to be bound by these Terms and Conditions.
+            By using PlaneProtect's services, you acknowledge that you have read, understood, and agree to be bound by these Terms and Conditions.
           </p>
         </div>
       </div>

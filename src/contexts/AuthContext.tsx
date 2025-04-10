@@ -30,33 +30,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const checkAdminStatus = async (user: User | null) => {
     if (!user) {
+      console.log('checkAdminStatus: No user, setting isAdmin to false.');
       setState(prev => ({ ...prev, isAdmin: false }));
       return;
     }
 
-    console.log(`Checking admin status for user ID: ${user.id}`);
-    
-    // Direct check for known admin user IDs - updated with the correct ID from logs
-    if (user.id === 'bade31d2-c74d-4da4-ac50-b143b0220106' || user.id === '179a0c8f-6239-44ed-976e-652c81bd7e3d') {
-      console.log('Admin user ID directly matched');
+    console.log(`checkAdminStatus: Checking admin status for user ID: ${user.id}`);
+
+    // Direct check for known admin user IDs
+    if (user.id === 'bade31d2-c74d-4da4-ac50-b143b0220106') {
+      console.log('checkAdminStatus: Admin user ID directly matched. Setting isAdmin to true.');
       setState(prev => ({ ...prev, isAdmin: true }));
       return;
     }
 
     try {
-      // Try a simpler query first
-      console.log('Attempting direct admin query...');
-      const { data: adminsData, error: adminsError } = await supabase
-        .from('admins')
-        .select('*');
-      
-      console.log('All admins data (RLS filtered):', adminsData);
-      
-      if (adminsError) {
-        console.error('Error querying all admins:', adminsError);
-      }
-      
-      // Original specific query
+      console.log('checkAdminStatus: Querying admins table...');
       const { data, error } = await supabase
         .from('admins')
         .select('user_id')
@@ -64,15 +53,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .maybeSingle();
 
       if (error) {
-        console.error('Supabase query error in checkAdminStatus:', error);
-        throw error;
+        console.error('checkAdminStatus: Supabase query error:', error);
+        // Ensure it defaults to false on error
+         console.log('checkAdminStatus: Setting isAdmin to false due to query error.');
+         setState(prev => ({ ...prev, isAdmin: false }));
+        return; // Exit after setting false on error
       }
 
-      console.log('Admin check query result:', data);
+      // *** ADDED DETAILED LOGGING HERE ***
+      console.log(`checkAdminStatus: DB query result for user ${user.id}:`, JSON.stringify(data));
+      const isAdminResult = !!data; // isAdminResult is true if data is not null
+      console.log(`checkAdminStatus: Based on DB result, setting isAdmin to: ${isAdminResult}`);
+      // *** END LOGGING ***
 
-      setState(prev => ({ ...prev, isAdmin: !!data }));
+      setState(prev => ({ ...prev, isAdmin: isAdminResult }));
     } catch (error) {
-      console.error('Error in checkAdminStatus function:', error);
+      console.error('checkAdminStatus: Error caught in try block:', error);
+      // Ensure isAdmin is false if any part of the try block fails
+      console.log('checkAdminStatus: Setting isAdmin to false due to caught error.');
       setState(prev => ({ ...prev, isAdmin: false }));
     }
   };

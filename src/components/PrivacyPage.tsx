@@ -38,7 +38,7 @@ export function PrivacyPage() {
         </div>
 
         <p className="text-slate-600 mb-6">
-          RefundHero ("we", "our", "us") is committed to protecting the privacy and security of your personal data. This Privacy Policy explains how we collect, use, store, share, and protect your information when you use our flight compensation claim management services ("Service"), in compliance with the General Data Protection Regulation (GDPR) and other applicable UK/EU data protection laws.
+          PlaneProtect ("we", "our", "us") is committed to protecting the privacy and security of your personal data. This Privacy Policy explains how we collect, use, store, share, and protect your information when you use our flight compensation claim management services ("Service"), in compliance with the General Data Protection Regulation (GDPR) and other applicable UK/EU data protection laws.
         </p>
 
         <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-xl text-blue-700">
@@ -232,7 +232,7 @@ export function PrivacyPage() {
                   <Mail className="w-5 h-5 text-blue-600" />
                   <h3 className="font-medium text-slate-900">Email</h3>
                 </div>
-                <p className="text-sm text-slate-600">privacy@refundhero.com</p>
+                <p className="text-sm text-slate-600">privacy@planeprotect.com</p>
               </div>
 
               <div className="bg-slate-50 rounded-xl p-4">
@@ -254,7 +254,7 @@ export function PrivacyPage() {
         {/* Acceptance Notice */}
         <div className="bg-slate-50 rounded-xl p-6 text-center">
           <p className="text-slate-600">
-            By using RefundHero's services, you acknowledge that you have read and understood this Privacy Policy and agree to the collection and use of your information as described herein.
+            By using PlaneProtect's services, you acknowledge that you have read and understood this Privacy Policy and agree to the collection and use of your information as described herein.
           </p>
         </div>
       </div>

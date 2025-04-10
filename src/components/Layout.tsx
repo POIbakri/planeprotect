@@ -50,7 +50,7 @@ export function Layout({ children }: { children?: React.ReactNode }) {
                   <Plane className="w-5 h-5 text-white" />
                 </motion.div>
                 <span className="text-xl font-semibold text-[#1D1D1F]">
-                  RefundHero
+                  PlaneProtect
                 </span>
               </Link>
             </div>
@@ -247,7 +247,7 @@ export function Layout({ children }: { children?: React.ReactNode }) {
                 <div className="bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg p-1.5 shadow-sm">
                   <Plane className="w-5 h-5 text-white" />
                 </div>
-                <span className="text-lg font-semibold text-[#1D1D1F]">RefundHero</span>
+                <span className="text-lg font-semibold text-[#1D1D1F]">PlaneProtect</span>
               </div>
               <p className="text-xs text-gray-500 leading-relaxed">
                 Helping passengers claim rightful compensation for flight disruptions across the UK & EU.
@@ -277,7 +277,7 @@ export function Layout({ children }: { children?: React.ReactNode }) {
               <ul className="space-y-2 text-sm text-gray-600">
                 <li className="flex items-start gap-2">
                   <Mail className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
-                  <a href="mailto:support@refundhero.com" className="hover:text-blue-600">support@refundhero.com</a>
+                  <a href="mailto:support@planeprotect.com" className="hover:text-blue-600">support@planeprotect.com</a>
                 </li>
                 <li className="flex items-start gap-2">
                   <Phone className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
@@ -293,7 +293,7 @@ export function Layout({ children }: { children?: React.ReactNode }) {
 
           <div className="mt-10 pt-6 border-t border-gray-200/60 text-center">
             <p className="text-xs text-gray-500">
-              &copy; {new Date().getFullYear()} RefundHero Ltd. All rights reserved.
+              &copy; {new Date().getFullYear()} PlaneProtect Ltd. All rights reserved.
             </p>
           </div>
         </div>

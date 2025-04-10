@@ -22,7 +22,7 @@ export function AboutUs() {
             The World's Leading Flight Compensation Service
           </h1>
           <p className="text-xl text-[#6e6e73] max-w-3xl mx-auto">
-            Since 2018, RefundHero has helped over 24,000 passengers secure €4.2 million in compensation 
+            Since 2018, PlaneProtect has helped over 24,000 passengers secure €4.2 million in compensation 
             from airlines. Our mission: make flight compensation simple, transparent, and accessible to everyone.
           </p>
         </motion.div>
@@ -39,7 +39,7 @@ export function AboutUs() {
               <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-purple-600/10 rounded-3xl" />
               <img 
                 src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=1200"
-                alt="Founders of RefundHero" 
+                alt="Founders of PlaneProtect" 
                 className="rounded-3xl relative shadow-md"
               />
               <div className="absolute -bottom-5 -right-5 bg-white/80 backdrop-blur-xl p-4 rounded-2xl shadow-lg border border-white/50">
@@ -65,7 +65,7 @@ export function AboutUs() {
             <h2 className="text-3xl font-bold text-[#1D1D1F] mb-6">Our Story</h2>
             <div className="space-y-4 text-[#424245]">
               <p>
-                RefundHero was founded in 2018 by a team of travel enthusiasts and legal experts who experienced 
+                PlaneProtect was founded in 2018 by a team of travel enthusiasts and legal experts who experienced 
                 firsthand the frustration of flight disruptions and the challenge of claiming rightful compensation.
               </p>
               <p>
