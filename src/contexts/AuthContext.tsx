@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/lib/api';
 import { sendEmail } from '@/lib/email';
-import type { User, AuthError } from '@supabase/supabase-js';
+import type { User, AuthError, Provider } from '@supabase/supabase-js';
 import toast from 'react-hot-toast';
 
 interface AuthState {
@@ -15,11 +15,22 @@ interface AuthContextType extends AuthState {
   signUp: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   refreshSession: () => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
+  updatePassword: (password: string) => Promise<void>;
+  signInWithProvider: (provider: Provider) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const ADMIN_CHECK_INTERVAL = 5 * 60 * 1000; // 5 minutes
+const isDev = process.env.NODE_ENV === 'development';
+
+// Log function that only logs in development
+const devLog = (...args: any[]) => {
+  if (isDev) {
+    console.log(...args);
+  }
+};
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<AuthState>({
@@ -30,22 +41,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const checkAdminStatus = async (user: User | null) => {
     if (!user) {
-      console.log('checkAdminStatus: No user, setting isAdmin to false.');
+      devLog('checkAdminStatus: No user, setting isAdmin to false.');
       setState(prev => ({ ...prev, isAdmin: false }));
       return;
     }
 
-    console.log(`checkAdminStatus: Checking admin status for user ID: ${user.id}`);
+    devLog(`checkAdminStatus: Checking admin status for user ID: ${user.id}`);
 
-    // Direct check for known admin user IDs
-    if (user.id === 'bade31d2-c74d-4da4-ac50-b143b0220106') {
-      console.log('checkAdminStatus: Admin user ID directly matched. Setting isAdmin to true.');
-      setState(prev => ({ ...prev, isAdmin: true }));
-      return;
-    }
-
+    // Securely check admin status through database only
     try {
-      console.log('checkAdminStatus: Querying admins table...');
       const { data, error } = await supabase
         .from('admins')
         .select('user_id')
@@ -53,24 +57,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .maybeSingle();
 
       if (error) {
-        console.error('checkAdminStatus: Supabase query error:', error);
-        // Ensure it defaults to false on error
-         console.log('checkAdminStatus: Setting isAdmin to false due to query error.');
-         setState(prev => ({ ...prev, isAdmin: false }));
-        return; // Exit after setting false on error
+        console.error('Admin status check error:', error);
+        setState(prev => ({ ...prev, isAdmin: false }));
+        return;
       }
 
-      // *** ADDED DETAILED LOGGING HERE ***
-      console.log(`checkAdminStatus: DB query result for user ${user.id}:`, JSON.stringify(data));
-      const isAdminResult = !!data; // isAdminResult is true if data is not null
-      console.log(`checkAdminStatus: Based on DB result, setting isAdmin to: ${isAdminResult}`);
-      // *** END LOGGING ***
-
+      const isAdminResult = !!data;
+      devLog(`Admin status for user ${user.id}: ${isAdminResult}`);
       setState(prev => ({ ...prev, isAdmin: isAdminResult }));
     } catch (error) {
-      console.error('checkAdminStatus: Error caught in try block:', error);
-      // Ensure isAdmin is false if any part of the try block fails
-      console.log('checkAdminStatus: Setting isAdmin to false due to caught error.');
+      console.error('Error checking admin status:', error);
       setState(prev => ({ ...prev, isAdmin: false }));
     }
   };
@@ -140,8 +136,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         case 'Email already registered':
           message = 'An account with this email already exists';
           break;
+        case 'Password should be at least 6 characters':
+          message = 'Password should be at least 6 characters';
+          break;
+        case 'For security purposes, you can only request this once every 60 seconds':
+          message = 'Please wait a moment before requesting another password reset';
+          break;
+        case 'Email rate limit exceeded':
+          message = 'Too many attempts. Please try again later';
+          break;
         default:
-          message = authError.message;
+          // Make generic error messages more user-friendly
+          if (authError.message.includes('rate limit')) {
+            message = 'Too many attempts. Please try again later';
+          } else if (authError.message.includes('timeout')) {
+            message = 'Connection timeout. Please check your internet and try again';
+          } else {
+            message = authError.message;
+          }
       }
     }
 
@@ -165,15 +177,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = async (email: string, password: string) => {
     try {
-      console.log('Starting signup process for:', email);
+      devLog('Starting signup process for:', email);
       
-      // Use a simpler signup process now that we've fixed the database trigger
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          // Use a relative path instead of a hardcoded Vercel URL
-          emailRedirectTo: '/auth/callback',
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
         },
       });
 
@@ -184,17 +194,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return;
         }
         
-        console.error('Signup API error details:', error);
+        console.error('Signup error:', error);
         throw error;
       }
 
-      console.log('Signup successful, user data:', data?.user?.id);
+      devLog('Signup successful');
       
       // Show success message
       toast.success('Account created! Please check your email to verify your account');
       
     } catch (error: any) {
-      console.error('Complete signup error details:', error);
+      console.error('Signup error:', error);
       
       // Give user friendly error message
       if (error.message?.includes('Database error') || error.message?.includes('saving new user')) {
@@ -217,6 +227,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const resetPassword = async (email: string) => {
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (error) throw error;
+      toast.success('Password reset link sent to your email');
+    } catch (error) {
+      handleAuthError(error);
+    }
+  };
+
+  const updatePassword = async (password: string) => {
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password,
+      });
+
+      if (error) throw error;
+      toast.success('Password updated successfully');
+    } catch (error) {
+      handleAuthError(error);
+    }
+  };
+
+  const signInWithProvider = async (provider: Provider) => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+
+      if (error) throw error;
+    } catch (error) {
+      handleAuthError(error);
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -225,6 +276,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         signUp,
         signOut,
         refreshSession,
+        resetPassword,
+        updatePassword,
+        signInWithProvider,
       }}
     >
       {children}
