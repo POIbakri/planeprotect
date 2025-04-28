@@ -201,7 +201,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       devLog('Signup successful');
       
       // Show success message
-      toast.success('Account created! Please check your email to verify your account');
+      toast.success('Please check your email to confirm (Junk Folder) your account', { 
+        duration: 5000 
+      });
       
     } catch (error: any) {
       console.error('Signup error:', error);
