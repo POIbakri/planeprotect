@@ -266,10 +266,10 @@ export function ClaimForm() {
               return (
                 <React.Fragment key={s.id}>
                   <div className="flex flex-col items-center">
-                    <div className={`w-6 h-6 rounded-full flex items-center justify-center transition-colors duration-300 ${isActive ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-400'}`}>
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center transition-colors duration-300 ${isActive ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-400'}`}>
                       <span className="text-xs font-medium">{index + 1}</span>
                     </div>
-                    <span className={`mt-1 text-xs text-center ${isActive ? 'text-blue-600 font-medium' : 'text-gray-500'}`}>
+                    <span className={`mt-1 text-xs text-center ${isActive ? 'text-blue-500 font-medium' : 'text-gray-500'}`}>
                       {s.name}
                     </span>
                   </div>
@@ -332,7 +332,7 @@ export function ClaimForm() {
             value={formData.fullName}
             onChange={handleInputChange}
             placeholder="As shown on passport"
-            className="h-11 rounded-lg border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-300 text-sm"
+            className="h-11 rounded-lg border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm"
             required
           />
         </div>
@@ -349,7 +349,7 @@ export function ClaimForm() {
             value={formData.email}
             onChange={handleInputChange}
             placeholder="your.email@example.com"
-            className="h-11 rounded-lg border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-300 text-sm"
+            className="h-11 rounded-lg border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm"
             required
           />
         </div>
@@ -366,7 +366,7 @@ export function ClaimForm() {
             value={formData.phone}
             onChange={handleInputChange}
             placeholder="+44 123 456 7890"
-            className="h-11 rounded-lg border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-300 text-sm"
+            className="h-11 rounded-lg border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm"
             required
           />
         </div>
@@ -382,7 +382,7 @@ export function ClaimForm() {
             value={formData.passportNumber}
             onChange={handleInputChange}
             placeholder="Document number"
-            className="h-11 rounded-lg border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-300 text-sm"
+            className="h-11 rounded-lg border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm"
             required
           />
         </div>
@@ -397,7 +397,7 @@ export function ClaimForm() {
                 name="consentGiven"
                 checked={formData.consentGiven}
                 onChange={handleInputChange}
-                className="mt-1 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 flex-shrink-0"
+                className="mt-1 h-4 w-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500 flex-shrink-0"
                 required
               />
               <label htmlFor="consentGiven" className="text-xs text-gray-700">
@@ -431,7 +431,7 @@ export function ClaimForm() {
     >
       <div className="space-y-4">
         {/* File Upload Area - Boarding Pass */}
-        <div className={`border-2 border-dashed rounded-xl p-4 transition-colors group relative ${formData.documents.boardingPass ? 'border-green-400 bg-green-50/50' : 'border-gray-300 hover:border-blue-400'}`}>
+        <div className={`border-2 border-dashed rounded-xl p-4 transition-colors group relative ${formData.documents.boardingPass ? 'border-green-400 bg-green-50/50' : 'border-gray-300 hover:border-blue-500'}`}>
           <label htmlFor="boardingPassUpload" className="block cursor-pointer">
             <div className="flex items-center">
               <Upload className={`w-6 h-6 mr-3 flex-shrink-0 ${formData.documents.boardingPass ? 'text-green-600' : 'text-gray-400 group-hover:text-blue-500'}`} />
@@ -453,7 +453,7 @@ export function ClaimForm() {
         </div>
 
         {/* File Upload Area - Booking Confirmation */}
-        <div className={`border-2 border-dashed rounded-xl p-4 transition-colors group relative ${formData.documents.bookingConfirmation ? 'border-green-400 bg-green-50/50' : 'border-gray-300 hover:border-blue-400'}`}>
+        <div className={`border-2 border-dashed rounded-xl p-4 transition-colors group relative ${formData.documents.bookingConfirmation ? 'border-green-400 bg-green-50/50' : 'border-gray-300 hover:border-blue-500'}`}>
            <label htmlFor="bookingConfirmationUpload" className="block cursor-pointer">
             <div className="flex items-center">
               <CreditCard className={`w-6 h-6 mr-3 flex-shrink-0 ${formData.documents.bookingConfirmation ? 'text-green-600' : 'text-gray-400 group-hover:text-blue-500'}`} />
@@ -475,7 +475,7 @@ export function ClaimForm() {
         </div>
 
         {/* File Upload Area - Passport/ID */}
-        <div className={`border-2 border-dashed rounded-xl p-4 transition-colors group relative ${formData.documents.passport ? 'border-green-400 bg-green-50/50' : 'border-gray-300 hover:border-blue-400'}`}>
+        <div className={`border-2 border-dashed rounded-xl p-4 transition-colors group relative ${formData.documents.passport ? 'border-green-400 bg-green-50/50' : 'border-gray-300 hover:border-blue-500'}`}>
            <label htmlFor="passportUpload" className="block cursor-pointer">
             <div className="flex items-center">
               <Passport className={`w-6 h-6 mr-3 flex-shrink-0 ${formData.documents.passport ? 'text-green-600' : 'text-gray-400 group-hover:text-blue-500'}`} />
@@ -545,7 +545,7 @@ export function ClaimForm() {
             value={formData.bankName}
             onChange={handleInputChange}
             placeholder="e.g., Monzo, Barclays, etc."
-            className="h-11 rounded-lg border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-300 text-sm"
+            className="h-11 rounded-lg border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm"
             required
           />
         </div>
@@ -561,7 +561,7 @@ export function ClaimForm() {
             value={formData.bankHolder}
             onChange={handleInputChange}
             placeholder="Full name on the account"
-            className="h-11 rounded-lg border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-300 text-sm"
+            className="h-11 rounded-lg border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm"
             required
           />
         </div>
@@ -577,7 +577,7 @@ export function ClaimForm() {
             value={formData.bankAccount}
             onChange={handleInputChange}
             placeholder="Enter IBAN or Account Number & Sort Code"
-            className="h-11 rounded-lg border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-300 text-sm"
+            className="h-11 rounded-lg border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm"
             required
           />
         </div>
@@ -645,7 +645,7 @@ export function ClaimForm() {
       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
       className="w-full max-w-lg mx-auto px-4 sm:px-0"
     >
-      <div className="bg-white/80 backdrop-blur-xl rounded-[2rem] p-6 sm:p-8 shadow-md border border-gray-200/50">
+      <div className="bg-white/90 backdrop-blur-xl rounded-[2rem] p-6 sm:p-8 shadow-md border border-gray-200/50">
         {renderStepIndicator()}
         <div className="mt-8">
           <AnimatePresence mode="wait">

@@ -68,250 +68,233 @@ export function Layout({ children }: { children?: React.ReactNode }) {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      {/* Header with enhanced mobile responsiveness */}
-      <nav className={`sticky top-0 z-50 ${scrollPosition > 10 ? 'bg-white/95' : 'bg-white/90'} backdrop-blur-lg border-b border-gray-200/70 shadow-sm transition-all duration-200`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex flex-col bg-[#FAFAFA]">
+      {/* Header - Apple-inspired design */}
+      <header className={`sticky top-0 z-50 ${scrollPosition > 10 ? 'bg-white/90' : 'bg-white/80'} backdrop-blur-md transition-all duration-300`}>
+        <div className="max-w-[1200px] mx-auto px-6">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
-              <Link to="/" className="flex items-center gap-2 group">
-                <motion.div 
-                  whileHover={{ rotate: -10, scale: 1.1 }}
-                  className="bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg p-1.5 shadow-sm transition-all duration-300"
-                >
-                  <Plane className="w-5 h-5 text-white" />
-                </motion.div>
-                <span className="text-lg sm:text-xl font-semibold text-[#1D1D1F]">
+              <Link to="/" className="flex items-center gap-2">
+                <div className="p-2 rounded-full bg-blue-500">
+                  <Plane className="w-4 h-4 text-white" />
+                </div>
+                <span className="text-lg font-medium text-[#1D1D1F]">
                   PlaneProtect
                 </span>
               </Link>
             </div>
 
             {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center gap-2">
+            <div className="hidden md:flex items-center gap-5">
+              <Link to="/" className="text-sm text-[#1D1D1F] hover:text-blue-500 transition-colors">
+                Home
+              </Link>
+              <button 
+                onClick={handleNavigateToHowItWorks}
+                className="text-sm text-[#1D1D1F] hover:text-blue-500 transition-colors"
+              >
+                How It Works
+              </button>
+              
               {user ? (
                 <>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="relative rounded-lg hover:bg-gray-100"
+                  <button
                     onClick={() => handleNavigation('/notifications')}
+                    className="relative p-2 rounded-full hover:bg-[#F5F5F7] transition-colors"
                     aria-label="Notifications"
                   >
-                    <Bell className="w-5 h-5 text-[#333]" />
-                    <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-500 rounded-full" />
-                  </Button>
+                    <Bell className="w-5 h-5 text-[#1D1D1F]" />
+                    <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-blue-500 rounded-full" />
+                  </button>
                   
                   {isAdmin && (
-                    <Button
-                      variant="outline"
-                      size="sm"
+                    <button
                       onClick={() => handleNavigation('/admin')}
-                      className="flex items-center gap-1.5 rounded-lg border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors duration-300"
+                      className="flex items-center gap-1.5 text-sm text-[#1D1D1F] hover:text-blue-500 transition-colors"
                     >
                       <Settings className="w-4 h-4" />
-                      <span className="hidden sm:inline">Admin</span>
-                    </Button>
+                      <span>Admin</span>
+                    </button>
                   )}
                   
-                  <Button
-                    variant="outline"
-                    size="sm"
+                  <button
                     onClick={() => handleNavigation('/dashboard')}
-                    className="flex items-center gap-1.5 rounded-lg border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors duration-300"
+                    className="rounded-full bg-[#F5F5F7] px-4 py-2 text-sm font-medium text-[#1D1D1F] hover:bg-[#EBEBEB] transition-colors"
                   >
-                    <User className="w-4 h-4" />
-                    <span className="hidden sm:inline">Dashboard</span>
-                  </Button>
+                    Dashboard
+                  </button>
                   
-                  <Button
-                    variant="outline"
-                    size="sm"
+                  <button
                     onClick={handleSignOut}
-                    className="flex items-center gap-1.5 rounded-lg border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400 transition-colors duration-300"
+                    className="text-sm text-[#1D1D1F] hover:text-blue-500 transition-colors"
                   >
-                    <LogOut className="w-4 h-4" />
-                    <span className="hidden sm:inline">Sign Out</span>
-                  </Button>
+                    Sign Out
+                  </button>
                 </>
               ) : (
-                <>
-                  <Button 
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleNavigateToHowItWorks}
-                    className="rounded-lg text-gray-600 hover:text-blue-600"
-                  >
-                    How It Works
-                  </Button>
-                  <Button
-                    variant="gradient"
-                    size="sm"
-                    onClick={() => handleNavigation('/login')}
-                    className="rounded-lg shadow-sm hover:shadow-md transition-all duration-300"
-                  >
-                    Sign In
-                  </Button>
-                </>
+                <button
+                  onClick={() => handleNavigation('/login')}
+                  className="rounded-full bg-blue-500 px-4 py-2 text-sm font-medium text-white hover:bg-blue-600 transition-colors"
+                >
+                  Sign In
+                </button>
               )}
             </div>
 
             {/* Mobile Menu Button */}
             <div className="flex items-center md:hidden">
-              <Button
-                variant="ghost"
-                size="icon"
+              <button
                 onClick={(e) => {
                   e.stopPropagation();
                   setIsMobileMenuOpen(!isMobileMenuOpen);
                 }}
-                className="rounded-lg hover:bg-gray-100"
+                className="p-2 rounded-full hover:bg-[#F5F5F7] transition-colors"
                 aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
                 data-mobile-menu="trigger"
               >
                 {isMobileMenuOpen ? (
-                  <X className="w-6 h-6 text-[#333]" />
+                  <X className="w-6 h-6 text-[#1D1D1F]" />
                 ) : (
-                  <Menu className="w-6 h-6 text-[#333]" />
+                  <Menu className="w-6 h-6 text-[#1D1D1F]" />
                 )}
-              </Button>
+              </button>
             </div>
           </div>
         </div>
 
-        {/* Mobile Navigation with improved accessibility and transitions */}
+        {/* Mobile Navigation */}
         <AnimatePresence>
           {isMobileMenuOpen && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.25, ease: "easeInOut" }}
-              className="md:hidden border-t border-gray-200/70 bg-white/95 backdrop-blur-lg overflow-hidden shadow-md"
+              transition={{ duration: 0.25 }}
+              className="md:hidden bg-white overflow-hidden"
               data-mobile-menu="content"
             >
-              <div className="px-4 py-4 space-y-2">
+              <div className="px-6 py-4 space-y-4">
+                <Link 
+                  to="/"
+                  className="block py-2 text-base text-[#1D1D1F]"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Home
+                </Link>
+                
+                <button
+                  onClick={handleNavigateToHowItWorks}
+                  className="block w-full text-left py-2 text-base text-[#1D1D1F]"
+                >
+                  How It Works
+                </button>
+                
                 {user ? (
                   <>
-                    <Button
-                      variant="ghost"
+                    <button
                       onClick={() => handleNavigation('/dashboard')}
-                      className="w-full justify-start rounded-lg text-base text-[#333] hover:bg-gray-100 h-11 px-3"
+                      className="block w-full text-left py-2 text-base text-[#1D1D1F]"
                     >
-                      <User className="w-5 h-5 mr-3 text-gray-500" />
-                      My Dashboard
-                    </Button>
-                    <Button
-                      variant="ghost"
+                      Dashboard
+                    </button>
+                    
+                    <button
                       onClick={() => handleNavigation('/notifications')}
-                      className="w-full justify-start rounded-lg text-base text-[#333] hover:bg-gray-100 h-11 px-3"
+                      className="block w-full text-left py-2 text-base text-[#1D1D1F]"
                     >
-                      <Bell className="w-5 h-5 mr-3 text-gray-500" />
                       Notifications
-                    </Button>
+                    </button>
+                    
                     {isAdmin && (
-                      <Button
-                        variant="ghost"
+                      <button
                         onClick={() => handleNavigation('/admin')}
-                        className="w-full justify-start rounded-lg text-base text-[#333] hover:bg-gray-100 h-11 px-3"
+                        className="block w-full text-left py-2 text-base text-[#1D1D1F]"
                       >
-                        <Settings className="w-5 h-5 mr-3 text-gray-500" />
-                        Admin Dashboard
-                      </Button>
+                        Admin
+                      </button>
                     )}
-                     <Button
-                      variant="ghost"
+                    
+                    <hr className="my-2 border-gray-100" />
+                    
+                    <button
                       onClick={handleSignOut}
-                      className="w-full justify-start rounded-lg text-base text-red-600 hover:bg-red-50 h-11 px-3 mt-2 border-t border-gray-100 pt-3"
+                      className="block w-full text-left py-2 text-base text-[#1D1D1F]"
                     >
-                      <LogOut className="w-5 h-5 mr-3" />
                       Sign Out
-                    </Button>
+                    </button>
                   </>
                 ) : (
-                  <>
-                    <Button
-                      variant="gradient"
-                      onClick={() => handleNavigation('/login')}
-                      className="w-full justify-center rounded-lg text-base h-11"
-                    >
-                      <User className="w-4 h-4 mr-2" />
-                      Sign In
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      onClick={handleNavigateToHowItWorks}
-                      className="w-full justify-start rounded-lg text-base text-[#333] hover:bg-gray-100 h-11 px-3 mt-2"
-                    >
-                      <CheckCircle2 className="w-5 h-5 mr-3 text-gray-500" />
-                      How It Works
-                    </Button>
-                  </>
+                  <button
+                    onClick={() => handleNavigation('/login')}
+                    className="w-full py-2 rounded-full bg-blue-500 text-white font-medium"
+                  >
+                    Sign In
+                  </button>
                 )}
               </div>
             </motion.div>
           )}
         </AnimatePresence>
-      </nav>
+      </header>
 
-      <main className="flex-grow max-w-7xl w-full mx-auto py-4 sm:py-8 px-4 sm:px-6 lg:px-8">
+      <main className="flex-grow w-full mx-auto">
         {children || <Outlet />}
       </main>
 
-      {/* Responsive footer */}
-      <footer className="bg-white/60 backdrop-blur-lg border-t border-gray-200/60 mt-8 sm:mt-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
+      {/* Footer - Apple-inspired design */}
+      <footer className="bg-white py-16">
+        <div className="max-w-[1200px] mx-auto px-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
             <div>
-              <div className="flex items-center gap-2 mb-4">
-                <div className="bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg p-1.5 shadow-sm">
-                  <Plane className="w-5 h-5 text-white" />
+              <div className="flex items-center gap-2 mb-5">
+                <div className="p-2 rounded-full bg-blue-500">
+                  <Plane className="w-4 h-4 text-white" />
                 </div>
-                <span className="text-lg font-semibold text-[#1D1D1F]">PlaneProtect</span>
+                <span className="text-base font-medium text-[#1D1D1F]">PlaneProtect</span>
               </div>
-              <p className="text-xs text-gray-500 leading-relaxed">
+              <p className="text-sm text-[#6e6e73] leading-relaxed">
                 Helping passengers claim rightful compensation for flight disruptions across the UK & EU.
               </p>
             </div>
             
-            <div className="mt-2 sm:mt-0">
-              <h3 className="text-sm font-semibold mb-4 text-gray-700 tracking-wider uppercase">Quick Links</h3>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li><Link to="/" className="hover:text-blue-600 transition-colors duration-200">Home</Link></li>
-                <li><a href="/#how-it-works" onClick={(e) => { e.preventDefault(); handleNavigateToHowItWorks(); }} className="hover:text-blue-600 transition-colors duration-200">How It Works</a></li>
-                <li><Link to="/about" className="hover:text-blue-600 transition-colors duration-200">About Us</Link></li>
+            <div>
+              <h3 className="text-xs font-medium text-[#86868b] mb-4 uppercase tracking-wide">Company</h3>
+              <ul className="space-y-3">
+                <li><Link to="/" className="text-sm text-[#1D1D1F] hover:text-blue-500 transition-colors">Home</Link></li>
+                <li><button onClick={handleNavigateToHowItWorks} className="text-sm text-[#1D1D1F] hover:text-blue-500 transition-colors">How It Works</button></li>
+                <li><Link to="/about" className="text-sm text-[#1D1D1F] hover:text-blue-500 transition-colors">About Us</Link></li>
               </ul>
             </div>
             
-            <div className="mt-2 sm:mt-0">
-              <h3 className="text-sm font-semibold mb-4 text-gray-700 tracking-wider uppercase">Legal</h3>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li><Link to="/privacy" className="hover:text-blue-600 transition-colors duration-200">Privacy Policy</Link></li>
-                <li><Link to="/terms" className="hover:text-blue-600 transition-colors duration-200">Terms of Service</Link></li>
+            <div>
+              <h3 className="text-xs font-medium text-[#86868b] mb-4 uppercase tracking-wide">Legal</h3>
+              <ul className="space-y-3">
+                <li><Link to="/privacy" className="text-sm text-[#1D1D1F] hover:text-blue-500 transition-colors">Privacy Policy</Link></li>
+                <li><Link to="/terms" className="text-sm text-[#1D1D1F] hover:text-blue-500 transition-colors">Terms of Service</Link></li>
               </ul>
             </div>
             
-            <div className="mt-2 sm:mt-0">
-              <h3 className="text-sm font-semibold mb-4 text-gray-700 tracking-wider uppercase">Contact</h3>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li className="flex items-start gap-2">
-                  <Mail className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
-                  <a href="mailto:support@planeprotect.com" className="hover:text-blue-600">support@planeprotect.com</a>
+            <div>
+              <h3 className="text-xs font-medium text-[#86868b] mb-4 uppercase tracking-wide">Contact</h3>
+              <ul className="space-y-3">
+                <li className="flex items-center gap-2">
+                  <Mail className="w-4 h-4 text-[#86868b]" />
+                  <a href="mailto:support@planeprotect.com" className="text-sm text-[#1D1D1F] hover:text-blue-500 transition-colors">support@planeprotect.com</a>
                 </li>
-                <li className="flex items-start gap-2">
-                  <Phone className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
-                  <a href="tel:+447123456789" className="hover:text-blue-600">+44 (0) 7123 456789</a>
+                <li className="flex items-center gap-2">
+                  <Phone className="w-4 h-4 text-[#86868b]" />
+                  <a href="tel:+447123456789" className="text-sm text-[#1D1D1F] hover:text-blue-500 transition-colors">+44 (0) 7123 456789</a>
                 </li>
-                <li className="flex items-start gap-2">
-                  <MapPin className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
-                  <span>London, UK</span>
+                <li className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-[#86868b]" />
+                  <span className="text-sm text-[#1D1D1F]">London, UK</span>
                 </li>
               </ul>
             </div>
           </div>
 
-          <div className="mt-8 sm:mt-10 pt-4 sm:pt-6 border-t border-gray-200/60 text-center">
-            <p className="text-xs text-gray-500">
+          <div className="mt-16 pt-8 border-t border-gray-100">
+            <p className="text-xs text-[#86868b] text-center">
               &copy; {new Date().getFullYear()} PlaneProtect Ltd. All rights reserved.
             </p>
           </div>

@@ -13,7 +13,7 @@ const buttonVariants = cva(
         secondary: "bg-slate-100 text-slate-900 hover:bg-slate-100/80",
         ghost: "hover:bg-slate-100 hover:text-slate-900",
         link: "text-slate-900 underline-offset-4 hover:underline",
-        gradient: "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-md hover:shadow-lg transition-all duration-200",
+        gradient: "bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-md hover:shadow-lg transition-all duration-200",
       },
       size: {
         default: "h-12 px-6",

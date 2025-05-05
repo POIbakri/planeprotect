@@ -149,12 +149,12 @@ export function LoginPage() {
             <ArrowLeft className="w-4 h-4" />
             Back
           </Button>
-          <div className="bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl p-3 shadow-lg">
+          <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-3 shadow-lg">
             <Plane className="w-8 h-8 text-white" />
           </div>
         </div>
 
-        <h2 className="text-2xl sm:text-3xl font-bold text-center mb-8 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+        <h2 className="text-2xl sm:text-3xl font-bold text-center mb-8 bg-gradient-to-r from-blue-500 to-blue-600 bg-clip-text text-transparent">
           {isSignUp ? 'Create Account' : 'Welcome Back'}
         </h2>
 
@@ -173,7 +173,7 @@ export function LoginPage() {
                   setEmail(e.target.value);
                   if (emailError) validateEmail(e.target.value);
                 }}
-                className={`pl-12 h-12 ${emailError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
+                className={`pl-12 h-12 ${emailError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'focus:ring-blue-500 focus:border-blue-500'}`}
                 required
                 onBlur={() => validateEmail(email)}
                 placeholder="your.email@example.com"
@@ -201,7 +201,7 @@ export function LoginPage() {
                   setPassword(e.target.value);
                   if (passwordError) validatePassword(e.target.value);
                 }}
-                className={`pl-12 pr-12 h-12 ${passwordError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
+                className={`pl-12 pr-12 h-12 ${passwordError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'focus:ring-blue-500 focus:border-blue-500'}`}
                 required
                 onBlur={() => validatePassword(password)}
                 placeholder={isSignUp ? "Create a strong password" : "Enter your password"}
@@ -246,7 +246,7 @@ export function LoginPage() {
               <div className="text-right">
                 <Link 
                   to="/forgot-password" 
-                  className="text-xs text-blue-600 hover:text-blue-500 font-medium"
+                  className="text-xs text-blue-500 hover:text-blue-600 font-medium"
                 >
                   Forgot Password?
                 </Link>
@@ -262,12 +262,12 @@ export function LoginPage() {
                   type="checkbox"
                   checked={acceptTerms}
                   onChange={(e) => setAcceptTerms(e.target.checked)}
-                  className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                  className="h-4 w-4 text-blue-500 rounded border-gray-300 focus:ring-blue-500"
                 />
               </div>
               <div className="ml-3 text-sm">
                 <label htmlFor="terms" className="text-slate-600">
-                  I accept the <Link to="/terms" className="text-blue-600 hover:text-blue-500">Terms of Service</Link> and <Link to="/privacy" className="text-blue-600 hover:text-blue-500">Privacy Policy</Link>
+                  I accept the <Link to="/terms" className="text-blue-500 hover:text-blue-600">Terms of Service</Link> and <Link to="/privacy" className="text-blue-500 hover:text-blue-600">Privacy Policy</Link>
                 </label>
               </div>
             </div>
@@ -301,7 +301,7 @@ export function LoginPage() {
           {isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}
           <button
             onClick={toggleForm}
-            className="text-blue-600 hover:text-blue-500 font-medium"
+            className="text-blue-500 hover:text-blue-600 font-medium"
           >
             {isSignUp ? 'Sign In' : 'Sign Up'}
           </button>

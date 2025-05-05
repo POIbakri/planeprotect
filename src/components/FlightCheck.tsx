@@ -806,12 +806,12 @@ export function FlightCheck({ onSuccess }: { onSuccess?: (details: ClaimNavDetai
                     <div className={`w-5 h-5 rounded-full flex items-center justify-center border-2 transition-colors duration-300 ${isCurrent ? 'border-blue-500 bg-blue-500' : isActive ? 'border-blue-500 bg-blue-100' : 'border-gray-300 bg-gray-100'}`}>
                        {isActive && !isCurrent ? <CheckCircle2 className="w-3 h-3 text-blue-500"/> : <span className={`text-xs font-medium ${isCurrent ? 'text-white' : 'text-gray-400'}`}>{index + 1}</span>}
                     </div>
-                     <span className={`mt-1 text-[10px] sm:text-xs ${isCurrent ? 'text-blue-600 font-semibold' : isActive ? 'text-gray-600' : 'text-gray-400'}`}>
+                     <span className={`mt-1 text-[10px] sm:text-xs ${isCurrent ? 'text-blue-500 font-semibold' : isActive ? 'text-gray-600' : 'text-gray-400'}`}>
                       {s.name}
                     </span>
                   </div>
                   {index < stepsInfo.length - 1 && (
-                    <div className={`flex-1 h-0.5 mt-[-10px] rounded-full ${isActive ? 'bg-blue-400' : 'bg-gray-200'}`}></div>
+                    <div className={`flex-1 h-0.5 mt-[-10px] rounded-full ${isActive ? 'bg-blue-500' : 'bg-gray-200'}`}></div>
                   )}
                 </React.Fragment>
               );
@@ -856,7 +856,7 @@ export function FlightCheck({ onSuccess }: { onSuccess?: (details: ClaimNavDetai
                 }
               }}
               placeholder="Search airline name or code"
-              className="h-11 pl-4 pr-10 rounded-lg bg-white/90 backdrop-blur-sm border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-300 transition-all duration-200 text-sm"
+              className="h-11 pl-4 pr-10 rounded-lg bg-white/90 backdrop-blur-sm border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200 text-sm"
               required
               onFocus={() => setShowAirlineResults(true)}
               onBlur={() => setTimeout(() => setShowAirlineResults(false), 150)}
@@ -907,13 +907,13 @@ export function FlightCheck({ onSuccess }: { onSuccess?: (details: ClaimNavDetai
               value={flightNumber}
               onChange={(e) => setFlightNumber(e.target.value.replace(/\D/g, ''))}
               placeholder="e.g., 1234"
-              className="h-11 rounded-lg bg-white/90 backdrop-blur-sm border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-300 transition-all duration-200 text-sm"
+              className="h-11 rounded-lg bg-white/90 backdrop-blur-sm border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200 text-sm"
               required
               pattern="^\d{1,4}$"
               title="Enter 1-4 digits"
             />
           </div>
-          <p className="text-xs text-[#6e6e73] pt-1">
+          <p className="text-xs text-blue-500 pt-1">
             Enter only the numbers after the airline code.
           </p>
         </motion.div>
@@ -934,12 +934,12 @@ export function FlightCheck({ onSuccess }: { onSuccess?: (details: ClaimNavDetai
             type="date"
             value={flightDate}
             onChange={(e) => setFlightDate(e.target.value)}
-            className="h-11 rounded-lg bg-white/90 backdrop-blur-sm border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-300 transition-all duration-200 text-sm appearance-none"
+            className="h-11 rounded-lg bg-white/90 backdrop-blur-sm border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200 text-sm appearance-none"
             required
             min={minDateStr}
             max={maxDate}
           />
-          <p className="text-xs text-[#6e6e73] pt-1">
+          <p className="text-xs text-blue-500 pt-1">
             Claims are valid up to 6 years back.
           </p>
         </motion.div>
@@ -995,7 +995,7 @@ export function FlightCheck({ onSuccess }: { onSuccess?: (details: ClaimNavDetai
                 }
               }}
               placeholder="Search city, airport name or code"
-              className="h-11 pl-4 pr-10 rounded-lg bg-white/90 backdrop-blur-sm border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-300 transition-all duration-200 text-sm"
+              className="h-11 pl-4 pr-10 rounded-lg bg-white/90 backdrop-blur-sm border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200 text-sm"
               required
               onFocus={() => setShowDepartureResults(true)}
               onBlur={() => setTimeout(() => setShowDepartureResults(false), 150)}
@@ -1048,7 +1048,7 @@ export function FlightCheck({ onSuccess }: { onSuccess?: (details: ClaimNavDetai
                 }
               }}
               placeholder="Search city, airport name or code"
-              className="h-11 pl-4 pr-10 rounded-lg bg-white/90 backdrop-blur-sm border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-300 transition-all duration-200 text-sm"
+              className="h-11 pl-4 pr-10 rounded-lg bg-white/90 backdrop-blur-sm border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200 text-sm"
               required
               onFocus={() => setShowDestinationResults(true)}
               onBlur={() => setTimeout(() => setShowDestinationResults(false), 150)}
@@ -1208,10 +1208,10 @@ export function FlightCheck({ onSuccess }: { onSuccess?: (details: ClaimNavDetai
                     });
                   }}
                   placeholder="e.g., 3"
-                  className="h-11 rounded-lg bg-white/90 backdrop-blur-sm border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-300 transition-all duration-200 text-sm"
+                  className="h-11 rounded-lg bg-white/90 backdrop-blur-sm border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200 text-sm"
                   required
                 />
-                <p className="text-xs text-[#6e6e73] pt-1">
+                <p className="text-xs text-blue-500 pt-1">
                   Enter the total delay upon arrival in whole hours.
                 </p>
               </motion.div>
@@ -1251,9 +1251,9 @@ export function FlightCheck({ onSuccess }: { onSuccess?: (details: ClaimNavDetai
                   </motion.div>
                 ))}
               </div>
-              <p className="text-xs text-[#6e6e73] pt-1">
+              <div className="text-xs text-blue-500 pt-1">
                 Select the reason provided by the airline, if any.
-              </p>
+              </div>
             </motion.div>
           </motion.div>
 
@@ -1288,7 +1288,7 @@ export function FlightCheck({ onSuccess }: { onSuccess?: (details: ClaimNavDetai
       {step === 'initial-flight' && (
         <motion.div
           key="step-flight"
-          className="bg-white/80 backdrop-blur-xl rounded-[2rem] p-5 sm:p-6 shadow-md border border-gray-200/50 overflow-hidden relative"
+          className="bg-white/90 backdrop-blur-xl rounded-[2rem] p-5 sm:p-6 shadow-md border border-gray-200/50 overflow-hidden relative"
         >
            <StepIndicator />
            <h2 className="text-xl font-semibold text-center text-[#1D1D1F] mb-6">Enter Flight Info</h2>
@@ -1297,7 +1297,7 @@ export function FlightCheck({ onSuccess }: { onSuccess?: (details: ClaimNavDetai
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.7, duration: 0.4 }}
-              className="mt-6 text-xs text-[#6e6e73] text-center leading-relaxed"
+              className="mt-6 text-xs text-blue-500 text-center leading-relaxed"
             >
               Check eligibility for free. No win, no fee.
             </motion.p>
@@ -1310,7 +1310,7 @@ export function FlightCheck({ onSuccess }: { onSuccess?: (details: ClaimNavDetai
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="bg-white/80 backdrop-blur-xl rounded-[2rem] p-5 sm:p-6 shadow-md border border-gray-200/50 overflow-hidden relative"
+          className="bg-white/90 backdrop-blur-xl rounded-[2rem] p-5 sm:p-6 shadow-md border border-gray-200/50 overflow-hidden relative"
         >
            <StepIndicator />
             <h2 className="text-xl font-semibold text-center text-[#1D1D1F] mb-6">Select Airports</h2>
@@ -1324,7 +1324,7 @@ export function FlightCheck({ onSuccess }: { onSuccess?: (details: ClaimNavDetai
            initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="bg-white/80 backdrop-blur-xl rounded-[2rem] p-5 sm:p-6 shadow-md border border-gray-200/50 overflow-hidden relative"
+          className="bg-white/90 backdrop-blur-xl rounded-[2rem] p-5 sm:p-6 shadow-md border border-gray-200/50 overflow-hidden relative"
         >
            <StepIndicator />
            <h2 className="text-xl font-semibold text-center text-[#1D1D1F] mb-6">Disruption Details</h2>
