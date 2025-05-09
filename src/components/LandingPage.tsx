@@ -100,18 +100,6 @@ export function LandingPage() {
 
         {/* Main hero content */}
         <div className="relative max-w-[1200px] mx-auto px-4 sm:px-6 py-4 sm:py-6 lg:py-8">
-          {/* Small logo mark centered on mobile, left aligned on desktop */}
-          <div className="flex justify-center lg:justify-start mb-5">
-            <motion.div 
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.2, duration: 0.8 }}
-              className="rounded-full p-3 bg-gradient-to-br from-blue-500 to-blue-600 shadow-md"
-            >
-              <Plane className="w-8 h-8 text-white" />
-            </motion.div>
-          </div>
-          
           {/* Two-column layout for hero content - Reversed on mobile for better UX */}
           <div className="lg:flex items-start gap-6 lg:gap-12">
             {/* Left Column - Hero Message (shows first on mobile) */}
