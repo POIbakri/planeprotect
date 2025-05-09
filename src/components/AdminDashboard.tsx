@@ -492,13 +492,13 @@ export function AdminDashboard() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="space-y-6 sm:space-y-8"
+      className="space-y-6 sm:space-y-8 max-w-7xl mx-auto px-4 sm:px-6 py-6"
     >
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h1 className="text-2xl sm:text-3xl font-semibold text-[#1D1D1F]">
+        <h1 className="text-2xl sm:text-3xl font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
           Admin Dashboard
         </h1>
-        <div className="flex flex-wrap gap-2 border border-gray-200 rounded-lg p-1 bg-gray-50/50 w-full sm:w-auto">
+        <div className="flex flex-wrap gap-2 border border-gray-200 rounded-lg p-1 bg-gray-50/60 w-full sm:w-auto shadow-sm">
           {[ { id: 'claims', label: 'Claims', icon: FileText }, 
             { id: 'analytics', label: 'Analytics', icon: Settings }, 
             { id: 'emails', label: 'Emails', icon: Mail } ].map(tab => (
@@ -506,9 +506,9 @@ export function AdminDashboard() {
               key={tab.id}
               variant={activeTab === tab.id ? 'default' : 'ghost'}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`flex-1 sm:flex-none rounded-lg h-9 px-3 text-sm ${activeTab === tab.id ? 'shadow-sm' : 'text-gray-600 hover:bg-white/60'}`}
+              className={`flex-1 sm:flex-none rounded-lg h-9 px-3 text-sm ${activeTab === tab.id ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md' : 'text-gray-600 hover:bg-white/80 hover:shadow-sm transition-all'}`}
             >
-              <tab.icon className={`w-4 h-4 mr-1.5 ${activeTab === tab.id ? '' : 'text-gray-400'}`} />
+              <tab.icon className={`w-4 h-4 mr-1.5 ${activeTab === tab.id ? 'text-white' : 'text-gray-400'}`} />
               {tab.label}
             </Button>
           ))}
@@ -517,7 +517,7 @@ export function AdminDashboard() {
 
       {activeTab === 'claims' && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
-          <div className="bg-white/70 backdrop-blur-lg rounded-xl p-4 shadow-sm border border-gray-200/50 mb-6">
+          <div className="bg-gradient-to-br from-white/95 to-white/80 backdrop-blur-lg rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300 border border-gray-200/50 mb-6">
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3 items-end">
               <div className="md:col-span-1 lg:col-span-2">
                 <label htmlFor="admin-search" className="block text-xs font-medium text-gray-600 mb-1">Search</label>
@@ -530,7 +530,7 @@ export function AdminDashboard() {
                     value={searchTerm}
                     onChange={handleSearchInputChange}
                     onKeyDown={handleSearchKeyDown}
-                    className="h-9 pl-8 text-sm rounded-lg border-gray-300 w-full"
+                    className="h-9 pl-8 text-sm rounded-lg border-gray-300 w-full focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all shadow-sm"
                   />
                 </div>
               </div>
@@ -540,7 +540,7 @@ export function AdminDashboard() {
                   id="status-filter"
                   value={statusFilter}
                   onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setStatusFilter(e.target.value as ClaimStatus | 'all')}
-                  className="h-9 rounded-lg text-sm border-gray-300 bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-300 w-full px-3 py-1 appearance-none"
+                  className="h-9 rounded-lg text-sm border-gray-300 bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 w-full px-3 py-1 appearance-none shadow-sm transition-all"
                 >
                   <option value="all">All Statuses</option>
                   {Object.entries(statusDisplayMap).map(([key, { label }]) => (
@@ -550,16 +550,16 @@ export function AdminDashboard() {
               </div>
               <div>
                  <label htmlFor="start-date" className="block text-xs font-medium text-gray-600 mb-1">Start Date</label>
-                 <Input id="start-date" type="date" name="startDate" value={dateFilter.startDate} onChange={handleDateFilterChange} className="h-9 text-sm rounded-lg border-gray-300 w-full"/>
+                 <Input id="start-date" type="date" name="startDate" value={dateFilter.startDate} onChange={handleDateFilterChange} className="h-9 text-sm rounded-lg border-gray-300 w-full focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all shadow-sm"/>
               </div>
               <div>
                  <label htmlFor="end-date" className="block text-xs font-medium text-gray-600 mb-1">End Date</label>
-                 <Input id="end-date" type="date" name="endDate" value={dateFilter.endDate} onChange={handleDateFilterChange} className="h-9 text-sm rounded-lg border-gray-300 w-full"/>
+                 <Input id="end-date" type="date" name="endDate" value={dateFilter.endDate} onChange={handleDateFilterChange} className="h-9 text-sm rounded-lg border-gray-300 w-full focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all shadow-sm"/>
               </div>
               <div className="flex gap-2 justify-end md:col-span-3 lg:col-span-1">
-                  <Button variant="ghost" size="sm" onClick={clearFilters} className="rounded-lg h-9 px-3 text-xs text-gray-600 hover:text-blue-600">Clear</Button>
-                  <Button variant="default" size="sm" onClick={handleFilterApply} className="rounded-lg h-9 px-3 text-xs">Apply</Button>
-                   <Button variant="outline" size="sm" onClick={exportClaimsReport} className="rounded-lg h-9 px-3 text-xs border-gray-300 text-gray-700 hover:bg-gray-50">
+                  <Button variant="ghost" size="sm" onClick={clearFilters} className="rounded-lg h-9 px-3 text-xs text-gray-600 hover:text-blue-600 transition-colors">Clear</Button>
+                  <Button variant="default" size="sm" onClick={handleFilterApply} className="rounded-lg h-9 px-3 text-xs bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-md hover:shadow-lg transition-all">Apply</Button>
+                   <Button variant="outline" size="sm" onClick={exportClaimsReport} className="rounded-lg h-9 px-3 text-xs border-blue-200 text-blue-600 hover:bg-blue-50 transition-all shadow-sm hover:shadow">
                       <Download className="w-3.5 h-3.5 mr-1" /> Export
                    </Button>
               </div>
@@ -567,44 +567,59 @@ export function AdminDashboard() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 mb-6">
-                <motion.div initial={{ opacity: 0, y:15 }} animate={{ opacity: 1, y:0 }} transition={{delay: 0.1}} className="bg-white/70 backdrop-blur-lg rounded-xl p-4 sm:p-5 shadow-sm border border-gray-200/50">
+                <motion.div 
+                  initial={{ opacity: 0, y:15 }} 
+                  animate={{ opacity: 1, y:0 }} 
+                  transition={{delay: 0.1}} 
+                  className="bg-gradient-to-br from-white to-emerald-50/30 backdrop-blur-lg rounded-xl p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow duration-300 border border-emerald-100/50"
+                >
                     <div className="flex items-center justify-between">
                         <div>
                         <p className="text-xs sm:text-sm text-gray-500 mb-1">Paid Value (This Page)</p>
-                        <p className="text-xl sm:text-2xl font-semibold text-emerald-600">{formatCurrency(stats.totalValue)}</p>
+                        <p className="text-xl sm:text-2xl font-semibold bg-gradient-to-r from-emerald-500 to-teal-600 bg-clip-text text-transparent">{formatCurrency(stats.totalValue)}</p>
                         </div>
-                        <div className="bg-emerald-100/70 p-2.5 rounded-lg"><BanknoteIcon className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600" /></div>
+                        <div className="bg-gradient-to-br from-emerald-100 to-emerald-200/50 p-2.5 rounded-lg shadow-sm"><BanknoteIcon className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600" /></div>
                     </div>
                 </motion.div>
-                 <motion.div initial={{ opacity: 0, y:15 }} animate={{ opacity: 1, y:0 }} transition={{delay: 0.2}} className="bg-white/70 backdrop-blur-lg rounded-xl p-4 sm:p-5 shadow-sm border border-gray-200/50">
+                 <motion.div 
+                   initial={{ opacity: 0, y:15 }} 
+                   animate={{ opacity: 1, y:0 }} 
+                   transition={{delay: 0.2}} 
+                   className="bg-gradient-to-br from-white to-amber-50/30 backdrop-blur-lg rounded-xl p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow duration-300 border border-amber-100/50"
+                 >
                      <div className="flex items-center justify-between">
                          <div>
                          <p className="text-xs sm:text-sm text-gray-500 mb-1">Pending/Review (This Page)</p>
-                         <p className="text-xl sm:text-2xl font-semibold text-amber-600">{stats.pendingCount}</p>
+                         <p className="text-xl sm:text-2xl font-semibold bg-gradient-to-r from-amber-500 to-orange-600 bg-clip-text text-transparent">{stats.pendingCount}</p>
                          </div>
-                         <div className="bg-amber-100/70 p-2.5 rounded-lg"><Clock className="w-5 h-5 sm:w-6 sm:h-6 text-amber-600" /></div>
+                         <div className="bg-gradient-to-br from-amber-100 to-amber-200/50 p-2.5 rounded-lg shadow-sm"><Clock className="w-5 h-5 sm:w-6 sm:h-6 text-amber-600" /></div>
                      </div>
                  </motion.div>
-                 <motion.div initial={{ opacity: 0, y:15 }} animate={{ opacity: 1, y:0 }} transition={{delay: 0.3}} className="bg-white/70 backdrop-blur-lg rounded-xl p-4 sm:p-5 shadow-sm border border-gray-200/50">
+                 <motion.div 
+                   initial={{ opacity: 0, y:15 }} 
+                   animate={{ opacity: 1, y:0 }} 
+                   transition={{delay: 0.3}} 
+                   className="bg-gradient-to-br from-white to-blue-50/30 backdrop-blur-lg rounded-xl p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow duration-300 border border-blue-100/50"
+                 >
                     <div className="flex items-center justify-between">
                         <div>
                         <p className="text-xs sm:text-sm text-gray-500 mb-1">Total Claims (Filtered)</p>
-                        <p className="text-xl sm:text-2xl font-semibold text-blue-600">{totalClaimsCount}</p>
+                        <p className="text-xl sm:text-2xl font-semibold bg-gradient-to-r from-blue-500 to-indigo-600 bg-clip-text text-transparent">{totalClaimsCount}</p>
                         </div>
-                        <div className="bg-blue-100/70 p-2.5 rounded-lg"><FileText className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" /></div>
+                        <div className="bg-gradient-to-br from-blue-100 to-blue-200/50 p-2.5 rounded-lg shadow-sm"><FileText className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" /></div>
                     </div>
                 </motion.div>
             </div>
 
-          <div className="bg-white/70 backdrop-blur-lg rounded-xl shadow-sm border border-gray-200/50 overflow-hidden">
-             <h2 className="text-lg font-semibold p-4 border-b border-gray-200/60">Claims Management</h2>
+          <div className="bg-gradient-to-br from-white/95 to-white/80 backdrop-blur-lg rounded-xl shadow-md hover:shadow-lg transition-all duration-300 border border-gray-200/50 overflow-hidden">
+             <h2 className="text-lg font-semibold p-4 border-b border-gray-200/60 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Claims Management</h2>
              {loading ? (
                <div className="flex items-center justify-center h-64">
                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
                </div>
              ) : claims.length === 0 ? (
                 <div className="text-center py-12 px-4">
-                    <div className="mx-auto bg-gray-100 w-16 h-16 flex items-center justify-center rounded-full mb-4">
+                    <div className="mx-auto bg-gradient-to-br from-gray-100 to-blue-50 w-16 h-16 flex items-center justify-center rounded-full mb-4 shadow-sm">
                         <FileText className="text-gray-400 w-8 h-8" />
                     </div>
                     <h3 className="text-lg font-medium text-gray-800 mb-2">No Claims Found</h3>
@@ -614,13 +629,15 @@ export function AdminDashboard() {
                         'There are no claims matching the current criteria.'}
                     </p>
                     {(searchTerm || statusFilter !== 'all' || dateFilter.startDate || dateFilter.endDate) && (
-                        <Button variant="outline" onClick={clearFilters} className="rounded-lg h-9 text-sm">Clear Filters</Button>
+                        <Button variant="outline" onClick={clearFilters} className="rounded-lg h-9 text-sm shadow-sm hover:shadow transition-all">Clear Filters</Button>
                     )}
                 </div>
              ) : (
                <>
                  {renderClaimsTable()}
-                 {renderPagination()} 
+                 <div className="px-4 pb-4">
+                   {renderPagination()}
+                 </div>
                </>
              )}
            </div>
@@ -630,8 +647,8 @@ export function AdminDashboard() {
       {activeTab === 'analytics' && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-             <div className="bg-white/70 backdrop-blur-lg rounded-xl p-5 sm:p-6 shadow-sm border border-gray-200/50">
-               <h2 className="text-lg font-semibold mb-4 text-gray-700">Claims Value Over Time</h2>
+             <div className="bg-gradient-to-br from-white/95 to-white/80 backdrop-blur-lg rounded-xl p-5 sm:p-6 shadow-md hover:shadow-lg transition-all duration-300 border border-gray-200/50">
+               <h2 className="text-lg font-semibold mb-4 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Claims Value Over Time</h2>
                <div className="h-64">
                  <ResponsiveContainer width="100%" height="100%">
                    <LineChart data={chartData}>
@@ -643,6 +660,7 @@ export function AdminDashboard() {
                          backgroundColor: 'white',
                          border: '1px solid #e2e8f0',
                          borderRadius: '0.5rem',
+                         boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
                        }}
                      />
                      <Line
@@ -651,13 +669,14 @@ export function AdminDashboard() {
                        stroke="#2563eb"
                        strokeWidth={2}
                        dot={{ fill: '#2563eb', strokeWidth: 2 }}
+                       activeDot={{ r: 6, fill: '#4f46e5', stroke: '#ffffff', strokeWidth: 2 }}
                      />
                    </LineChart>
                  </ResponsiveContainer>
                </div>
              </div>
-             <div className="bg-white/70 backdrop-blur-lg rounded-xl p-5 sm:p-6 shadow-sm border border-gray-200/50">
-                <h2 className="text-lg font-semibold mb-4 text-gray-700">Claims by Status</h2>
+             <div className="bg-gradient-to-br from-white/95 to-white/80 backdrop-blur-lg rounded-xl p-5 sm:p-6 shadow-md hover:shadow-lg transition-all duration-300 border border-gray-200/50">
+                <h2 className="text-lg font-semibold mb-4 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Claims by Status</h2>
                 <div className="h-64">
                   <p className="text-center text-gray-400 pt-16">Status Breakdown Placeholder</p>
                 </div>
@@ -667,7 +686,7 @@ export function AdminDashboard() {
       )}
 
       {activeTab === 'emails' && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }} className="bg-gradient-to-br from-white/95 to-white/80 backdrop-blur-lg rounded-xl shadow-md hover:shadow-lg transition-all duration-300 border border-gray-200/50 p-5">
              <EmailTemplateEditor />
           </motion.div>
       )}

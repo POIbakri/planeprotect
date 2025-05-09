@@ -114,17 +114,17 @@ export function UserDashboard() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="space-y-6 sm:space-y-8"
+      className="space-y-6 sm:space-y-8 max-w-7xl mx-auto px-4 sm:px-6 py-6"
     >
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
-        <h1 className="text-2xl sm:text-3xl font-semibold text-[#1D1D1F]">
+        <h1 className="text-2xl sm:text-3xl font-semibold text-[#1D1D1F] bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
           Your Dashboard
         </h1>
         <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
           <Button
             variant="outline"
             onClick={() => openContactDialog()}
-            className="flex items-center gap-1.5 rounded-lg h-10 px-4 text-sm border-blue-200 text-blue-600 hover:bg-blue-50"
+            className="flex items-center gap-1.5 rounded-lg h-10 px-4 text-sm border-blue-200 text-blue-600 hover:bg-blue-50 transition-all shadow-sm hover:shadow"
           >
             <HelpCircle className="w-4 h-4" />
             Contact Support
@@ -132,7 +132,7 @@ export function UserDashboard() {
           <Button
             variant="gradient"
             onClick={() => navigate('/')}
-            className="flex items-center gap-1.5 rounded-lg h-10 px-4 text-sm"
+            className="flex items-center gap-1.5 rounded-lg h-10 px-4 text-sm bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-md hover:shadow-lg transition-all"
           >
             <Plane className="w-4 h-4" />
             Check New Flight
@@ -145,16 +145,16 @@ export function UserDashboard() {
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-white/70 backdrop-blur-lg rounded-xl p-4 sm:p-5 shadow-sm border border-gray-200/50"
+          className="bg-gradient-to-br from-white to-emerald-50/30 backdrop-blur-lg rounded-xl p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow duration-300 border border-emerald-100/50"
         >
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs sm:text-sm text-gray-500 mb-1">Total Paid</p>
-              <p className="text-xl sm:text-2xl font-semibold text-emerald-600">
+              <p className="text-xl sm:text-2xl font-semibold text-emerald-600 bg-gradient-to-r from-emerald-500 to-teal-600 bg-clip-text text-transparent">
                 {formatCurrency(totalCompensation)}
               </p>
             </div>
-            <div className="bg-emerald-100/70 p-2.5 rounded-lg">
+            <div className="bg-gradient-to-br from-emerald-100 to-emerald-200/50 p-2.5 rounded-lg shadow-sm">
               <BanknoteIcon className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600" />
             </div>
           </div>
@@ -164,14 +164,14 @@ export function UserDashboard() {
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-white/70 backdrop-blur-lg rounded-xl p-4 sm:p-5 shadow-sm border border-gray-200/50"
+          className="bg-gradient-to-br from-white to-amber-50/30 backdrop-blur-lg rounded-xl p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow duration-300 border border-amber-100/50"
         >
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs sm:text-sm text-gray-500 mb-1">Active Claims</p>
-              <p className="text-xl sm:text-2xl font-semibold text-amber-600">{activeClaims}</p>
+              <p className="text-xl sm:text-2xl font-semibold text-amber-600 bg-gradient-to-r from-amber-500 to-orange-600 bg-clip-text text-transparent">{activeClaims}</p>
             </div>
-            <div className="bg-amber-100/70 p-2.5 rounded-lg">
+            <div className="bg-gradient-to-br from-amber-100 to-amber-200/50 p-2.5 rounded-lg shadow-sm">
               <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-amber-600" />
             </div>
           </div>
@@ -181,21 +181,21 @@ export function UserDashboard() {
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="bg-white/70 backdrop-blur-lg rounded-xl p-4 sm:p-5 shadow-sm border border-gray-200/50"
+          className="bg-gradient-to-br from-white to-blue-50/30 backdrop-blur-lg rounded-xl p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow duration-300 border border-blue-100/50"
         >
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs sm:text-sm text-gray-500 mb-1">Total Claims</p>
-              <p className="text-xl sm:text-2xl font-semibold text-blue-600">{totalClaims}</p>
+              <p className="text-xl sm:text-2xl font-semibold text-blue-600 bg-gradient-to-r from-blue-500 to-indigo-600 bg-clip-text text-transparent">{totalClaims}</p>
             </div>
-            <div className="bg-blue-100/70 p-2.5 rounded-lg">
+            <div className="bg-gradient-to-br from-blue-100 to-blue-200/50 p-2.5 rounded-lg shadow-sm">
               <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
             </div>
           </div>
         </motion.div>
       </div>
 
-      <div className="bg-white/70 backdrop-blur-lg rounded-2xl p-5 sm:p-6 shadow-md border border-gray-200/50">
+      <div className="bg-gradient-to-br from-white/95 to-white/80 backdrop-blur-lg rounded-2xl p-5 sm:p-6 shadow-md hover:shadow-lg transition-shadow duration-300 border border-gray-200/50">
         <div className="flex flex-col md:flex-row gap-3 md:items-center mb-5">
           <div className="relative flex-grow">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -204,14 +204,14 @@ export function UserDashboard() {
               placeholder="Search by flight no..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="h-10 pl-9 text-sm rounded-lg border-gray-300 w-full"
+              className="h-10 pl-9 text-sm rounded-lg border-gray-300 w-full focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all shadow-sm"
             />
           </div>
           <div className="flex gap-3 flex-wrap sm:flex-nowrap">
             <select 
               value={selectedStatus}
               onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedStatus(e.target.value as FilterStatus)}
-              className="h-10 rounded-lg text-sm border-gray-300 bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-300 w-full sm:w-auto min-w-[120px] px-3 py-2 appearance-none"
+              className="h-10 rounded-lg text-sm border-gray-300 bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 w-full sm:w-auto min-w-[120px] px-3 py-2 appearance-none shadow-sm transition-all"
             >
               <option value="all">All Statuses</option>
               {Object.entries(statusDisplayMap).map(([key, { label }]) => (
@@ -223,7 +223,7 @@ export function UserDashboard() {
                 variant="ghost"
                 size="sm"
                 onClick={handleClearFilters}
-                className="text-gray-600 hover:text-blue-600 rounded-lg h-10 px-3 text-sm"
+                className="text-gray-600 hover:text-blue-600 rounded-lg h-10 px-3 text-sm transition-colors"
               >
                 Clear
               </Button>
@@ -231,7 +231,7 @@ export function UserDashboard() {
           </div>
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-4">
           {loading ? (
             <div className="flex items-center justify-center h-48">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
@@ -246,11 +246,11 @@ export function UserDashboard() {
                   'You haven\'t submitted any claims yet. Check a flight to get started!'}
               </p>
               {(selectedStatus !== 'all' || searchTerm) ? (
-                <Button variant="outline" onClick={handleClearFilters} className="rounded-lg h-9 text-sm">
+                <Button variant="outline" onClick={handleClearFilters} className="rounded-lg h-9 text-sm shadow-sm hover:shadow transition-all">
                   Clear Filters
                 </Button>
               ) : (
-                <Button variant="gradient" onClick={() => navigate('/')} className="rounded-lg h-10 text-sm">
+                <Button variant="gradient" onClick={() => navigate('/')} className="rounded-lg h-10 text-sm bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-md hover:shadow-lg transition-all">
                   Check Flight Eligibility
                 </Button>
               )}
@@ -266,7 +266,7 @@ export function UserDashboard() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3 }}
-                    className="bg-gradient-to-b from-white/95 to-white/90 p-4 sm:p-5 rounded-xl border border-gray-200/60 shadow-sm transition-shadow hover:shadow-md relative group"
+                    className="bg-gradient-to-b from-white/95 to-white/90 p-4 sm:p-5 rounded-xl border border-gray-200/60 shadow-sm hover:shadow-md transition-all cursor-pointer relative group"
                   >
                     <div 
                       className="absolute right-3 top-3 opacity-0 group-hover:opacity-100 transition-opacity"
@@ -278,7 +278,7 @@ export function UserDashboard() {
                       <Button
                         size="sm"
                         variant="ghost"
-                        className="h-8 w-8 p-0 rounded-full bg-blue-50 hover:bg-blue-100"
+                        className="h-8 w-8 p-0 rounded-full bg-blue-50 hover:bg-blue-100 shadow-sm hover:shadow transition-all"
                         title="Contact support about this claim"
                       >
                         <Mail className="h-4 w-4 text-blue-600" />
@@ -289,18 +289,18 @@ export function UserDashboard() {
                       onClick={() => navigate(`/claim/${claim.id}`)}
                     >
                       <div className="flex items-center gap-3">
-                        <div className="hidden sm:block bg-blue-100/70 p-2 rounded-lg">
+                        <div className="hidden sm:block bg-gradient-to-br from-blue-100 to-indigo-100/50 p-2 rounded-lg shadow-sm">
                           <Plane className="w-6 h-6 text-blue-500" />
                         </div>
                         <div>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 flex-wrap">
                             <p className="text-lg font-semibold text-[#1D1D1F]">{claim.flight_number}</p>
-                            <span className={`text-xs px-2 py-0.5 rounded-full flex items-center gap-1 ${statusInfo.colorClasses}`}>
+                            <span className={`text-xs px-2 py-0.5 rounded-full flex items-center gap-1 ${statusInfo.colorClasses} shadow-sm`}>
                               <StatusIcon className="w-3 h-3" />
                               {statusInfo.label}
                             </span>
                             {claim.assignment_form_signed && (
-                              <span className="text-xs px-2 py-0.5 rounded-full flex items-center gap-1 text-emerald-700 bg-emerald-100 border-emerald-200">
+                              <span className="text-xs px-2 py-0.5 rounded-full flex items-center gap-1 text-emerald-700 bg-emerald-100 border-emerald-200 shadow-sm">
                                 <FileSignature className="w-3 h-3" />
                                 Signed
                               </span>
@@ -313,12 +313,12 @@ export function UserDashboard() {
                         </div>
                       </div>
                       <div className="flex flex-col items-end">
-                        <div className="text-xl font-semibold text-[#1D1D1F]">
+                        <div className="text-xl font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                           {formatCurrency(claim.compensation_amount)}
                         </div>
-                        <div className="flex items-center mt-1 text-blue-600 text-xs font-medium">
+                        <div className="flex items-center mt-1 text-blue-600 text-xs font-medium group-hover:translate-x-0.5 transition-transform">
                           View Details
-                          <ArrowRight className="w-3 h-3 ml-1" />
+                          <ArrowRight className="w-3 h-3 ml-1 group-hover:ml-2 transition-all" />
                         </div>
                       </div>
                     </div>
@@ -335,7 +335,7 @@ export function UserDashboard() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4, duration: 0.5 }}
-        className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-5 sm:p-6 shadow-sm border border-blue-100/50"
+        className="bg-gradient-to-r from-blue-50 to-purple-100 rounded-2xl p-5 sm:p-6 shadow-sm hover:shadow-md transition-all duration-300 border border-blue-100/50"
       >
         <div className="flex flex-col md:flex-row items-center justify-between gap-5">
           <div className="text-center md:text-left">
@@ -350,7 +350,7 @@ export function UserDashboard() {
           <div className="flex flex-col sm:flex-row gap-3">
             <a 
               href="mailto:support@planeprotect.co.uk" 
-              className="flex items-center justify-center gap-2 h-10 px-4 rounded-lg bg-white text-blue-600 border border-blue-200 text-sm font-medium hover:bg-blue-50 transition-colors"
+              className="flex items-center justify-center gap-2 h-10 px-4 rounded-lg bg-white text-blue-600 border border-blue-200 text-sm font-medium hover:bg-blue-50 transition-colors shadow-sm hover:shadow transition-all"
             >
               <Mail className="w-4 h-4" />
               Email Support
@@ -358,7 +358,7 @@ export function UserDashboard() {
             <Button
               variant="gradient"
               onClick={() => openContactDialog()}
-              className="flex items-center gap-2 h-10 rounded-lg text-sm font-medium"
+              className="flex items-center gap-2 h-10 rounded-lg text-sm font-medium bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-md hover:shadow-lg transition-all"
             >
               <MessageSquare className="w-4 h-4" />
               Contact Form
