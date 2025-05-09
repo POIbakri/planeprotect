@@ -2,7 +2,7 @@ import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Plane, User, LogOut, Settings, Bell, Menu, X, 
-  Shield, CheckCircle2, Mail, Phone, MapPin
+  Shield, CheckCircle2, Mail, Phone, MapPin, MessageSquare
 } from 'lucide-react';
 import { Button } from './ui/button';
 import { useAuth } from '@/contexts/AuthContext';
@@ -45,6 +45,20 @@ export function Layout({ children }: { children?: React.ReactNode }) {
     } else {
       // Otherwise navigate to the landing page with the section hash
       navigate('/#how-it-works');
+    }
+    setIsMobileMenuOpen(false);
+  };
+
+  const handleNavigateToContact = () => {
+    // If we're already on the landing page, scroll to the section
+    if (location.pathname === '/') {
+      const contactSection = document.getElementById('contact-us');
+      if (contactSection) {
+        contactSection.scrollIntoView({ behavior: 'smooth' });
+      }
+    } else {
+      // Otherwise navigate to the landing page with the section hash
+      navigate('/#contact-us');
     }
     setIsMobileMenuOpen(false);
   };
@@ -94,6 +108,12 @@ export function Layout({ children }: { children?: React.ReactNode }) {
                 className="text-sm text-[#1D1D1F] hover:text-blue-500 transition-colors"
               >
                 How It Works
+              </button>
+              <button 
+                onClick={handleNavigateToContact}
+                className="text-sm text-[#1D1D1F] hover:text-blue-500 transition-colors"
+              >
+                Contact Us
               </button>
               
               {user ? (
@@ -164,7 +184,7 @@ export function Layout({ children }: { children?: React.ReactNode }) {
 
         {/* Mobile Navigation */}
         <AnimatePresence>
-          {isMobileMenuOpen && (
+          {isMobileMenuOpen &&
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
@@ -187,6 +207,13 @@ export function Layout({ children }: { children?: React.ReactNode }) {
                   className="block w-full text-left py-2 text-base text-[#1D1D1F]"
                 >
                   How It Works
+                </button>
+                
+                <button
+                  onClick={handleNavigateToContact}
+                  className="block w-full text-left py-2 text-base text-[#1D1D1F]"
+                >
+                  Contact Us
                 </button>
                 
                 {user ? (
@@ -233,7 +260,7 @@ export function Layout({ children }: { children?: React.ReactNode }) {
                 )}
               </div>
             </motion.div>
-          )}
+}
         </AnimatePresence>
       </header>
 
@@ -263,6 +290,7 @@ export function Layout({ children }: { children?: React.ReactNode }) {
                 <li><Link to="/" className="text-sm text-[#1D1D1F] hover:text-blue-500 transition-colors">Home</Link></li>
                 <li><button onClick={handleNavigateToHowItWorks} className="text-sm text-[#1D1D1F] hover:text-blue-500 transition-colors">How It Works</button></li>
                 <li><Link to="/about" className="text-sm text-[#1D1D1F] hover:text-blue-500 transition-colors">About Us</Link></li>
+                <li><button onClick={handleNavigateToContact} className="text-sm text-[#1D1D1F] hover:text-blue-500 transition-colors">Contact Us</button></li>
               </ul>
             </div>
             
@@ -279,12 +307,9 @@ export function Layout({ children }: { children?: React.ReactNode }) {
               <ul className="space-y-3">
                 <li className="flex items-center gap-2">
                   <Mail className="w-4 h-4 text-[#86868b]" />
-                  <a href="mailto:support@planeprotect.com" className="text-sm text-[#1D1D1F] hover:text-blue-500 transition-colors">support@planeprotect.com</a>
+                  <a href="mailto:support@planeprotect.co.uk" className="text-sm text-[#1D1D1F] hover:text-blue-500 transition-colors">support@planeprotect.co.uk</a>
                 </li>
-                <li className="flex items-center gap-2">
-                  <Phone className="w-4 h-4 text-[#86868b]" />
-                  <a href="tel:+447123456789" className="text-sm text-[#1D1D1F] hover:text-blue-500 transition-colors">+44 (0) 7123 456789</a>
-                </li>
+            
                 <li className="flex items-center gap-2">
                   <MapPin className="w-4 h-4 text-[#86868b]" />
                   <span className="text-sm text-[#1D1D1F]">London, UK</span>

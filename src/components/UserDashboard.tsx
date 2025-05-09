@@ -3,13 +3,14 @@ import { motion } from 'framer-motion';
 import { getUserClaims } from '@/lib/api';
 import { formatDate, formatCurrency } from '@/lib/utils';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Clock, CheckCircle2, AlertTriangle, BanknoteIcon, FileText, Plane, ArrowRight, Search, Filter, Calendar, FileSignature } from 'lucide-react';
+import { Clock, CheckCircle2, AlertTriangle, BanknoteIcon, FileText, Plane, ArrowRight, Search, Filter, Calendar, FileSignature, HelpCircle, Mail, MessageSquare } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import type { Claim, ClaimStatus } from '@/lib/types';
 import { CLAIM_STATUS } from '@/lib/constants';
+import { ContactDialog } from './ContactDialog';
 
 type FilterStatus = ClaimStatus | 'all';
 
@@ -22,6 +23,8 @@ export function UserDashboard() {
     startDate: '',
     endDate: '',
   });
+  const [isContactDialogOpen, setIsContactDialogOpen] = useState(false);
+  const [selectedClaimId, setSelectedClaimId] = useState<string | undefined>(undefined);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -87,6 +90,11 @@ export function UserDashboard() {
     setSearchTerm('');
     setDateFilter({ startDate: '', endDate: '' });
   };
+
+  const openContactDialog = (claimId?: string) => {
+    setSelectedClaimId(claimId);
+    setIsContactDialogOpen(true);
+  };
   
   const statusDisplayMap: Record<ClaimStatus, { label: string; colorClasses: string; icon: React.ElementType }> = {
     [CLAIM_STATUS.PENDING]: { label: 'Pending', colorClasses: 'text-amber-700 bg-amber-100 border-amber-200', icon: Clock },
@@ -112,14 +120,24 @@ export function UserDashboard() {
         <h1 className="text-2xl sm:text-3xl font-semibold text-[#1D1D1F]">
           Your Dashboard
         </h1>
-        <Button
-          variant="gradient"
-          onClick={() => navigate('/')}
-          className="flex items-center gap-1.5 rounded-lg h-10 px-4 text-sm w-full sm:w-auto"
-        >
-          <Plane className="w-4 h-4" />
-          Check New Flight
-        </Button>
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+          <Button
+            variant="outline"
+            onClick={() => openContactDialog()}
+            className="flex items-center gap-1.5 rounded-lg h-10 px-4 text-sm border-blue-200 text-blue-600 hover:bg-blue-50"
+          >
+            <HelpCircle className="w-4 h-4" />
+            Contact Support
+          </Button>
+          <Button
+            variant="gradient"
+            onClick={() => navigate('/')}
+            className="flex items-center gap-1.5 rounded-lg h-10 px-4 text-sm"
+          >
+            <Plane className="w-4 h-4" />
+            Check New Flight
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">
@@ -248,10 +266,28 @@ export function UserDashboard() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3 }}
-                    className="bg-gradient-to-b from-white/95 to-white/90 p-4 sm:p-5 rounded-xl border border-gray-200/60 shadow-sm transition-shadow hover:shadow-md"
-                    onClick={() => navigate(`/claim/${claim.id}`)}
+                    className="bg-gradient-to-b from-white/95 to-white/90 p-4 sm:p-5 rounded-xl border border-gray-200/60 shadow-sm transition-shadow hover:shadow-md relative group"
                   >
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                    <div 
+                      className="absolute right-3 top-3 opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openContactDialog(claim.id);
+                      }}
+                    >
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-8 w-8 p-0 rounded-full bg-blue-50 hover:bg-blue-100"
+                        title="Contact support about this claim"
+                      >
+                        <Mail className="h-4 w-4 text-blue-600" />
+                      </Button>
+                    </div>
+                    <div 
+                      className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2"
+                      onClick={() => navigate(`/claim/${claim.id}`)}
+                    >
                       <div className="flex items-center gap-3">
                         <div className="hidden sm:block bg-blue-100/70 p-2 rounded-lg">
                           <Plane className="w-6 h-6 text-blue-500" />
@@ -293,6 +329,50 @@ export function UserDashboard() {
           )}
         </div>
       </div>
+
+      {/* Help & Support Card */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4, duration: 0.5 }}
+        className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-5 sm:p-6 shadow-sm border border-blue-100/50"
+      >
+        <div className="flex flex-col md:flex-row items-center justify-between gap-5">
+          <div className="text-center md:text-left">
+            <h3 className="text-lg font-semibold text-[#1D1D1F] mb-2 flex items-center justify-center md:justify-start">
+              <HelpCircle className="w-5 h-5 mr-2 text-blue-500" />
+              Need Help?
+            </h3>
+            <p className="text-gray-600 text-sm max-w-md">
+              Our support team is here to assist you with any questions or concerns about your claims.
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <a 
+              href="mailto:support@planeprotect.co.uk" 
+              className="flex items-center justify-center gap-2 h-10 px-4 rounded-lg bg-white text-blue-600 border border-blue-200 text-sm font-medium hover:bg-blue-50 transition-colors"
+            >
+              <Mail className="w-4 h-4" />
+              Email Support
+            </a>
+            <Button
+              variant="gradient"
+              onClick={() => openContactDialog()}
+              className="flex items-center gap-2 h-10 rounded-lg text-sm font-medium"
+            >
+              <MessageSquare className="w-4 h-4" />
+              Contact Form
+            </Button>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Contact Dialog */}
+      <ContactDialog 
+        isOpen={isContactDialogOpen} 
+        onClose={() => setIsContactDialogOpen(false)}
+        claimId={selectedClaimId}
+      />
     </motion.div>
   );
 }
