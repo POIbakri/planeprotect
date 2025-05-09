@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Upload, CreditCard, Import as Passport, Plane, User, Mail, Phone, CheckCircle2, Info, BanknoteIcon, Building } from 'lucide-react';
+import { Upload, CreditCard, Import as Passport, Plane, User, Mail, Phone, CheckCircle2, Info, BanknoteIcon, Building, Lock, Shield } from 'lucide-react';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { formatFlightNumber } from '@/lib/utils';
@@ -212,8 +212,22 @@ export function ClaimForm() {
       toast.dismiss(loadingToast);
       toast.success('Claim submitted successfully!');
 
-      // ADD navigation to dashboard
-      navigate('/dashboard'); 
+      // Navigate to assignment form instead of dashboard
+      navigate('/assignment-form', { 
+        state: { 
+          claimData: {
+            claimId: claim.id,
+            fullName: formData.fullName,
+            bookingReference: location.state?.bookingReference || '',
+            flightNumber: flightNumber,
+            flightDate: flightDate,
+            email: formData.email,
+            phone: formData.phone,
+            // Include bank details for possible address inference
+            bankHolder: formData.bankHolder
+          } 
+        } 
+      });
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to submit claim';
@@ -319,6 +333,18 @@ export function ClaimForm() {
         </div>
       </div>
 
+      <div className="bg-blue-50 rounded-xl p-4 border border-blue-100 mb-6">
+        <div className="flex items-start gap-3">
+          <Lock className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+          <div>
+            <h3 className="text-sm font-medium text-blue-800 mb-1">Your Data is Secure</h3>
+            <p className="text-xs text-blue-700">
+              Plane Protect Limited is fully GDPR compliant. We encrypt and securely store all personal information. Your data will only be used to process your claim and will never be sold to third parties.
+            </p>
+          </div>
+        </div>
+      </div>
+
       <div className="space-y-4">
         {/* Inputs with updated styling and icons */}
         <div className="space-y-1">
@@ -389,7 +415,7 @@ export function ClaimForm() {
 
         {/* Legal Consent Section - Refined */}
         <div className="pt-4">
-          <div className="bg-blue-50/60 rounded-xl p-4 border border-blue-100/80">
+          <div className="bg-blue-50/60 rounded-xl p-4 border border-blue-100">
             <div className="flex items-start gap-3">
               <input
                 type="checkbox"
@@ -429,6 +455,18 @@ export function ClaimForm() {
       transition={{ duration: 0.3 }}
       className="space-y-6"
     >
+      <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-100 mb-6">
+        <div className="flex items-start gap-3">
+          <Shield className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+          <div>
+            <h3 className="text-sm font-medium text-emerald-800 mb-1">Documents Securely Stored</h3>
+            <p className="text-xs text-emerald-700">
+              All documents are encrypted and stored in compliance with GDPR requirements. We implement best-in-class security measures to protect your sensitive information. Documents are only accessed by authorized personnel involved in processing your claim.
+            </p>
+          </div>
+        </div>
+      </div>
+      
       <div className="space-y-4">
         {/* File Upload Area - Boarding Pass */}
         <div className={`border-2 border-dashed rounded-xl p-4 transition-colors group relative ${formData.documents.boardingPass ? 'border-green-400 bg-green-50/50' : 'border-gray-300 hover:border-blue-500'}`}>
@@ -533,6 +571,18 @@ export function ClaimForm() {
         handleNext(); // Will trigger handleSubmit inside
       }}
     >
+      <div className="bg-amber-50 rounded-xl p-4 border border-amber-100 mb-6">
+        <div className="flex items-start gap-3">
+          <BanknoteIcon className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+          <div>
+            <h3 className="text-sm font-medium text-amber-800 mb-1">Bank Details for Your Compensation</h3>
+            <p className="text-xs text-amber-700">
+              We collect your bank details solely to transfer your compensation payment when the claim is successful. Your financial information is encrypted and protected in accordance with financial security standards. We never store card details or use your bank information for any other purpose.
+            </p>
+          </div>
+        </div>
+      </div>
+      
       <div className="space-y-4">
         <div className="space-y-1">
           <label htmlFor="bankName" className="flex items-center text-sm font-medium text-[#333] mb-1">

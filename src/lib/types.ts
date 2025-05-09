@@ -94,6 +94,8 @@ export interface Claim {
   disruption_reason?: string;
   delay_duration?: number;
   documents?: ClaimDocument[];
+  assignment_form_signed?: boolean;
+  assignment_form_url?: string;
 }
 
 export interface ClaimDocument {

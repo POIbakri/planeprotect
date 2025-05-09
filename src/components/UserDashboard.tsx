@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { getUserClaims } from '@/lib/api';
 import { formatDate, formatCurrency } from '@/lib/utils';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Clock, CheckCircle2, AlertTriangle, BanknoteIcon, FileText, Plane, ArrowRight, Search, Filter, Calendar } from 'lucide-react';
+import { Clock, CheckCircle2, AlertTriangle, BanknoteIcon, FileText, Plane, ArrowRight, Search, Filter, Calendar, FileSignature } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { useNavigate } from 'react-router-dom';
@@ -248,35 +248,43 @@ export function UserDashboard() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3 }}
-                    className="p-4 border border-gray-200/80 rounded-lg hover:shadow-md transition-shadow duration-200 bg-white/80"
+                    className="bg-gradient-to-b from-white/95 to-white/90 p-4 sm:p-5 rounded-xl border border-gray-200/60 shadow-sm transition-shadow hover:shadow-md"
+                    onClick={() => navigate(`/claim/${claim.id}`)}
                   >
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-2">
-                      <div className="flex items-center gap-2">
-                        <Plane className="w-4 h-4 text-gray-500 flex-shrink-0" />
-                        <h3 className="font-medium text-sm sm:text-base text-gray-800">{claim.flight_number}</h3>
-                        <span className="text-xs text-gray-400">({formatDate(claim.flight_date)})</span>
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                      <div className="flex items-center gap-3">
+                        <div className="hidden sm:block bg-blue-100/70 p-2 rounded-lg">
+                          <Plane className="w-6 h-6 text-blue-500" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className="text-lg font-semibold text-[#1D1D1F]">{claim.flight_number}</p>
+                            <span className={`text-xs px-2 py-0.5 rounded-full flex items-center gap-1 ${statusInfo.colorClasses}`}>
+                              <StatusIcon className="w-3 h-3" />
+                              {statusInfo.label}
+                            </span>
+                            {claim.assignment_form_signed && (
+                              <span className="text-xs px-2 py-0.5 rounded-full flex items-center gap-1 text-emerald-700 bg-emerald-100 border-emerald-200">
+                                <FileSignature className="w-3 h-3" />
+                                Signed
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm text-gray-600 mb-1">
+                            Flight Date: {formatDate(claim.flight_date)}
+                          </p>
+                          <p className="text-sm text-gray-500">{claim.passenger_name}</p>
+                        </div>
                       </div>
-                      <div className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 text-xs font-medium rounded-full ${statusInfo.colorClasses}`}>
-                        <StatusIcon className="w-3 h-3" />
-                        {statusInfo.label}
-                      </div>
-                    </div>
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mt-2 pt-2 border-t border-gray-100">
-                      <div className="text-sm mb-2 sm:mb-0">
-                        <span className="text-gray-500">Potential: </span>
-                        <span className="text-base font-semibold text-gray-700">
+                      <div className="flex flex-col items-end">
+                        <div className="text-xl font-semibold text-[#1D1D1F]">
                           {formatCurrency(claim.compensation_amount)}
-                        </span>
-                        {claim.status === CLAIM_STATUS.PAID && <span className="text-xs text-emerald-600 ml-2">(Paid)</span>}
+                        </div>
+                        <div className="flex items-center mt-1 text-blue-600 text-xs font-medium">
+                          View Details
+                          <ArrowRight className="w-3 h-3 ml-1" />
+                        </div>
                       </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => navigate(`/claim/${claim.id}`)}
-                        className="rounded-lg text-blue-600 border-blue-200 hover:bg-blue-50/50 h-8 px-3 text-xs"
-                      >
-                        View Status <ArrowRight className="w-3 h-3 ml-1" />
-                      </Button>
                     </div>
                   </motion.div>
                 );

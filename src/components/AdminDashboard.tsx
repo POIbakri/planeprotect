@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { getAllClaims, updateClaimStatus } from '@/lib/api';
 import { formatDate, formatCurrency } from '@/lib/utils';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Clock, CheckCircle2, AlertTriangle, BanknoteIcon, FileText, Search, Filter, Mail, Settings, Download, ChevronUp, ChevronDown } from 'lucide-react';
+import { Clock, CheckCircle2, AlertTriangle, BanknoteIcon, FileText, Search, Filter, Mail, Settings, Download, ChevronUp, ChevronDown, FileSignature, ExternalLink } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { EmailTemplateEditor } from './EmailTemplateEditor';
@@ -342,6 +342,151 @@ export function AdminDashboard() {
       <ChevronDown className="w-3 h-3 ml-1 text-gray-500" />;
   };
 
+  const renderClaimsTable = () => {
+    return (
+      <div className="overflow-x-auto -mx-6 px-6">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead>
+            <tr>
+              <th 
+                className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-blue-500 transition-colors"
+                onClick={() => handleSort('flight_number')}
+              >
+                Flight {renderSortArrow('flight_number')}
+              </th>
+              <th 
+                className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-blue-500 transition-colors"
+                onClick={() => handleSort('passenger_name')}
+              >
+                Passenger {renderSortArrow('passenger_name')}
+              </th>
+              <th 
+                className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-blue-500 transition-colors"
+                onClick={() => handleSort('flight_date')}
+              >
+                Date {renderSortArrow('flight_date')}
+              </th>
+              <th 
+                className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-blue-500 transition-colors"
+                onClick={() => handleSort('compensation_amount')}
+              >
+                Amount {renderSortArrow('compensation_amount')}
+              </th>
+              <th 
+                className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-blue-500 transition-colors"
+                onClick={() => handleSort('status')}
+              >
+                Status {renderSortArrow('status')}
+              </th>
+              <th 
+                className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Form
+              </th>
+              <th 
+                className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {filteredClaims.map((claim) => {
+              const statusDisplay = getStatusDisplay(claim.status);
+              const StatusIcon = statusDisplay.icon;
+              return (
+                <tr key={claim.id} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    <span className="text-sm font-medium text-gray-900">{claim.flight_number}</span>
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    <span className="text-sm text-gray-900">{claim.passenger_name}</span>
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    <span className="text-sm text-gray-500">{formatDate(claim.flight_date)}</span>
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    <span className="text-sm font-medium text-gray-900">{formatCurrency(claim.compensation_amount)}</span>
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    <div className="flex items-center">
+                      <span 
+                        className={`flex items-center px-2.5 py-0.5 text-xs font-medium rounded-full ${statusDisplay.colorClasses}`}
+                      >
+                        <StatusIcon className="w-3 h-3 mr-1" />
+                        {statusDisplay.label}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    <div className="flex items-center">
+                      {claim.assignment_form_signed ? (
+                        <div className="flex items-center">
+                          <span className="text-emerald-700 flex items-center gap-1 text-xs">
+                            <FileSignature className="w-3 h-3" />
+                            Signed
+                          </span>
+                          {claim.assignment_form_url && (
+                            <a 
+                              href={claim.assignment_form_url} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="ml-2 text-blue-600 hover:text-blue-800"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <ExternalLink className="w-4 h-4" />
+                            </a>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-amber-700 flex items-center gap-1 text-xs">
+                          <AlertTriangle className="w-3 h-3" />
+                          Missing
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap text-center">
+                    <div className="flex items-center justify-center space-x-2">
+                      <select
+                        value={claim.status}
+                        onChange={(e) => handleStatusUpdate(claim.id, e.target.value as ClaimStatus)}
+                        className="block w-24 px-2 py-1 text-xs border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      >
+                        <option value={claim.status} disabled>
+                          Change...
+                        </option>
+                        {allowedTransitions[claim.status]?.map((status) => {
+                          const display = getStatusDisplay(status);
+                          return (
+                            <option key={status} value={status}>
+                              {display.label}
+                            </option>
+                          );
+                        })}
+                      </select>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/claim/${claim.id}`);
+                        }}
+                        className="rounded px-2 py-1 text-xs"
+                      >
+                        View
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -474,60 +619,7 @@ export function AdminDashboard() {
                 </div>
              ) : (
                <>
-                 <div className="overflow-x-auto">
-                   <table className="w-full text-left text-sm">
-                      <thead className="bg-gray-50/50">
-                        <tr className="border-b border-gray-200">
-                           <th className="px-3 py-2.5 font-medium text-gray-600 cursor-pointer hover:bg-gray-100/80" onClick={() => handleSort('id')}>ID {renderSortArrow('id')}</th>
-                           <th className="px-3 py-2.5 font-medium text-gray-600 cursor-pointer hover:bg-gray-100/80" onClick={() => handleSort('passenger_name')}>Passenger {renderSortArrow('passenger_name')}</th>
-                           <th className="px-3 py-2.5 font-medium text-gray-600 cursor-pointer hover:bg-gray-100/80" onClick={() => handleSort('flight_number')}>Flight {renderSortArrow('flight_number')}</th>
-                           <th className="px-3 py-2.5 font-medium text-gray-600 cursor-pointer hover:bg-gray-100/80" onClick={() => handleSort('flight_date')}>Date {renderSortArrow('flight_date')}</th>
-                           <th className="px-3 py-2.5 font-medium text-gray-600 cursor-pointer hover:bg-gray-100/80" onClick={() => handleSort('compensation_amount')}>Amount {renderSortArrow('compensation_amount')}</th>
-                           <th className="px-3 py-2.5 font-medium text-gray-600 cursor-pointer hover:bg-gray-100/80" onClick={() => handleSort('status')}>Status {renderSortArrow('status')}</th>
-                           <th className="px-3 py-2.5 font-medium text-gray-600 text-right">Actions</th>
-                        </tr>
-                      </thead>
-                     <tbody>
-                       {claims.map((claim) => {
-                         const statusInfo = getStatusDisplay(claim.status);
-                         const StatusIcon = statusInfo.icon;
-                         const nextStatuses = allowedTransitions[claim.status] || [];
-                         return (
-                            <tr key={claim.id} className="border-b border-gray-100 hover:bg-gray-50/50">
-                              <td className="px-3 py-2 text-gray-700 font-mono text-xs">{claim.id.slice(0, 8)}...</td>
-                              <td className="px-3 py-2 text-gray-800 truncate max-w-[150px]">{claim.passenger_name}</td>
-                              <td className="px-3 py-2 text-gray-700">{claim.flight_number}</td>
-                              <td className="px-3 py-2 text-gray-700 whitespace-nowrap">{formatDate(claim.flight_date)}</td>
-                              <td className="px-3 py-2 font-medium text-emerald-700 whitespace-nowrap">
-                                {formatCurrency(claim.compensation_amount)}
-                              </td>
-                              <td className="px-3 py-2">
-                                 <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium rounded-full ${statusInfo.colorClasses}`}>
-                                   <StatusIcon className="w-3 h-3" />
-                                   {statusInfo.label}
-                                 </span>
-                               </td>
-                              <td className="px-3 py-2 text-right">
-                                <select 
-                                   className="h-7 rounded-md text-xs border-gray-300 w-auto px-2 py-1 bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-300 appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
-                                   value=""
-                                   onChange={(e: React.ChangeEvent<HTMLSelectElement>) => { if(e.target.value) handleStatusUpdate(claim.id, e.target.value as ClaimStatus); }}
-                                   disabled={nextStatuses.length === 0}
-                                >
-                                    <option value="" disabled>Update...</option>
-                                    {nextStatuses.map((nextStatus: ClaimStatus) => (
-                                       <option key={nextStatus} value={nextStatus}>
-                                          {statusDisplayMap[nextStatus]?.label || nextStatus} 
-                                       </option>
-                                    ))}
-                                </select>
-                              </td>
-                            </tr>
-                        );
-                       })}
-                     </tbody>
-                   </table>
-                 </div>
+                 {renderClaimsTable()}
                  {renderPagination()} 
                </>
              )}

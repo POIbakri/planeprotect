@@ -23,6 +23,8 @@ import { AdminRoute } from './components/AdminRoute';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { performanceMonitor } from './lib/performance';
 import { AboutUs } from './components/AboutUs';
+import { CookieConsent } from './components/CookieConsent';
+import { AssignmentForm } from './components/AssignmentForm';
 
 // Initialize monitoring
 performanceMonitor.startMonitoring();
@@ -82,6 +84,11 @@ function App() {
                   <ClaimForm />
                 </PrivateRoute>
               } />
+              <Route path="assignment-form" element={
+                <PrivateRoute>
+                  <AssignmentForm />
+                </PrivateRoute>
+              } />
               <Route path="claim/:id" element={
                 <PrivateRoute>
                   <ClaimStatus />
@@ -111,6 +118,9 @@ function App() {
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Layout>
+          
+          {/* GDPR Compliant Cookie Consent Banner - Global Placement */}
+          <CookieConsent />
         </Router>
       </AuthProvider>
     </ErrorBoundary>

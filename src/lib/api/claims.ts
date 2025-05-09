@@ -5,7 +5,8 @@ import type {
   Claim, 
   ClaimDocument, 
   ClaimStatus,
-  PaginatedResponse 
+  PaginatedResponse,
+  ClaimFilters
 } from '../types';
 
 const CACHE_TTL = {
@@ -89,7 +90,8 @@ export async function updateClaimStatus(
 
 export async function getAllClaims(
   page = 1,
-  limit = 10
+  limit = 10,
+  filters?: ClaimFilters
 ): Promise<PaginatedResponse<Claim>> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('Authentication required');
@@ -104,11 +106,44 @@ export async function getAllClaims(
     throw new Error('Unauthorized: Admin access required');
   }
 
-  const { data, error, count } = await supabase
+  let query = supabase
     .from('claims')
-    .select('*, claim_documents(*)', { count: 'exact' })
-    .order('created_at', { ascending: false })
-    .range((page - 1) * limit, page * limit - 1);
+    .select('*, claim_documents(*)', { count: 'exact' });
+
+  // Apply filters if provided
+  if (filters) {
+    if (filters.status) {
+      query = query.eq('status', filters.status);
+    }
+    
+    if (filters.search) {
+      query = query.or(`flight_number.ilike.%${filters.search}%,passenger_name.ilike.%${filters.search}%`);
+    }
+    
+    if (filters.startDate) {
+      query = query.gte('flight_date', filters.startDate);
+    }
+    
+    if (filters.endDate) {
+      query = query.lte('flight_date', filters.endDate);
+    }
+    
+    // Apply sorting
+    if (filters.sortBy) {
+      query = query.order(filters.sortBy, { 
+        ascending: filters.sortDirection === 'asc' 
+      });
+    } else {
+      query = query.order('created_at', { ascending: false });
+    }
+  } else {
+    query = query.order('created_at', { ascending: false });
+  }
+  
+  // Apply pagination
+  query = query.range((page - 1) * limit, page * limit - 1);
+
+  const { data, error, count } = await query;
 
   if (error) {
     logger.error('Failed to fetch all claims', error);
@@ -152,6 +187,52 @@ export async function uploadClaimDocument(
     cache.invalidate(`claim:${claimId}`);
   } catch (error) {
     logger.error('Failed to upload document', error as Error);
+    throw error;
+  }
+}
+
+export async function uploadAssignmentForm(
+  claimId: string,
+  file: Blob,
+  fileName: string
+): Promise<string> {
+  try {
+    // Upload the assignment form PDF to storage
+    const storageFileName = `${claimId}/assignment-form-${Date.now()}.pdf`;
+    
+    const { error: uploadError, data } = await supabase.storage
+      .from('claim-documents')
+      .upload(storageFileName, file, {
+        contentType: 'application/pdf',
+        upsert: true
+      });
+
+    if (uploadError) throw uploadError;
+
+    // Get the public URL for the uploaded file
+    const { data: { publicUrl } } = supabase.storage
+      .from('claim-documents')
+      .getPublicUrl(storageFileName);
+
+    // Update claim record with assignment form status and URL
+    const { error: updateError } = await supabase
+      .from('claims')
+      .update({ 
+        assignment_form_signed: true,
+        assignment_form_url: publicUrl,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', claimId);
+
+    if (updateError) throw updateError;
+
+    // Invalidate caches
+    cache.invalidate(`claim:${claimId}`);
+    cache.invalidate('claims:user:');
+    
+    return publicUrl;
+  } catch (error) {
+    logger.error('Failed to upload assignment form', error as Error);
     throw error;
   }
 }
