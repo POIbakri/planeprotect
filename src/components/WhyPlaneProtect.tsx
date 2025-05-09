@@ -194,10 +194,10 @@ export function WhyPlaneProtect() {
           
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 relative z-10">
             {[
-              { label: "Success Rate", value: "98%", color: "text-blue-600", bgColor: "bg-blue-50" },
-              { label: "Average Claim", value: "€450", color: "text-purple-600", bgColor: "bg-purple-50" },
-              { label: "Average Time", value: "14 Days", color: "text-teal-600", bgColor: "bg-teal-50" },
-              { label: "Satisfied Clients", value: "24,000+", color: "text-amber-600", bgColor: "bg-amber-50" },
+              { label: "Success Rate", value: "98%", color: "text-blue-600", bgColor: "bg-blue-50", icon: BadgePercent },
+              { label: "Average Claim", value: "€450", color: "text-purple-600", bgColor: "bg-purple-50", icon: Calculator },
+              { label: "Average Time", value: "14 Days", color: "text-teal-600", bgColor: "bg-teal-50", icon: Clock },
+              { label: "Satisfied Clients", value: "24,000+", color: "text-amber-600", bgColor: "bg-amber-50", icon: Users },
             ].map((stat, index) => (
               <motion.div
                 key={index}
@@ -208,7 +208,7 @@ export function WhyPlaneProtect() {
                 className="text-center"
               >
                 <div className={`inline-flex items-center justify-center w-16 h-16 ${stat.bgColor} rounded-full mb-4`}>
-                  <div className={`text-3xl font-semibold ${stat.color}`}>{stat.value.slice(0, 1)}</div>
+                  <stat.icon className={`w-8 h-8 ${stat.color}`} />
                 </div>
                 <div className="text-3xl font-semibold text-[#1D1D1F] mb-1">{stat.value}</div>
                 <div className="text-[#6e6e73]">{stat.label}</div>
