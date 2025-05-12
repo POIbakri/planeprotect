@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { Analytics } from '@vercel/analytics/react';
 import { AuthProvider } from './contexts/AuthContext';
@@ -25,15 +25,28 @@ import { performanceMonitor } from './lib/performance';
 import { AboutUs } from './components/AboutUs';
 import { CookieConsent } from './components/CookieConsent';
 import { AssignmentForm } from './components/AssignmentForm';
+import { useEffect } from 'react';
 
 // Initialize monitoring
 performanceMonitor.startMonitoring();
 
+// ScrollToTop component that uses the useLocation hook to detect route changes
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  
+  return null;
+}
+
 function App() {
   return (
     <ErrorBoundary>
-      <AuthProvider>
-        <Router>
+      <Router>
+        <ScrollToTop />
+        <AuthProvider>
           <Analytics />
           <Toaster 
             position="top-right"
@@ -121,8 +134,8 @@ function App() {
           
           {/* GDPR Compliant Cookie Consent Banner - Global Placement */}
           <CookieConsent />
-        </Router>
-      </AuthProvider>
+        </AuthProvider>
+      </Router>
     </ErrorBoundary>
   );
 }
